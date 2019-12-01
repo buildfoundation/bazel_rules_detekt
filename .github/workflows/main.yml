@@ -23,7 +23,9 @@ jobs:
           curl --location --fail https://github.com/bazelbuild/bazel/releases/download/1.2.1/bazel-1.2.1-linux-x86_64 --output /tmp/bazel
           chmod +x /tmp/bazel
       - name: Integration Test detekt_with_default_attributes
-        run: /tmp/bazel build //tests/integration:detekt_with_default_attributes
+        run: |
+          /tmp/bazel build //tests/integration:detekt_with_default_attributes
+          test -f bazel-bin/tests/integration/detekt_with_default_attributes_detekt_report.txt
       - name: Integration Test detekt_with_strict_config
         run: |
           set +e
@@ -33,4 +35,11 @@ jobs:
           echo "Printing bazel.log (1 error expected)"
           cat /tmp/bazel.log
           grep "Build failed with 1 weighted issues" /tmp/bazel.log
-
+      - name: Integration Test detekt_xml_report
+        run: |
+          /tmp/bazel build //tests/integration:detekt_xml_report
+          test -f bazel-out/k8-fastbuild/bin/tests/integration/detekt_xml_report_detekt_report.xml
+      - name: Integration Test detekt_html_report
+        run: |
+          /tmp/bazel build //tests/integration:detekt_html_report
+          test -f bazel-out/k8-fastbuild/bin/tests/integration/detekt_html_report_detekt_report.html
