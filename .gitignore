@@ -1,0 +1,10 @@
+### IntelliJ
+.idea/
+out/
+.ijwb/
+
+### macOS
+.DS_Store
+
+### Bazel
+/bazel-*

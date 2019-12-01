@@ -18,9 +18,12 @@ load("@rules_java//java:repositories.bzl", "remote_jdk11_repos")
 remote_jdk11_repos()
 
 http_file(
-    name = "detekt_cli",
+    # Name is specifically _jar because we want to add JVM Persistent Worker support,
+    # thus we rely on binary to be .jar rather than some sort of executable.
+    name = "detekt_cli_jar",
     urls = [
-        "https://github.com/arturbosch/detekt/releases/download/1.0.1/detekt-cli-1.0.1-all.jar",
+        # TODO: Add more mirrors, JCenter/Bintray is notoriously bad with 5xx and all sorts of timeouts.
+        "https://jcenter.bintray.com/io/gitlab/arturbosch/detekt/detekt-cli/1.2.0/detekt-cli-1.2.0-all.jar",
     ],
-    sha256 = "7d84f61d3f9f8119addeac7a51542e101d7fc3051b4b82762d3b7baa3bbc309e",
+    sha256 = "e9710fb9260c0824b3a9ae7d8326294ab7a01af68cfa510cab66de964da80862",
 )
