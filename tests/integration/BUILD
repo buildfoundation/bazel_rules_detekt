@@ -1,4 +1,4 @@
-load("@rules_detekt//detekt:rules.bzl", "detekt")
+load("@rules_detekt//detekt:detekt.bzl", "detekt")
 
 detekt(
     name = "detekt",

@@ -1,6 +1,16 @@
 name: CI
 on: [push]
 jobs:
+  buildifier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Download Buildifier
+        run: |
+          curl --location --fail https://github.com/bazelbuild/buildtools/releases/download/0.29.0/buildifier --output /tmp/buildifier
+          chmod +x /tmp/buildifier
+      - name: Lint Starlark Files
+        run: /tmp/buildifier -mode check -lint warn -r .
   build:
     runs-on: ubuntu-latest
     steps:
@@ -9,6 +19,8 @@ jobs:
       with:
         java-version: "11.0.5"
     - name: Download Bazel
-      run: curl --location --fail https://github.com/bazelbuild/bazel/releases/download/1.2.1/bazel-1.2.1-linux-x86_64 --output /tmp/bazel && chmod +x /tmp/bazel
+      run: |
+        curl --location --fail https://github.com/bazelbuild/bazel/releases/download/1.2.1/bazel-1.2.1-linux-x86_64 --output /tmp/bazel
+        chmod +x /tmp/bazel
     - name: Run Bazel Build
       run: /tmp/bazel build //...
