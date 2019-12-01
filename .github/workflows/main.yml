@@ -32,5 +32,5 @@ jobs:
           set -e
           echo "Printing bazel.log (1 error expected)"
           cat /tmp/bazel.log
-          grep --quiet "Build failed with 1 weighted issues" /tmp/bazel.log
+          grep "Build failed with 1 weighted issues" /tmp/bazel.log
 
