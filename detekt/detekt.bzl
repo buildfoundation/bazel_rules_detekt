@@ -12,8 +12,9 @@ def _impl(ctx):
     action_arguments = [
         "-Xms16m",
         "-Xmx128m",
-        "-jar",
-        ctx.file._detekt_cli_jar.path,
+        "-cp",
+        ":".join([jar for jar in [ctx.file._detekt_cli_jar.path, ctx.file._detekt_wrapper_jar.path]]),
+        "io.buildfoundation.bazel.rulesdetekt.wrapper.Main",
     ]
 
     if ctx.attr.config != None:
@@ -47,7 +48,7 @@ def _impl(ctx):
     ctx.actions.run(
         inputs = action_inputs,
         outputs = action_outputs,
-        tools = [ctx.file._detekt_cli_jar],
+        tools = [ctx.file._detekt_wrapper_jar, ctx.file._detekt_cli_jar],
         executable = "java",
         arguments = action_arguments,
     )
@@ -59,6 +60,7 @@ detekt = rule(
         # This is not public API yet because ideally Detekt should run as Persistent Worker which will change how we integrate it.
         # Later we should allow user to customize Detekt binary.
         "_detekt_cli_jar": attr.label(default = "@detekt_cli_jar//file", allow_single_file = True),
+        "_detekt_wrapper_jar": attr.label(default = "//detekt/wrapper:bin_deploy.jar", allow_single_file = True),
         "srcs": attr.label_list(allow_files = True),
         "config": attr.label(default = None, allow_single_file = True, doc = "Custom Detekt config file (must end with .yml). If not set Detekt will use its default configuration (mind the Detekt version) https://github.com/arturbosch/detekt/blob/master/detekt-cli/src/main/resources/default-detekt-config.yml"),
         # TODO: Baselines are not fully supported yet due to Detekt relying on absolute paths which doesn't work with Bazel sandboxing.
