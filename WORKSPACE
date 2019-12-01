@@ -23,8 +23,6 @@ http_file(
     ],
 )
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
 rules_kotlin_version = "legacy-1.3.0-rc1"
 
 rules_kotlin_sha = "9de078258235ea48021830b1669bbbb678d7c3bdffd3435f4c0817c921a88e42"
