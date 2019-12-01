@@ -8,6 +8,6 @@ kt_jvm_library(
 java_binary(
     name = "bin",
     main_class = "io.buildfoundation.bazel.rulesdetekt.wrapper.Main",
-    runtime_deps = [":_lib"],
     visibility = ["//visibility:public"],
+    runtime_deps = [":_lib"],
 )

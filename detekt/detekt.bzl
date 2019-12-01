@@ -14,7 +14,7 @@ def _impl(ctx):
         "-Xmx128m",
         "-cp",
         ":".join([jar for jar in [ctx.file._detekt_cli_jar.path, ctx.file._detekt_wrapper_jar.path]]),
-        "io.buildfoundation.bazel.rulesdetekt.wrapper.Main"
+        "io.buildfoundation.bazel.rulesdetekt.wrapper.Main",
     ]
 
     if ctx.attr.config != None:
