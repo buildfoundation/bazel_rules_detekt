@@ -5,6 +5,7 @@ Detekt is a static analysis tool for Kotlin: https://github.com/arturbosch/detek
 
 def _impl(ctx):
     action_inputs = [] + ctx.files.srcs
+    action_outputs = []
 
     # See Detekt CLI documentation: https://arturbosch.github.io/detekt/cli.html
     # TODO: Allow customizing JVM options.
@@ -28,16 +29,24 @@ def _impl(ctx):
     if ctx.attr.parallel:
         action_arguments.append("--parallel")
 
-    action_arguments += [
-        "--report",
-        "txt:{}".format(ctx.outputs.txt_report.path),
-        "--report",
-        "xml:{}".format(ctx.outputs.xml_report.path),
-    ]
+    if ctx.attr._txt_report:
+        txt_report = ctx.outputs.txt_report
+        action_outputs.append(txt_report)
+        action_arguments += [ "--report", "txt:{}".format(txt_report.path) ]
+
+    if ctx.attr.xml_report:
+        xml_report = ctx.actions.declare_file("{}_detekt_report.xml".format(ctx.label.name))
+        action_outputs.append(xml_report)
+        action_arguments += [ "--report", "xml:{}".format(xml_report.path) ]
+
+    if ctx.attr.html_report:
+        html_report = ctx.actions.declare_file("{}_detekt_report.html".format(ctx.label.name))
+        action_outputs.append(html_report)
+        action_arguments += [ "--report", "html:{}".format(html_report.path) ]
 
     ctx.actions.run(
         inputs = action_inputs,
-        outputs = [ctx.outputs.txt_report, ctx.outputs.xml_report],
+        outputs = action_outputs,
         tools = [ctx.file._detekt_cli_jar],
         executable = "java",
         arguments = action_arguments,
@@ -55,9 +64,12 @@ detekt = rule(
         # TODO: Baselines are not fully supported yet due to Detekt relying on absolute paths which doesn't work with Bazel sandboxing.
         "_baseline": attr.label(default = None, allow_single_file = True),
         "parallel": attr.bool(default = False, doc = "As per Detekt documentation https://arturbosch.github.io/detekt/cli.html: Enables parallel compilation of source files. Should only be used if the analyzing project has more than ~200 Kotlin files."),
+        "_txt_report": attr.bool(default = True),
+        "xml_report": attr.bool(default = False),
+        "html_report": attr.bool(default = False),
     },
     outputs = {
+        # We need at least one declared output for the rule to run, thus we always generate txt report.
         "txt_report": "%{name}_detekt_report.txt",
-        "xml_report": "%{name}_detekt_report.xml",
     },
 )

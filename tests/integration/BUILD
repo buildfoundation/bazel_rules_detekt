@@ -10,3 +10,15 @@ detekt(
     srcs = glob(["src/main/kotlin/**/*.kt"]),
     config = "strict-config.yml",
 )
+
+detekt(
+    name = "detekt_xml_report",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    xml_report = True,
+)
+
+detekt(
+    name = "detekt_html_report",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    html_report = True,
+)
