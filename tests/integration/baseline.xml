@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<checkstyle version="4.3">
+<file name="tests/integration/src/main/kotlin/io/buildfoundation/bazelrulesdetekt/integrationtest/Main.kt">
+	<error line="3" column="31" severity="info" message="This empty block of code can be removed." source="detekt.EmptyFunctionBlock" />
+</file>
+</checkstyle>
