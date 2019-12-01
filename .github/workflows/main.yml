@@ -14,15 +14,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-java@v1
-      with:
-        java-version: "11.0.5"
-    - name: Download Bazel
-      run: |
-        curl --location --fail https://github.com/bazelbuild/bazel/releases/download/1.2.1/bazel-1.2.1-linux-x86_64 --output /tmp/bazel
-        chmod +x /tmp/bazel
-    - name: Integration Test detekt_with_default_attributes
-      run: /tmp/bazel build //tests/integration:detekt_with_default_attributes
-    - name: Integration Test detekt_with_strict_config
-      run: /tmp/bazel build //tests/integration:detekt_with_strict_config
+      - uses: actions/checkout@v1
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "11.0.5"
+      - name: Download Bazel
+        run: |
+          curl --location --fail https://github.com/bazelbuild/bazel/releases/download/1.2.1/bazel-1.2.1-linux-x86_64 --output /tmp/bazel
+          chmod +x /tmp/bazel
+      - name: Integration Test detekt_with_default_attributes
+        run: /tmp/bazel build //tests/integration:detekt_with_default_attributes
+      - name: Integration Test detekt_with_strict_config
+        run: |
+          set +e
+          /tmp/bazel build //tests/integration:detekt_with_strict_config > /tmp/bazel.log 2>&1
+          export BAZEL_EXIT_CODE=$?
+          set -e
+          echo "Printing bazel.log (1 error expected)"
+          cat /tmp/bazel.log
+          grep --quiet "Build failed with 1 weighted issues" /tmp/bazel.log
+
