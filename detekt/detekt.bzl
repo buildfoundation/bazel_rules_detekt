@@ -4,8 +4,11 @@ Detekt is a static analysis tool for Kotlin: https://github.com/arturbosch/detek
 """
 
 def _impl(ctx):
+    action_inputs = [] + ctx.files.srcs
+
+    # See Detekt CLI documentation: https://arturbosch.github.io/detekt/cli.html
     # TODO: Allow customizing JVM options.
-    arguments = [
+    action_arguments = [
         "-Xms16m",
         "-Xmx128m",
         "-jar",
@@ -13,14 +16,19 @@ def _impl(ctx):
     ]
 
     if ctx.attr.config != None:
-        arguments += ["--config", ctx.file.config]
+        action_inputs.append(ctx.file.config)
+        action_arguments += ["--config", ctx.file.config.path]
 
-    arguments += ["--input"] + [src.path for src in ctx.files.srcs]
+    action_arguments += ["--input"] + [src.path for src in ctx.files.srcs]
+
+    if ctx.attr._baseline != None:
+        action_inputs.append(ctx.file._baseline)
+        action_arguments += ["--baseline", ctx.file._baseline.path]
 
     if ctx.attr.parallel:
-        arguments.append("--parallel")
+        action_arguments.append("--parallel")
 
-    arguments += [
+    action_arguments += [
         "--report",
         "txt:{}".format(ctx.outputs.txt_report.path),
         "--report",
@@ -28,11 +36,11 @@ def _impl(ctx):
     ]
 
     ctx.actions.run(
-        inputs = ctx.files.srcs,
+        inputs = action_inputs,
         outputs = [ctx.outputs.txt_report, ctx.outputs.xml_report],
         tools = [ctx.file._detekt_cli_jar],
         executable = "java",
-        arguments = arguments,
+        arguments = action_arguments,
     )
 
 detekt = rule(
@@ -43,12 +51,13 @@ detekt = rule(
         # Later we should allow user to customize Detekt binary.
         "_detekt_cli_jar": attr.label(default = "@detekt_cli_jar//file", allow_single_file = True),
         "srcs": attr.label_list(allow_files = True),
-        "config": attr.label(default = None, allow_single_file = True),
+        "config": attr.label(default = None, allow_single_file = True, doc = "Custom Detekt config file (must end with .yml). If not set Detekt will use its default configuration (mind the Detekt version) https://github.com/arturbosch/detekt/blob/master/detekt-cli/src/main/resources/default-detekt-config.yml"),
+        # TODO: Baselines are not fully supported yet due to Detekt relying on absolute paths which doesn't work with Bazel sandboxing.
+        "_baseline": attr.label(default = None, allow_single_file = True),
         "parallel": attr.bool(default = False, doc = "As per Detekt documentation https://arturbosch.github.io/detekt/cli.html: Enables parallel compilation of source files. Should only be used if the analyzing project has more than ~200 Kotlin files."),
-        # TODO: Add baseline support.
     },
     outputs = {
-        "txt_report": "report.txt",
-        "xml_report": "report.xml",
+        "txt_report": "%{name}_detekt_report.txt",
+        "xml_report": "%{name}_detekt_report.xml",
     },
 )
