@@ -41,5 +41,5 @@ jobs:
           test -f bazel-out/k8-fastbuild/bin/tests/integration/detekt_xml_report_detekt_report.xml
       - name: Integration Test detekt_html_report
         run: |
-          /tmp/bazel build //tests/integration:detekt_xml_report
+          /tmp/bazel build //tests/integration:detekt_html_report
           test -f bazel-out/k8-fastbuild/bin/tests/integration/detekt_html_report_detekt_report.html
