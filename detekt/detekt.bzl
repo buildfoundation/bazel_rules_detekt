@@ -32,17 +32,17 @@ def _impl(ctx):
     if ctx.attr._txt_report:
         txt_report = ctx.outputs.txt_report
         action_outputs.append(txt_report)
-        action_arguments += [ "--report", "txt:{}".format(txt_report.path) ]
+        action_arguments += ["--report", "txt:{}".format(txt_report.path)]
 
     if ctx.attr.xml_report:
         xml_report = ctx.actions.declare_file("{}_detekt_report.xml".format(ctx.label.name))
         action_outputs.append(xml_report)
-        action_arguments += [ "--report", "xml:{}".format(xml_report.path) ]
+        action_arguments += ["--report", "xml:{}".format(xml_report.path)]
 
     if ctx.attr.html_report:
         html_report = ctx.actions.declare_file("{}_detekt_report.html".format(ctx.label.name))
         action_outputs.append(html_report)
-        action_arguments += [ "--report", "html:{}".format(html_report.path) ]
+        action_arguments += ["--report", "html:{}".format(html_report.path)]
 
     ctx.actions.run(
         inputs = action_inputs,
