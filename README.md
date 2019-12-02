@@ -27,9 +27,9 @@ Integration of [Detekt](https://github.com/arturbosch/detekt) — Kotlin static 
 
 ### TODOs
 
-- Baseline Files (blocked by Detekt outputting and reading absolute paths in baselines, see #3)
+- Baseline Files (blocked by Detekt outputting and reading absolute paths in baselines, see [#3](https://github.com/buildfoundation/bazel_rules_detekt/issues/3))
 - Persistent Worker Mode
-- User-Provided Detekt CLI Jar (blocked by Persistent Worker Mode due to potential changes in classloading/etc, see #14)
+- User-Provided Detekt CLI Jar (blocked by Persistent Worker Mode due to potential changes in classloading/etc, see [#14](https://github.com/buildfoundation/bazel_rules_detekt/issues/14))
 
 
 ## Usage
