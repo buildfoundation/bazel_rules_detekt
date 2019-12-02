@@ -36,7 +36,7 @@ Integration of [Detekt](https://github.com/arturbosch/detekt) — Kotlin static 
 
 ### `WORKSPACE` Configuration
 
-First of all you need to declare `bazel_rules_detekt` in `WORKSPACE`:
+First of all you need to declare `rules_detekt` in `WORKSPACE`:
 
 (for version and sha256 see [GitHub Releases page](https://github.com/buildfoundation/bazel_rules_detekt/releases))
 
@@ -57,7 +57,7 @@ http_archive(
 
 ### `BUILD` Configuration
 
-Once declared in `WORSKPACE`, rules_detekt can be `load`ed and applied in a `BUILD` file:
+Once declared in `WORSKPACE`, `rules_detekt` can be `load`ed and applied in a `BUILD` file:
 
 ```python
 load("@rules_detekt//detekt:detekt.bzl", "detekt")
@@ -122,7 +122,7 @@ detekt(
 
 Enables/disables XML report file generation. The report is generated with following pattern: `{target_name}_detekt_report.xml`
 FYI Detekt uses Checkstyle XML reporting format which makes it compatible with tools like SonarQube and so on. 
-Note that rules_detekt always generate txt report file: `{target_name}_detekt_report.txt`
+Note that `rules_detekt` always generate txt report file: `{target_name}_detekt_report.txt`
 
 ```python
 detekt(
@@ -137,7 +137,7 @@ detekt(
 - Default value: `False`
 
 Enables/disables HTML report file generation. The report is generated with following pattern: `{target_name}_detekt_report.html` 
-Note that rules_detekt always generate txt report file: `{target_name}_detekt_report.txt`
+Note that `rules_detekt` always generate txt report file: `{target_name}_detekt_report.txt`
 
 ```python
 detekt(
