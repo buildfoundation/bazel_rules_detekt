@@ -10,6 +10,7 @@ Integration of [Detekt](https://github.com/arturbosch/detekt) — Kotlin static 
 - [Usage](#usage)
     - [`WORKSPACE` Configuration](#workspace-configuration)
     - [`BUILD` Configuration](#build-configuration)
+    - [Executing](#executing)
     - [Supported Attributes](#supported-attributes)
         - [`srcs`](#srcs)
         - [`config`](#config)
@@ -67,6 +68,11 @@ detekt(
     srcs = glob(["src/main/kotlin/**/*.kt"]),
 )
 ```
+
+### Executing
+
+Once set up, Detekt targets can be ran with `bazel build //mypackage:my_detekt`.
+Detekt targets will be cached if ran successfully.
 
 ### Supported Attributes
 
