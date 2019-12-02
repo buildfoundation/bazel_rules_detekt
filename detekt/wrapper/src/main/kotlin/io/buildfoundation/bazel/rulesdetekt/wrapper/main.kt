@@ -5,6 +5,7 @@ package io.buildfoundation.bazel.rulesdetekt.wrapper
 import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintStream
+import java.nio.charset.Charset
 import java.security.Permission
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.thread
@@ -30,8 +31,21 @@ fun main(rawArgs: Array<String>) {
     val detektStdoutFile = File("detekt-stdout.txt")
     val detektStderrFile = File("detekt-stderr.txt")
 
+    val defaultCharset = Charset.defaultCharset()
+
     PrintStream(FileOutputStream(detektStdoutFile).buffered()).use { detektStdout ->
         PrintStream(FileOutputStream(detektStderrFile).buffered()).use { detektStderr ->
+
+            val detektMainClass: Class<*>
+
+            try {
+                detektMainClass = Class.forName("io.gitlab.arturbosch.detekt.cli.Main")
+            } catch (e: ClassNotFoundException) {
+                throw IllegalStateException("Cannot find Detekt's main class in classpath, it might be due to custom Detekt version or an incompatible change on Detekt's side, detekt_rules_error_code_1", e)
+            }
+
+            System.setOut(detektStdout)
+            System.setErr(detektStderr)
 
             Runtime.getRuntime().addShutdownHook(thread(start = false) {
                 if (interceptedExitCode.get() != 0) {
@@ -45,8 +59,17 @@ fun main(rawArgs: Array<String>) {
                     detektStderr.flush()
                     detektStderr.close()
 
-                    originalStdout.println(detektStdoutFile.readText())
-                    originalStderr.println(detektStderrFile.readText())
+                    detektStdoutFile
+                            .bufferedReader(defaultCharset)
+                            .useLines { lines ->
+                                lines.forEach { originalStdout.println(it) }
+                            }
+
+                    detektStderrFile
+                            .bufferedReader(defaultCharset)
+                            .useLines { lines ->
+                                lines.forEach { originalStderr.println(it) }
+                            }
                 }
             })
 
@@ -64,11 +87,7 @@ fun main(rawArgs: Array<String>) {
                 }
             })
 
-            System.setOut(detektStdout)
-            System.setErr(detektStderr)
-
-            Class
-                    .forName("io.gitlab.arturbosch.detekt.cli.Main")
+            detektMainClass
                     .declaredMethods
                     .first { it.name == "main" }
                     .invoke(null, rawArgs)
