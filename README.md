@@ -48,7 +48,7 @@ http_archive(
 
 ### `BUILD` Configuration
 
-Once declared in the `WORSKPACE` file, the rule can be loaded in the` BUILD` file.
+Once declared in the `WORSKPACE` file, the rule can be loaded in the `BUILD` file.
 
 ```python
 load("@rules_detekt//detekt:detekt.bzl", "detekt")
