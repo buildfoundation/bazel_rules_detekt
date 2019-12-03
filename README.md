@@ -1,45 +1,35 @@
-# bazel_rules_detekt
+# `bazel_rules_detekt`
 
-Integration of [Detekt](https://github.com/arturbosch/detekt) — Kotlin static analysis tool for [Bazel build system](https://bazel.build).
-
-***Table of Contents***
+The [Detekt](https://github.com/arturbosch/detekt) (a Kotlin static analysis tool) integration
+for [the Bazel build system](https://bazel.build).
 
 - [Overview](#overview)
-    - [Features](#features)
-    - [TODOs](#todos)
 - [Usage](#usage)
     - [`WORKSPACE` Configuration](#workspace-configuration)
     - [`BUILD` Configuration](#build-configuration)
-    - [Executing](#executing)
-    - [Supported Attributes](#supported-attributes)
-        - [`srcs`](#srcs)
-        - [`config`](#config)
-        - [`parallel`](#parallel)
-        - [`xml_report`](#xml_report)
-        - [`html_report`](#html_report)
+    - [Execution](#execution)
 
 ## Overview
 
-### Features 
+Features:
 
-- User-Provided Detekt Config Files
-- TXT, XML and HTML Reporting
-- Parallel Detekt "Compilation" 
+- user-provided Detekt configuration;
+- text, XML and HTML report generation;
+- parallel Detekt compilation.
 
-### TODOs
+Upcoming features:
 
-- Baseline Files (blocked by Detekt outputting and reading absolute paths in baselines, see [#3](https://github.com/buildfoundation/bazel_rules_detekt/issues/3))
-- Persistent Worker Mode
-- User-Provided Detekt CLI Jar (blocked by Persistent Worker Mode due to potential changes in classloading/etc, see [#14](https://github.com/buildfoundation/bazel_rules_detekt/issues/14))
-
+- baseline files (blocked by Detekt outputting and reading absolute paths in baselines, see [#3](https://github.com/buildfoundation/bazel_rules_detekt/issues/3));
+- Bazel persistent worker mode;
+- user-provided Detekt CLI JAR (blocked by the persistent worker mode due to potential changes in classloading, see [#14](https://github.com/buildfoundation/bazel_rules_detekt/issues/14)).
 
 ## Usage
 
 ### `WORKSPACE` Configuration
 
-First of all you need to declare `rules_detekt` in `WORKSPACE`:
+First of all you need to declare the rule in the `WORKSPACE` file.
 
-(for version and sha256 see [GitHub Releases page](https://github.com/buildfoundation/bazel_rules_detekt/releases))
+Please refer to [GitHub releases](https://github.com/buildfoundation/bazel_rules_detekt/releases) for the version and the SHA-256 hashsum.
 
 ```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
@@ -58,7 +48,7 @@ http_archive(
 
 ### `BUILD` Configuration
 
-Once declared in `WORSKPACE`, `rules_detekt` can be `load`ed and applied in a `BUILD` file:
+Once declared in the `WORSKPACE` file, the rule can be loaded in the `BUILD` file.
 
 ```python
 load("@rules_detekt//detekt:detekt.bzl", "detekt")
@@ -69,84 +59,35 @@ detekt(
 )
 ```
 
-### Executing
+#### Attributes
 
-Once set up, Detekt targets can be ran with `bazel build //mypackage:my_detekt`.
-Detekt targets will be cached if ran successfully.
+Name          | Type         | Default | Description
+--------------|--------------|---------|--------
+`srcs`        | `label_list` | —       | A glob or an explicit list of Kotlin files.
+`config`      | `label`      | [The Detekt one](https://github.com/arturbosch/detekt/blob/master/detekt-cli/src/main/resources/default-detekt-config.yml) | A path or a target that represents a custom [Detekt configuration file](https://arturbosch.github.io/detekt/configurations.html).
+`parallel`    | `bool`       | `False` | Enables / disables the [Detekt `--parallel` option](https://arturbosch.github.io/detekt/cli.html).
+`html_report` | `bool`       |  `False`        | Enables / disables the HTML report generation. The report file name is `{target_name}_detekt_report.html`.
+`xml_report`  | `bool`       |  `False`        | Enables / disables the XML report generation. The report file name is `{target_name}_detekt_report.xml`. <br/><br/> FYI Detekt uses the Checkstyle XML reporting format which makes it compatible with tools like SonarQube and so on.
 
-### Supported Attributes
+Note that a text report is always generated as `{target_name}_detekt_report.txt`.
 
-#### `srcs`
 
-- Starlark type: `label_list`
-- Mandatory: `True`
-
-A glob or an explicit list of `.kt` files for Detekt analysis.
+#### Example
 
 ```python
 detekt(
     srcs = glob(["src/main/kotlin/**/*.kt"]),
-)
-```
-
-#### `config`
-
-- Starlark type: `label`
-- Mandatory: `False`
-- Default value: [default Detekt configuration](https://github.com/arturbosch/detekt/blob/master/detekt-cli/src/main/resources/default-detekt-config.yml) (mind the Detekt version)  
-
-A path or target that represents custom Detekt configuration file.
-File must have `.yml` extension (expected by Detekt).
-See official Detekt documentation for details https://github.com/arturbosch/detekt/blob/master/detekt-cli/src/main/resources/default-detekt-config.yml
-
-```python
-detekt(
     config = "my-detekt-config.yml",
-)
-```
-
-#### `parallel`
-
-- Starlark type: `bool`
-- Mandatory: `False`
-- Default value: `False`
-
-As per Detekt documentation https://arturbosch.github.io/detekt/cli.html: Enables/disables parallel compilation of source files. 
-Should only be used if the analyzing project has more than ~200 Kotlin files.
-
-```python
-detekt(
     parallel = True,
-)
-```
-
-#### `xml_report`
-
-- Starlark type: `bool`
-- Mandatory: `False`
-- Default value: `False`
-
-Enables/disables XML report file generation. The report is generated with following pattern: `{target_name}_detekt_report.xml`
-FYI Detekt uses Checkstyle XML reporting format which makes it compatible with tools like SonarQube and so on. 
-Note that `rules_detekt` always generate txt report file: `{target_name}_detekt_report.txt`
-
-```python
-detekt(
+    html_report = True,
     xml_report = True,
 )
 ```
 
-#### `html_report`
+### Execution
 
-- Starlark type: `bool`
-- Mandatory: `False`
-- Default value: `False`
-
-Enables/disables HTML report file generation. The report is generated with following pattern: `{target_name}_detekt_report.html` 
-Note that `rules_detekt` always generate txt report file: `{target_name}_detekt_report.txt`
-
-```python
-detekt(
-    html_report = True,
-)
 ```
+$ bazel build //mypackage:my_detekt
+```
+
+Results will be cached on successful runs.
