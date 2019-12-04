@@ -18,31 +18,31 @@ def _impl(ctx):
     ]
 
     if ctx.attr.config != None:
-        action_inputs += ctx.file.config
+        action_inputs += [ctx.file.config]
         action_arguments += ["--config", ctx.file.config.path]
 
     action_arguments += ["--input"] + [src.path for src in ctx.files.srcs]
 
     if ctx.attr._baseline != None:
-        action_inputs += ctx.file._baseline
+        action_inputs += [ctx.file._baseline]
         action_arguments += ["--baseline", ctx.file._baseline.path]
 
     if ctx.attr.parallel:
-        action_arguments += "--parallel"
+        action_arguments += ["--parallel"]
 
     if ctx.attr._txt_report:
         txt_report = ctx.outputs.txt_report
-        action_outputs += txt_report
+        action_outputs += [txt_report]
         action_arguments += ["--report", "txt:{}".format(txt_report.path)]
 
     if ctx.attr.xml_report:
         xml_report = ctx.actions.declare_file("{}_detekt_report.xml".format(ctx.label.name))
-        action_outputs += xml_report
+        action_outputs += [xml_report]
         action_arguments += ["--report", "xml:{}".format(xml_report.path)]
 
     if ctx.attr.html_report:
         html_report = ctx.actions.declare_file("{}_detekt_report.html".format(ctx.label.name))
-        action_outputs += html_report
+        action_outputs += [html_report]
         action_arguments += ["--report", "html:{}".format(html_report.path)]
 
     ctx.actions.run(
