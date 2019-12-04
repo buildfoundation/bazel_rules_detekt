@@ -17,13 +17,13 @@ def _impl(ctx):
         "io.buildfoundation.bazel.rulesdetekt.wrapper.Main",
     ]
 
-    if ctx.attr.config is not None:
+    if ctx.attr.config != None:
         action_inputs += ctx.file.config
         action_arguments += ["--config", ctx.file.config.path]
 
     action_arguments += ["--input"] + [src.path for src in ctx.files.srcs]
 
-    if ctx.attr._baseline is not None:
+    if ctx.attr._baseline != None:
         action_inputs += ctx.file._baseline
         action_arguments += ["--baseline", ctx.file._baseline.path]
 
