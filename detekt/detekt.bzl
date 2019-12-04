@@ -19,7 +19,7 @@ def _impl(ctx):
 
     if ctx.attr.config != None:
         action_inputs.append(ctx.file.config)
-        
+
         action_arguments.append("--config")
         action_arguments.append(ctx.file.config.path)
 
@@ -27,8 +27,8 @@ def _impl(ctx):
     action_arguments.extend([src.path for src in ctx.files.srcs])
 
     if ctx.attr._baseline != None:
-        action_inputs.append(ctx.file._baseline) 
-        
+        action_inputs.append(ctx.file._baseline)
+
         action_arguments.append("--baseline")
         action_arguments.append(ctx.file._baseline.path)
 
@@ -38,21 +38,21 @@ def _impl(ctx):
     if ctx.attr._txt_report:
         txt_report = ctx.outputs.txt_report
         action_outputs.append(txt_report)
-        
+
         action_arguments.append("--report")
         action_arguments.append("txt:{}".format(txt_report.path))
 
     if ctx.attr.xml_report:
         xml_report = ctx.actions.declare_file("{}_detekt_report.xml".format(ctx.label.name))
         action_outputs.append(xml_report)
-        
+
         action_arguments.append("--report")
         action_arguments.append("xml:{}".format(xml_report.path))
 
     if ctx.attr.html_report:
         html_report = ctx.actions.declare_file("{}_detekt_report.html".format(ctx.label.name))
         action_outputs.append(html_report)
-        
+
         action_arguments.append("--report")
         action_arguments.append("html:{}".format(html_report.path))
 
