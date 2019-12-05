@@ -19,6 +19,9 @@ def _impl(ctx):
 
     if ctx.attr.config != None:
         action_inputs.append(ctx.file.config)
+        
+        action_arguments.append("--config")
+        action_arguments.append(ctx.file.config.path)
 
     action_arguments += ["--input", ",".join([src.path for src in ctx.files.srcs])]
 
