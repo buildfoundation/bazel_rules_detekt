@@ -13,19 +13,24 @@ def _impl(ctx):
         "-Xms16m",
         "-Xmx128m",
         "-cp",
-        ":".join([jar for jar in [ctx.file._detekt_cli_jar.path, ctx.file._detekt_wrapper_jar.path]]),
+        ":".join([jar.path for jar in [ctx.file._detekt_cli_jar, ctx.file._detekt_wrapper_jar]]),
         "io.buildfoundation.bazel.rulesdetekt.wrapper.Main",
     ]
 
     if ctx.attr.config != None:
         action_inputs.append(ctx.file.config)
-        action_arguments += ["--config", ctx.file.config.path]
 
-    action_arguments += ["--input"] + [src.path for src in ctx.files.srcs]
+        action_arguments.append("--config")
+        action_arguments.append(ctx.file.config.path)
+
+    action_arguments.append("--input")
+    action_arguments.extend([src.path for src in ctx.files.srcs])
 
     if ctx.attr._baseline != None:
         action_inputs.append(ctx.file._baseline)
-        action_arguments += ["--baseline", ctx.file._baseline.path]
+
+        action_arguments.append("--baseline")
+        action_arguments.append(ctx.file._baseline.path)
 
     if ctx.attr.parallel:
         action_arguments.append("--parallel")
@@ -33,17 +38,23 @@ def _impl(ctx):
     if ctx.attr._txt_report:
         txt_report = ctx.outputs.txt_report
         action_outputs.append(txt_report)
-        action_arguments += ["--report", "txt:{}".format(txt_report.path)]
+
+        action_arguments.append("--report")
+        action_arguments.append("txt:{}".format(txt_report.path))
 
     if ctx.attr.xml_report:
         xml_report = ctx.actions.declare_file("{}_detekt_report.xml".format(ctx.label.name))
         action_outputs.append(xml_report)
-        action_arguments += ["--report", "xml:{}".format(xml_report.path)]
+
+        action_arguments.append("--report")
+        action_arguments.append("xml:{}".format(xml_report.path))
 
     if ctx.attr.html_report:
         html_report = ctx.actions.declare_file("{}_detekt_report.html".format(ctx.label.name))
         action_outputs.append(html_report)
-        action_arguments += ["--report", "html:{}".format(html_report.path)]
+
+        action_arguments.append("--report")
+        action_arguments.append("html:{}".format(html_report.path))
 
     ctx.actions.run(
         inputs = action_inputs,
