@@ -70,16 +70,41 @@ detekt = rule(
         # Vendor Detekt CLI.
         # This is not public API yet because ideally Detekt should run as Persistent Worker which will change how we integrate it.
         # Later we should allow user to customize Detekt binary.
-        "_detekt_cli_jar": attr.label(default = "@detekt_cli_jar//file", allow_single_file = True),
-        "_detekt_wrapper_jar": attr.label(default = "//detekt/wrapper:bin_deploy.jar", allow_single_file = True),
-        "srcs": attr.label_list(allow_files = True),
-        "config": attr.label(default = None, allow_single_file = True, doc = "Custom Detekt config file (must end with .yml). If not set Detekt will use its default configuration (mind the Detekt version) https://github.com/arturbosch/detekt/blob/master/detekt-cli/src/main/resources/default-detekt-config.yml"),
+        "_detekt_cli_jar": attr.label(
+            default = "@detekt_cli_jar//file",
+            allow_single_file = True,
+        ),
+        "_detekt_wrapper_jar": attr.label(
+            default = "//detekt/wrapper:bin_deploy.jar",
+            allow_single_file = True,
+        ),
+        "srcs": attr.label_list(
+            mandatory = True,
+            allow_files = True,
+        ),
+        "config": attr.label(
+            default = None,
+            allow_single_file = True,
+            doc = "Custom Detekt config file (must end with .yml). If not set Detekt will use its default configuration (mind the Detekt version) https://github.com/arturbosch/detekt/blob/master/detekt-cli/src/main/resources/default-detekt-config.yml",
+        ),
         # TODO: Baselines are not fully supported yet due to Detekt relying on absolute paths which doesn't work with Bazel sandboxing.
-        "_baseline": attr.label(default = None, allow_single_file = True),
-        "parallel": attr.bool(default = False, doc = "As per Detekt documentation https://arturbosch.github.io/detekt/cli.html: Enables parallel compilation of source files. Should only be used if the analyzing project has more than ~200 Kotlin files."),
-        "_txt_report": attr.bool(default = True),
-        "xml_report": attr.bool(default = False),
-        "html_report": attr.bool(default = False),
+        "_baseline": attr.label(
+            default = None,
+            allow_single_file = True,
+        ),
+        "parallel": attr.bool(
+            default = False,
+            doc = "As per Detekt documentation https://arturbosch.github.io/detekt/cli.html: Enables parallel compilation of source files. Should only be used if the analyzing project has more than ~200 Kotlin files.",
+        ),
+        "_txt_report": attr.bool(
+            default = True,
+        ),
+        "xml_report": attr.bool(
+            default = False,
+        ),
+        "html_report": attr.bool(
+            default = False,
+        ),
     },
     outputs = {
         # We need at least one declared output for the rule to run, thus we always generate txt report.
