@@ -154,6 +154,6 @@ def test_suite(name):
         name = name,
         tests = [
             ":action_full_contents_test",
-            ":action_blank_contents_test"
+            ":action_blank_contents_test",
         ],
     )
