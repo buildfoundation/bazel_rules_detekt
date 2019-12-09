@@ -1,47 +1,33 @@
 name: CI
+
 on: [push, pull_request]
+
 jobs:
   buildifier:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - name: Download Buildifier
+      - name: "Checkout the source code"
+        uses: actions/checkout@v1
+      - name: "Download Buildifier"
         run: |
           curl --location --fail https://github.com/bazelbuild/buildtools/releases/download/0.29.0/buildifier --output /tmp/buildifier
-          chmod +x /tmp/buildifier
-      - name: Lint Starlark Files
-        run: /tmp/buildifier -mode check -lint warn -r .
+          chmod +x /tmp/buildifier && echo "::add-path::/tmp/"
+      - name: "Lint Starlark files"
+        run: buildifier -mode check -lint warn -r .
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-java@v1
+      - name: "Checkout the source code"
+        uses: actions/checkout@v1
+      - name: "Install JDK"
+        uses: actions/setup-java@v1
         with:
           java-version: "11.0.5"
-      - name: Download Bazelisk
+      - name: "Download Bazelisk"
         run: |
           curl --location --fail https://github.com/bazelbuild/bazelisk/releases/download/v1.1.0/bazelisk-linux-amd64 --output /tmp/bazelisk
-          chmod +x /tmp/bazelisk
-      - name: Analysis Tests
-        run: /tmp/bazelisk test //tests/analysis:tests
-      - name: Integration Test detekt_with_default_attributes
-        run: |
-          /tmp/bazelisk build //tests/integration:detekt_with_default_attributes
-          test -f bazel-bin/tests/integration/detekt_with_default_attributes_detekt_report.txt
-      - name: Integration Test detekt_with_strict_config
-        run: |
-          set +e
-          /tmp/bazelisk build //tests/integration:detekt_with_strict_config > /tmp/bazel.log 2>&1
-          export BAZEL_EXIT_CODE=$?
-          set -e
-          echo "Printing bazel.log (1 error expected)"
-          cat /tmp/bazel.log
-          grep "Build failed with 1 weighted issues" /tmp/bazel.log
-      - name: Integration Test detekt_xml_report
-        run: |
-          /tmp/bazelisk build //tests/integration:detekt_xml_report
-          test -f bazel-out/k8-fastbuild/bin/tests/integration/detekt_xml_report_detekt_report.xml
-      - name: Integration Test detekt_html_report
-        run: |
-          /tmp/bazelisk build //tests/integration:detekt_html_report
-          test -f bazel-out/k8-fastbuild/bin/tests/integration/detekt_html_report_detekt_report.html
+          chmod +x /tmp/bazelisk && echo "::add-path::/tmp/"
+      - name: "Analysis tests"
+        run: bazelisk test //tests/analysis:tests
+      - name: "Integration tests"
+        run: bash tests/integration/test_*.sh
