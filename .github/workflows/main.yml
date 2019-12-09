@@ -22,6 +22,8 @@ jobs:
         run: |
           curl --location --fail https://github.com/bazelbuild/bazelisk/releases/download/v1.1.0/bazelisk-linux-amd64 --output /tmp/bazelisk
           chmod +x /tmp/bazelisk
+      - name: Analysis Tests
+        run: /tmp/bazelisk test //tests/analysis:tests
       - name: Integration Test detekt_with_default_attributes
         run: |
           /tmp/bazelisk build //tests/integration:detekt_with_default_attributes
