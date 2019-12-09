@@ -61,13 +61,16 @@ detekt(
 
 #### Attributes
 
-Name          | Type         | Default | Description
---------------|--------------|---------|--------
-`srcs`        | `label_list` | —       | A glob or an explicit list of Kotlin files.
-`config`      | `label`      | [The Detekt one](https://github.com/arturbosch/detekt/blob/master/detekt-cli/src/main/resources/default-detekt-config.yml) | A path or a target that represents a custom [Detekt configuration file](https://arturbosch.github.io/detekt/configurations.html).
-`parallel`    | `bool`       | `False` | Enables / disables the [Detekt `--parallel` option](https://arturbosch.github.io/detekt/cli.html).
-`html_report` | `bool`       |  `False`        | Enables / disables the HTML report generation. The report file name is `{target_name}_detekt_report.html`.
-`xml_report`  | `bool`       |  `False`        | Enables / disables the XML report generation. The report file name is `{target_name}_detekt_report.xml`. <br/><br/> FYI Detekt uses the Checkstyle XML reporting format which makes it compatible with tools like SonarQube and so on.
+Name                           | Type         | Default | Description
+-------------------------------|--------------|---------|--------
+`srcs`                         | `label_list` | —       | A glob or an explicit list of Kotlin files.
+`config`                       | `label`      | [The Detekt one](https://github.com/arturbosch/detekt/blob/master/detekt-cli/src/main/resources/default-detekt-config.yml) | A path or a target that represents a custom [Detekt configuration file](https://arturbosch.github.io/detekt/configurations.html).
+`html_report`                  | `bool`       | `False` | Enables / disables the HTML report generation. The report file name is `{target_name}_detekt_report.html`.
+`xml_report`                   | `bool`       | `False` | Enables / disables the XML report generation. The report file name is `{target_name}_detekt_report.xml`. <br/><br/> FYI Detekt uses the Checkstyle XML reporting format which makes it compatible with tools like SonarQube and so on.
+`build_upon_default_config`    | `bool`       | `False` | See [Detekt `--build-upon-default-config` option](https://arturbosch.github.io/detekt/cli.html).
+`disable_default_rulesets`     | `bool`       | `False` | See [Detekt `--disable-default-rulesets` option](https://arturbosch.github.io/detekt/cli.html).
+`fail_fast`                    | `bool`       | `False` | See [Detekt `--fail-fast` option](https://arturbosch.github.io/detekt/cli.html).
+`parallel`                     | `bool`       | `False` | See [Detekt `--parallel` option](https://arturbosch.github.io/detekt/cli.html).
 
 Note that a text report is always generated as `{target_name}_detekt_report.txt`.
 
@@ -78,9 +81,12 @@ Note that a text report is always generated as `{target_name}_detekt_report.txt`
 detekt(
     srcs = glob(["src/main/kotlin/**/*.kt"]),
     config = "my-detekt-config.yml",
-    parallel = True,
     html_report = True,
     xml_report = True,
+    build_upon_default_config = True,
+    disable_default_rulesets = True,
+    fail_fast = True,
+    parallel = True,
 )
 ```
 
