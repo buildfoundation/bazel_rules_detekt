@@ -32,9 +32,6 @@ def _impl(ctx):
         action_arguments.append("--baseline")
         action_arguments.append(ctx.file._baseline.path)
 
-    if ctx.attr.parallel:
-        action_arguments.append("--parallel")
-
     if ctx.attr._txt_report:
         txt_report = ctx.outputs.txt_report
         action_outputs.append(txt_report)
@@ -55,6 +52,18 @@ def _impl(ctx):
 
         action_arguments.append("--report")
         action_arguments.append("html:{}".format(html_report.path))
+
+    if ctx.attr.build_upon_default_config:
+        action_arguments.append("--build-upon-default-config")
+
+    if ctx.attr.disable_default_rulesets:
+        action_arguments.append("--disable-default-rulesets")
+
+    if ctx.attr.fail_fast:
+        action_arguments.append("--fail-fast")
+
+    if ctx.attr.parallel:
+        action_arguments.append("--parallel")
 
     ctx.actions.run(
         inputs = action_inputs,
@@ -92,10 +101,6 @@ detekt = rule(
             default = None,
             allow_single_file = True,
         ),
-        "parallel": attr.bool(
-            default = False,
-            doc = "As per Detekt documentation https://arturbosch.github.io/detekt/cli.html: Enables parallel compilation of source files. Should only be used if the analyzing project has more than ~200 Kotlin files.",
-        ),
         "_txt_report": attr.bool(
             default = True,
         ),
@@ -104,6 +109,22 @@ detekt = rule(
         ),
         "html_report": attr.bool(
             default = False,
+        ),
+        "build_upon_default_config": attr.bool(
+            default = False,
+            doc = "See Detekt '--build-upon-default-config' option: https://arturbosch.github.io/detekt/cli.html",
+        ),
+        "disable_default_rulesets": attr.bool(
+            default = False,
+            doc = "See Detekt '--disable-default-rulesets' option: https://arturbosch.github.io/detekt/cli.html",
+        ),
+        "fail_fast": attr.bool(
+            default = False,
+            doc = "See Detekt '--fail-fast' option: https://arturbosch.github.io/detekt/cli.html",
+        ),
+        "parallel": attr.bool(
+            default = False,
+            doc = "See Detekt '--parallel' option: https://arturbosch.github.io/detekt/cli.html",
         ),
     },
     outputs = {
