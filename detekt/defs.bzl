@@ -86,11 +86,12 @@ detekt = rule(
         "srcs": attr.label_list(
             mandatory = True,
             allow_files = True,
+            doc = "A glob or an explicit list of Kotlin files.",
         ),
         "config": attr.label(
             default = None,
             allow_single_file = True,
-            doc = "Custom Detekt config file (must end with .yml). If not set Detekt will use its default configuration (mind the Detekt version) https://github.com/arturbosch/detekt/blob/master/detekt-cli/src/main/resources/default-detekt-config.yml",
+            doc = "Detekt config file. Otherwise [the default configuration](https://github.com/arturbosch/detekt/blob/master/detekt-cli/src/main/resources/default-detekt-config.yml) is used.",
         ),
         # TODO: Baselines are not fully supported yet due to Detekt relying on absolute paths which doesn't work with Bazel sandboxing.
         "_baseline": attr.label(
@@ -99,28 +100,31 @@ detekt = rule(
         ),
         "html_report": attr.bool(
             default = False,
+            doc = "Enables / disables the HTML report generation. The report file name is `{target_name}_detekt_report.html`.",
         ),
         "_txt_report": attr.bool(
             default = True,
         ),
         "xml_report": attr.bool(
             default = False,
+            doc = """Enables / disables the XML report generation. The report file name is `{target_name}_detekt_report.xml`. FYI Detekt uses the Checkstyle XML reporting format which makes it compatible with tools like SonarQube and so on.
+            """,
         ),
         "build_upon_default_config": attr.bool(
             default = False,
-            doc = "See Detekt '--build-upon-default-config' option: https://arturbosch.github.io/detekt/cli.html",
+            doc = "See [Detekt `--build-upon-default-config` option](https://arturbosch.github.io/detekt/cli.html).",
         ),
         "disable_default_rulesets": attr.bool(
             default = False,
-            doc = "See Detekt '--disable-default-rulesets' option: https://arturbosch.github.io/detekt/cli.html",
+            doc = "See [Detekt `--disable-default-rulesets` option](https://arturbosch.github.io/detekt/cli.html).",
         ),
         "fail_fast": attr.bool(
             default = False,
-            doc = "See Detekt '--fail-fast' option: https://arturbosch.github.io/detekt/cli.html",
+            doc = "See [Detekt `--fail-fast` option](https://arturbosch.github.io/detekt/cli.html).",
         ),
         "parallel": attr.bool(
             default = False,
-            doc = "See Detekt '--parallel' option: https://arturbosch.github.io/detekt/cli.html",
+            doc = "See [Detekt `--parallel` option](https://arturbosch.github.io/detekt/cli.html).",
         ),
     },
     provides = [DefaultInfo],

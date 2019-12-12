@@ -28,7 +28,6 @@ http_archive(
     name = "io_bazel_rules_kotlin",
     sha256 = rules_kotlin_sha,
     strip_prefix = "rules_kotlin-{v}".format(v = rules_kotlin_version),
-    type = "zip",
     urls = ["https://github.com/bazelbuild/rules_kotlin/archive/{v}.zip".format(v = rules_kotlin_version)],
 )
 
@@ -73,3 +72,22 @@ http_archive(
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()
+
+# Stardoc (for documentation)
+
+stardoc_version = "0.4.0"
+
+stardoc_sha = "6d07d18c15abb0f6d393adbd6075cd661a2219faab56a9517741f0fc755f6f3c"
+
+http_archive(
+    name = "io_bazel_stardoc",
+    sha256 = stardoc_sha,
+    strip_prefix = "stardoc-{v}".format(v = stardoc_version),
+    urls = [
+        "https://github.com/bazelbuild/stardoc/archive/{v}.tar.gz".format(v = stardoc_version),
+    ],
+)
+
+load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
+
+stardoc_repositories()
