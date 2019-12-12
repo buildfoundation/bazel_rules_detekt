@@ -51,7 +51,7 @@ http_archive(
 Once declared in the `WORSKPACE` file, the rule can be loaded in the `BUILD` file.
 
 ```python
-load("@rules_detekt//detekt:detekt.bzl", "detekt")
+load("@rules_detekt//detekt:defs.bzl", "detekt")
 
 detekt(
     name = "my_detekt",
