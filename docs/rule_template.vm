@@ -1,0 +1,31 @@
+# Attributes
+
+Name           | Type                               | Default            | Description
+---------------|------------------------------------|--------------------|------------
+#foreach ($attr in $ruleInfo.getAttributeList())
+#if ($attr.type == "NAME")
+  #set($type = "[`name`](https://docs.bazel.build/versions/master/build-ref.html#name)")
+#elseif ($attr.type == "BOOLEAN")
+  #set($type = "[`bool`](https://docs.bazel.build/versions/master/skylark/lib/bool.html)")
+#elseif ($attr.type == "INT")
+  #set($type = "[`int`](https://docs.bazel.build/versions/master/skylark/lib/int.html)")
+#elseif ($attr.type == "INT_LIST")
+  #set($type = "[`[int]`](https://docs.bazel.build/versions/master/skylark/lib/list.html)")
+#elseif ($attr.type == "LABEL")
+  #set($type = "[`Label`](https://docs.bazel.build/versions/master/skylark/lib/Label.html)")
+#elseif ($attr.type == "LABEL_LIST")
+  #set($type = "[`[Label]`](https://docs.bazel.build/versions/master/skylark/lib/list.html)")
+#elseif ($attr.type == "STRING")
+  #set($type = "[`string`](https://docs.bazel.build/versions/master/skylark/lib/string.html)")
+#elseif ($attr.type == "STRING_LIST")
+  #set($type = "[`[string]`](https://docs.bazel.build/versions/master/skylark/lib/list.html)")
+#else
+  #set($type = "Unknown")
+#end
+#if ($attr.getMandatory())
+  #set($default = "—")
+#else
+  #set($default = "`$attr.defaultValue`")
+#end
+`$attr.name` | $type | $default | $attr.docString
+#end

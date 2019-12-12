@@ -22,14 +22,13 @@ remote_jdk11_repos()
 
 rules_kotlin_version = "legacy-1.3.0-rc3"
 
-rules_kotlin_sha = "54678552125753d9fc0a37736d140f1d2e69778d3e52cf454df41a913b964ede"
+rules_kotlin_sha = "7cee5bd86d44ec7f643241197c28a2bced85614955adf0ed52a935296beb85b7"
 
 http_archive(
     name = "io_bazel_rules_kotlin",
     sha256 = rules_kotlin_sha,
     strip_prefix = "rules_kotlin-{v}".format(v = rules_kotlin_version),
-    type = "zip",
-    urls = ["https://github.com/bazelbuild/rules_kotlin/archive/{v}.zip".format(v = rules_kotlin_version)],
+    urls = ["https://github.com/bazelbuild/rules_kotlin/archive/{v}.tar.gz".format(v = rules_kotlin_version)],
 )
 
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")
@@ -73,3 +72,22 @@ http_archive(
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()
+
+# Stardoc (for documentation)
+
+stardoc_version = "0.4.0"
+
+stardoc_sha = "6d07d18c15abb0f6d393adbd6075cd661a2219faab56a9517741f0fc755f6f3c"
+
+http_archive(
+    name = "io_bazel_stardoc",
+    sha256 = stardoc_sha,
+    strip_prefix = "stardoc-{v}".format(v = stardoc_version),
+    urls = [
+        "https://github.com/bazelbuild/stardoc/archive/{v}.tar.gz".format(v = stardoc_version),
+    ],
+)
+
+load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
+
+stardoc_repositories()
