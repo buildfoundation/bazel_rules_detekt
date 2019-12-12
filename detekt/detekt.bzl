@@ -4,73 +4,67 @@ Detekt is a static analysis tool for Kotlin: https://github.com/arturbosch/detek
 """
 
 def _impl(ctx):
+    jars = [ctx.file._detekt_wrapper_jar, ctx.file._detekt_cli_jar]
+
     action_inputs = [] + ctx.files.srcs
     action_outputs = []
 
-    # See Detekt CLI documentation: https://arturbosch.github.io/detekt/cli.html
+    action_arguments = ctx.actions.args()
+
     # TODO: Allow customizing JVM options.
-    action_arguments = [
-        "-Xms16m",
-        "-Xmx128m",
-        "-cp",
-        ":".join([jar.path for jar in [ctx.file._detekt_cli_jar, ctx.file._detekt_wrapper_jar]]),
-        "io.buildfoundation.bazel.rulesdetekt.wrapper.Main",
-    ]
+    action_arguments.add("-Xms16m")
+    action_arguments.add("-Xmx128m")
+    action_arguments.add_joined("-cp", jars, join_with = ":")
+    action_arguments.add("io.buildfoundation.bazel.rulesdetekt.wrapper.Main")
+
+    detekt_arguments = ctx.actions.args()
 
     if ctx.attr.config != None:
         action_inputs.append(ctx.file.config)
+        detekt_arguments.add("--config", ctx.file.config)
 
-        action_arguments.append("--config")
-        action_arguments.append(ctx.file.config.path)
-
-    action_arguments.append("--input")
-    action_arguments.append(",".join([src.path for src in ctx.files.srcs]))
+    detekt_arguments.add_joined("--input", ctx.files.srcs, join_with = ",")
 
     if ctx.attr._baseline != None:
         action_inputs.append(ctx.file._baseline)
-
-        action_arguments.append("--baseline")
-        action_arguments.append(ctx.file._baseline.path)
+        detekt_arguments.add("--baseline", ctx.file._baseline)
 
     if ctx.attr._txt_report:
         txt_report = ctx.outputs.txt_report
-        action_outputs.append(txt_report)
 
-        action_arguments.append("--report")
-        action_arguments.append("txt:{}".format(txt_report.path))
+        action_outputs.append(txt_report)
+        detekt_arguments.add("--report", "txt:{}".format(txt_report.path))
 
     if ctx.attr.xml_report:
         xml_report = ctx.actions.declare_file("{}_detekt_report.xml".format(ctx.label.name))
-        action_outputs.append(xml_report)
 
-        action_arguments.append("--report")
-        action_arguments.append("xml:{}".format(xml_report.path))
+        action_outputs.append(xml_report)
+        detekt_arguments.add("--report", "xml:{}".format(xml_report.path))
 
     if ctx.attr.html_report:
         html_report = ctx.actions.declare_file("{}_detekt_report.html".format(ctx.label.name))
-        action_outputs.append(html_report)
 
-        action_arguments.append("--report")
-        action_arguments.append("html:{}".format(html_report.path))
+        action_outputs.append(html_report)
+        detekt_arguments.add("--report", "html:{}".format(html_report.path))
 
     if ctx.attr.build_upon_default_config:
-        action_arguments.append("--build-upon-default-config")
+        detekt_arguments.add("--build-upon-default-config")
 
     if ctx.attr.disable_default_rulesets:
-        action_arguments.append("--disable-default-rulesets")
+        detekt_arguments.add("--disable-default-rulesets")
 
     if ctx.attr.fail_fast:
-        action_arguments.append("--fail-fast")
+        detekt_arguments.add("--fail-fast")
 
     if ctx.attr.parallel:
-        action_arguments.append("--parallel")
+        detekt_arguments.add("--parallel")
 
     ctx.actions.run(
         inputs = action_inputs,
         outputs = action_outputs,
-        tools = [ctx.file._detekt_wrapper_jar, ctx.file._detekt_cli_jar],
+        tools = jars,
         executable = "java",
-        arguments = action_arguments,
+        arguments = [action_arguments, detekt_arguments],
     )
 
 detekt = rule(
