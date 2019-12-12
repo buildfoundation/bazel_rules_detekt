@@ -72,13 +72,14 @@ Name                           | Type         | Default | Description
 `fail_fast`                    | `bool`       | `False` | See [Detekt `--fail-fast` option](https://arturbosch.github.io/detekt/cli.html).
 `parallel`                     | `bool`       | `False` | See [Detekt `--parallel` option](https://arturbosch.github.io/detekt/cli.html).
 
-Note that a text report is always generated as `{target_name}_detekt_report.txt`.
-
+Note that a text report is always generated as `{target_name}_detekt_report.txt`
+since Bazel requires rules to have outputs.
 
 #### Example
 
 ```python
 detekt(
+    name = "my_detekt",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
     config = "my-detekt-config.yml",
     html_report = True,

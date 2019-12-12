@@ -4,6 +4,8 @@ set -eou pipefail
 TARGET="detekt_with_default_attributes"
 OUTPUT_DIR="$(bazelisk info bazel-bin)/tests/integration/"
 
+echo ":: Target with default attributes should generate text report."
+
 bazelisk clean
 bazelisk build //tests/integration:${TARGET}
 

@@ -30,4 +30,4 @@ jobs:
       - name: "Analysis tests"
         run: bazelisk test //tests/analysis:tests
       - name: "Integration tests"
-        run: bash tests/integration/test_*.sh
+        run: find tests/integration -type f -name "test_*.sh" -exec bash {} \;
