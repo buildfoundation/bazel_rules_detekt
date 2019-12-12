@@ -1,6 +1,8 @@
 #!/bin/bash
 set -eou pipefail
 
+echo ":: Target with strict config should fail."
+
 bazelisk clean
 
 set +e

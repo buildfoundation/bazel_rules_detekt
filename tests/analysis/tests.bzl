@@ -36,11 +36,11 @@ def _action_full_contents_test_impl(ctx):
         "--input",
         "{{source_dir}}/path A,{{source_dir}}/path B,{{source_dir}}/path C",
         "--report",
+        "html:{{output_dir}}/{{source_dir}}/test_target_full_detekt_report.html",
+        "--report",
         "txt:{{output_dir}}/{{source_dir}}/test_target_full_detekt_report.txt",
         "--report",
         "xml:{{output_dir}}/{{source_dir}}/test_target_full_detekt_report.xml",
-        "--report",
-        "html:{{output_dir}}/{{source_dir}}/test_target_full_detekt_report.html",
         "--build-upon-default-config",
         "--disable-default-rulesets",
         "--fail-fast",
@@ -57,9 +57,9 @@ def _action_full_contents_test_impl(ctx):
     ])
 
     expected_outputs = expand_paths(env.ctx, [
+        "{{output_dir}}/{{source_dir}}/test_target_full_detekt_report.html",
         "{{output_dir}}/{{source_dir}}/test_target_full_detekt_report.txt",
         "{{output_dir}}/{{source_dir}}/test_target_full_detekt_report.xml",
-        "{{output_dir}}/{{source_dir}}/test_target_full_detekt_report.html",
     ])
 
     action = actions[0]

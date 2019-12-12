@@ -29,8 +29,14 @@ def _impl(ctx):
         action_inputs.append(ctx.file._baseline)
         detekt_arguments.add("--baseline", ctx.file._baseline)
 
+    if ctx.attr.html_report:
+        html_report = ctx.actions.declare_file("{}_detekt_report.html".format(ctx.label.name))
+
+        action_outputs.append(html_report)
+        detekt_arguments.add("--report", "html:{}".format(html_report.path))
+
     if ctx.attr._txt_report:
-        txt_report = ctx.outputs.txt_report
+        txt_report = ctx.actions.declare_file("{}_detekt_report.txt".format(ctx.label.name))
 
         action_outputs.append(txt_report)
         detekt_arguments.add("--report", "txt:{}".format(txt_report.path))
@@ -40,12 +46,6 @@ def _impl(ctx):
 
         action_outputs.append(xml_report)
         detekt_arguments.add("--report", "xml:{}".format(xml_report.path))
-
-    if ctx.attr.html_report:
-        html_report = ctx.actions.declare_file("{}_detekt_report.html".format(ctx.label.name))
-
-        action_outputs.append(html_report)
-        detekt_arguments.add("--report", "html:{}".format(html_report.path))
 
     if ctx.attr.build_upon_default_config:
         detekt_arguments.add("--build-upon-default-config")
@@ -66,6 +66,8 @@ def _impl(ctx):
         executable = "java",
         arguments = [action_arguments, detekt_arguments],
     )
+
+    return [DefaultInfo(files = depset(action_outputs))]
 
 detekt = rule(
     implementation = _impl,
@@ -95,13 +97,13 @@ detekt = rule(
             default = None,
             allow_single_file = True,
         ),
+        "html_report": attr.bool(
+            default = False,
+        ),
         "_txt_report": attr.bool(
             default = True,
         ),
         "xml_report": attr.bool(
-            default = False,
-        ),
-        "html_report": attr.bool(
             default = False,
         ),
         "build_upon_default_config": attr.bool(
@@ -121,8 +123,5 @@ detekt = rule(
             doc = "See Detekt '--parallel' option: https://arturbosch.github.io/detekt/cli.html",
         ),
     },
-    outputs = {
-        # We need at least one declared output for the rule to run, thus we always generate txt report.
-        "txt_report": "%{name}_detekt_report.txt",
-    },
+    provides = [DefaultInfo],
 )
