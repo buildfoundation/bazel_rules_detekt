@@ -3,7 +3,7 @@ The rule analysis tests.
 """
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
-load("@rules_detekt//detekt:detekt.bzl", "detekt")
+load("@rules_detekt//detekt:defs.bzl", "detekt")
 
 def expand_paths(ctx, values):
     source_dir = ctx.build_file_path.replace("/BUILD", "")

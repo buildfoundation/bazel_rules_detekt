@@ -1,4 +1,4 @@
-load("@rules_detekt//detekt:detekt.bzl", "detekt")
+load("@rules_detekt//detekt:defs.bzl", "detekt")
 
 detekt(
     name = "detekt_with_default_attributes",
