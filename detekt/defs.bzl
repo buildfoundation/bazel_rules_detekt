@@ -4,18 +4,16 @@ Detekt is a static analysis tool for Kotlin: https://github.com/arturbosch/detek
 """
 
 def _impl(ctx):
-    jars = [ctx.file._detekt_wrapper_jar, ctx.file._detekt_cli_jar]
-
     action_inputs = [] + ctx.files.srcs
     action_outputs = []
 
     action_arguments = ctx.actions.args()
 
+    # The Bazel-generated execution script requires "=" between argument names and values.
     # TODO: Allow customizing JVM options.
-    action_arguments.add("-Xms16m")
-    action_arguments.add("-Xmx128m")
-    action_arguments.add_joined("-cp", jars, join_with = ":")
-    action_arguments.add("io.buildfoundation.bazel.rulesdetekt.wrapper.Main")
+    action_arguments.add("--jvm_flag=-Xms16m")
+    action_arguments.add("--jvm_flag=-Xmx128m")
+    action_arguments.add("--main_advice_classpath={}".format(ctx.file._detekt_cli_jar.path))
 
     detekt_arguments = ctx.actions.args()
 
@@ -60,10 +58,14 @@ def _impl(ctx):
         detekt_arguments.add("--parallel")
 
     ctx.actions.run(
+        mnemonic = "Detekt",
         inputs = action_inputs,
         outputs = action_outputs,
-        tools = jars,
-        executable = "java",
+        tools = [ctx.file._detekt_cli_jar],
+        executable = ctx.executable._detekt_wrapper,
+        execution_requirements = {
+            "supports-workers": "0",
+        },
         arguments = [action_arguments, detekt_arguments],
     )
 
@@ -79,9 +81,10 @@ detekt = rule(
             default = "@detekt_cli_jar//file",
             allow_single_file = True,
         ),
-        "_detekt_wrapper_jar": attr.label(
-            default = "//detekt/wrapper:bin_deploy.jar",
-            allow_single_file = True,
+        "_detekt_wrapper": attr.label(
+            default = "//detekt/wrapper:bin",
+            executable = True,
+            cfg = "host",
         ),
         "srcs": attr.label_list(
             mandatory = True,

@@ -25,12 +25,10 @@ def _action_full_contents_test_impl(ctx):
     asserts.equals(env, 1, len(actions))
 
     expected_arguments = expand_paths(env.ctx, [
-        "java",
-        "-Xms16m",
-        "-Xmx128m",
-        "-cp",
-        "{{output_dir}}/external/rules_detekt/detekt/wrapper/bin_deploy.jar:external/detekt_cli_jar/file/downloaded",
-        "io.buildfoundation.bazel.rulesdetekt.wrapper.Main",
+        "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin",
+        "--jvm_flag=-Xms16m",
+        "--jvm_flag=-Xmx128m",
+        "--main_advice_classpath=external/detekt_cli_jar/file/downloaded",
         "--config",
         "{{source_dir}}/config.yml",
         "--input",
@@ -52,8 +50,10 @@ def _action_full_contents_test_impl(ctx):
         "{{source_dir}}/path B",
         "{{source_dir}}/path C",
         "{{source_dir}}/config.yml",
-        "{{output_dir}}/external/rules_detekt/detekt/wrapper/bin_deploy.jar",
         "external/detekt_cli_jar/file/downloaded",
+        "bazel-out/host/internal/_middlemen/external_Srules_Udetekt_Sdetekt_Swrapper_Sbin-runfiles",
+        "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin.jar",
+        "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin",
     ])
 
     expected_outputs = expand_paths(env.ctx, [
@@ -99,12 +99,10 @@ def _action_blank_contents_test_impl(ctx):
     asserts.equals(env, 1, len(actions))
 
     expected_arguments = expand_paths(env.ctx, [
-        "java",
-        "-Xms16m",
-        "-Xmx128m",
-        "-cp",
-        "{{output_dir}}/external/rules_detekt/detekt/wrapper/bin_deploy.jar:external/detekt_cli_jar/file/downloaded",
-        "io.buildfoundation.bazel.rulesdetekt.wrapper.Main",
+        "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin",
+        "--jvm_flag=-Xms16m",
+        "--jvm_flag=-Xmx128m",
+        "--main_advice_classpath=external/detekt_cli_jar/file/downloaded",
         "--input",
         "{{source_dir}}/path A,{{source_dir}}/path B,{{source_dir}}/path C",
         "--report",
@@ -115,8 +113,10 @@ def _action_blank_contents_test_impl(ctx):
         "{{source_dir}}/path A",
         "{{source_dir}}/path B",
         "{{source_dir}}/path C",
-        "{{output_dir}}/external/rules_detekt/detekt/wrapper/bin_deploy.jar",
         "external/detekt_cli_jar/file/downloaded",
+        "bazel-out/host/internal/_middlemen/external_Srules_Udetekt_Sdetekt_Swrapper_Sbin-runfiles",
+        "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin.jar",
+        "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin",
     ])
 
     expected_outputs = expand_paths(env.ctx, [
