@@ -3,8 +3,6 @@ set -eou pipefail
 
 echo ":: Target with strict config should fail."
 
-bazelisk clean
-
 set +e
 bazelisk build //tests/integration:detekt_with_strict_config > /tmp/bazel.log > /dev/null
 BAZEL_EXIT_CODE=$?

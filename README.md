@@ -3,25 +3,19 @@
 The [Detekt](https://github.com/arturbosch/detekt) (a Kotlin static analysis tool) integration
 for [the Bazel build system](https://bazel.build).
 
-- [Overview](#overview)
-- [Usage](#usage)
-    - [`WORKSPACE` Configuration](#workspace-configuration)
-    - [`BUILD` Configuration](#build-configuration)
-    - [Execution](#execution)
-
 ## Overview
 
 Features:
 
-- user-provided Detekt configuration;
-- text, XML and HTML report generation;
-- parallel Detekt compilation.
+- [persistent workers](https://blog.bazel.build/2015/12/10/java-workers.html) support;
+- configuration files;
+- HTML, text and XML reports;
+- [and more](docs/rule.md).
 
 Upcoming features:
 
-- baseline files (blocked by Detekt outputting and reading absolute paths in baselines, see [#3](https://github.com/buildfoundation/bazel_rules_detekt/issues/3));
-- Bazel persistent worker mode;
-- user-provided Detekt CLI JAR (blocked by the persistent worker mode due to potential changes in classloading, see [#14](https://github.com/buildfoundation/bazel_rules_detekt/issues/14)).
+- baseline files (blocked by Detekt using absolute paths in baselines, see [#3](https://github.com/buildfoundation/bazel_rules_detekt/issues/3));
+- user-provided Detekt CLI JAR.
 
 ## Usage
 
