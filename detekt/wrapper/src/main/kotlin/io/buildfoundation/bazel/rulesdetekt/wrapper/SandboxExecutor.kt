@@ -30,10 +30,11 @@ interface SandboxExecutor {
 
                     result.set(executor.execute(arguments))
 
-                    listOf(sandboxStdout, sandboxStderr).forEach {
-                        it.flush()
-                        it.close()
-                    }
+                    sandboxStdout.flush()
+                    sandboxStdout.close()
+
+                    sandboxStderr.flush()
+                    sandboxStderr.close()
                 }
             }
 

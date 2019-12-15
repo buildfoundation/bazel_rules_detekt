@@ -8,7 +8,7 @@ interface SandboxedExecutor {
 
     fun execute(arguments: Array<String>): Result
 
-    object DetektExecutor : SandboxedExecutor {
+    class DetektExecutor : SandboxedExecutor {
 
         override fun execute(arguments: Array<String>): Result = try {
             executeRunner(arguments)

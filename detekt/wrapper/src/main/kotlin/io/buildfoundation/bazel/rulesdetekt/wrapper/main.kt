@@ -17,7 +17,7 @@ import kotlin.system.exitProcess
  * - By fixing Detekt design issues like absolute paths in reports/baselines.
  */
 fun main(arguments: Array<String>) {
-    val result = SandboxExecutor.Impl(SandboxedExecutor.DetektExecutor).execute(arguments)
+    val result = SandboxExecutor.Impl(SandboxedExecutor.DetektExecutor()).execute(arguments)
 
     if (result.code != 0) {
         System.out.println(result.stdout)
