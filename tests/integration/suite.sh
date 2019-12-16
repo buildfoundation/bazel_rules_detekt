@@ -9,7 +9,7 @@ for STRATEGY in "local" "worker"; do
 
     bazelisk clean
 
-    time find ${DIR} -type f -name "test_*.sh" -exec bash {} \;
+    find ${DIR} -type f -name "test_*.sh" -exec bash {} \;
 done
 
 rm ".bazelrc"
