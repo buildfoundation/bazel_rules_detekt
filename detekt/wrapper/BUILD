@@ -15,7 +15,10 @@ java_proto_library(
 kt_jvm_library(
     name = "lib",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
-    deps = [":worker_protocol_java_proto"],
+    deps = [
+        ":worker_protocol_java_proto",
+        "@maven//:io_gitlab_arturbosch_detekt_detekt_cli",
+    ],
 )
 
 java_binary(

@@ -13,7 +13,6 @@ def _impl(ctx):
     # TODO: Allow customizing JVM options.
     action_arguments.add("--jvm_flag=-Xms16m")
     action_arguments.add("--jvm_flag=-Xmx128m")
-    action_arguments.add("--main_advice_classpath={}".format(ctx.file._detekt_cli_jar.path))
 
     detekt_arguments = ctx.actions.args()
 
@@ -69,7 +68,6 @@ def _impl(ctx):
         mnemonic = "Detekt",
         inputs = action_inputs,
         outputs = action_outputs,
-        tools = [ctx.file._detekt_cli_jar],
         executable = ctx.executable._detekt_wrapper,
         execution_requirements = {
             "supports-workers": "1",
@@ -82,13 +80,6 @@ def _impl(ctx):
 detekt = rule(
     implementation = _impl,
     attrs = {
-        # Vendor Detekt CLI.
-        # This is not public API yet because ideally Detekt should run as Persistent Worker which will change how we integrate it.
-        # Later we should allow user to customize Detekt binary.
-        "_detekt_cli_jar": attr.label(
-            default = "@detekt_cli_jar//file",
-            allow_single_file = True,
-        ),
         "_detekt_wrapper": attr.label(
             default = "//detekt/wrapper:bin",
             executable = True,
