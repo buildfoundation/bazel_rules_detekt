@@ -17,6 +17,14 @@ def _impl(ctx):
 
     detekt_arguments = ctx.actions.args()
 
+    # Detekt arguments are passed in a file. The file path is a special @-named argument.
+    # See https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javac.html#BHCJEIBB
+    # A worker execution replaces the @-argument with the "--persistent_worker" one.
+    # A non-worker execution preserves the argument which is eventually expanded to regular arguments.
+
+    detekt_arguments.set_param_file_format("multiline")
+    detekt_arguments.use_param_file("@%s", use_always = True)
+
     if ctx.attr.config != None:
         action_inputs.append(ctx.file.config)
         detekt_arguments.add("--config", ctx.file.config)
@@ -64,7 +72,7 @@ def _impl(ctx):
         tools = [ctx.file._detekt_cli_jar],
         executable = ctx.executable._detekt_wrapper,
         execution_requirements = {
-            "supports-workers": "0",
+            "supports-workers": "1",
         },
         arguments = [action_arguments, detekt_arguments],
     )
