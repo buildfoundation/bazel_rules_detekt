@@ -30,21 +30,23 @@ rules_detekt_sha256 = "see-github-releases-page"
 
 http_archive(
     name = "rules_detekt",
-    urls = ["https://github.com/buildfoundation/bazel_rules_detekt/archive/%s.zip" % rules_detekt_version],
-    strip_prefix = "bazel_rules_detekt-%s" % rules_detekt_version,
     sha256 = rules_detekt_sha256,
+    strip_prefix = "bazel_rules_detekt-%s" % rules_detekt_version,
+    url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/%s.zip" % rules_detekt_version,
 )
 
-load("@rules_detekt//detekt:distribution.bzl", "detekt_distribution")
+load("@rules_detekt//detekt:dependencies.bzl", "rules_detekt_dependencies")
+rules_detekt_dependencies()
 
-detekt_distribution()
+load("@rules_detekt//detekt:toolchains.bzl", "rules_detekt_toolchains")
+rules_detekt_toolchains()
 ```
 
 It is possible to change the Detekt version used by the rule.
 
 ```diff
-- detekt_distribution()
-+ detekt_distribution(version = "x.y.z")
+- rules_detekt_toolchains()
++ rules_detekt_toolchains(detekt_version = "x.y.z")
 ```
 
 ### `BUILD` Configuration
