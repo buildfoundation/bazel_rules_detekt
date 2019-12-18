@@ -14,8 +14,8 @@ detekt(
 detekt(
     name = "detekt_with_strict_config_and_baseline",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
-    config = "strict-config.yml",
     baseline = "strict-config-baseline.xml",
+    config = "strict-config.yml",
 )
 
 detekt(
