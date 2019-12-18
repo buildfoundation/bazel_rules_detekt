@@ -6,14 +6,11 @@ for [the Bazel build system](https://bazel.build).
 ## Features
 
 - configuration files;
+- baseline files;
 - HTML, text and XML reports;
 - customizable Detekt version;
 - [persistent workers](https://blog.bazel.build/2015/12/10/java-workers.html) support;
 - [and more](docs/rule.md).
-
-Upcoming:
-
-- baseline files (blocked by Detekt using absolute paths in baselines, see [#3](https://github.com/buildfoundation/bazel_rules_detekt/issues/3)).
 
 ## Usage
 

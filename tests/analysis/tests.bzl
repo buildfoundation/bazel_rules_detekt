@@ -5,7 +5,7 @@ The rule analysis tests.
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load("@rules_detekt//detekt:defs.bzl", "detekt")
 
-def expand_paths(ctx, values):
+def _expand_paths(ctx, values):
     source_dir = ctx.build_file_path.replace("/BUILD", "")
     output_dir = ctx.bin_dir.path
 
@@ -24,7 +24,7 @@ def _action_full_contents_test_impl(ctx):
     actions = analysistest.target_actions(env)
     asserts.equals(env, 1, len(actions))
 
-    expected_arguments = expand_paths(env.ctx, [
+    expected_arguments = _expand_paths(env.ctx, [
         "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin",
         "--jvm_flag=-Xms16m",
         "--jvm_flag=-Xmx128m",
@@ -32,6 +32,8 @@ def _action_full_contents_test_impl(ctx):
         "{{source_dir}}/config.yml",
         "--input",
         "{{source_dir}}/path A,{{source_dir}}/path B,{{source_dir}}/path C",
+        "--baseline",
+        "{{source_dir}}/baseline.xml",
         "--report",
         "html:{{output_dir}}/{{source_dir}}/test_target_full_detekt_report.html",
         "--report",
@@ -44,17 +46,18 @@ def _action_full_contents_test_impl(ctx):
         "--parallel",
     ])
 
-    expected_inputs = expand_paths(env.ctx, [
+    expected_inputs = _expand_paths(env.ctx, [
         "{{source_dir}}/path A",
         "{{source_dir}}/path B",
         "{{source_dir}}/path C",
         "{{source_dir}}/config.yml",
+        "{{source_dir}}/baseline.xml",
         "bazel-out/host/internal/_middlemen/external_Srules_Udetekt_Sdetekt_Swrapper_Sbin-runfiles",
         "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin.jar",
         "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin",
     ])
 
-    expected_outputs = expand_paths(env.ctx, [
+    expected_outputs = _expand_paths(env.ctx, [
         "{{output_dir}}/{{source_dir}}/test_target_full_detekt_report.html",
         "{{output_dir}}/{{source_dir}}/test_target_full_detekt_report.txt",
         "{{output_dir}}/{{source_dir}}/test_target_full_detekt_report.xml",
@@ -74,6 +77,7 @@ def _test_action_full_contents():
     detekt(
         name = "test_target_full",
         srcs = ["path A", "path B", "path C"],
+        baseline = "baseline.xml",
         config = "config.yml",
         html_report = True,
         xml_report = True,
@@ -96,7 +100,7 @@ def _action_blank_contents_test_impl(ctx):
     actions = analysistest.target_actions(env)
     asserts.equals(env, 1, len(actions))
 
-    expected_arguments = expand_paths(env.ctx, [
+    expected_arguments = _expand_paths(env.ctx, [
         "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin",
         "--jvm_flag=-Xms16m",
         "--jvm_flag=-Xmx128m",
@@ -106,7 +110,7 @@ def _action_blank_contents_test_impl(ctx):
         "txt:{{output_dir}}/{{source_dir}}/test_target_blank_detekt_report.txt",
     ])
 
-    expected_inputs = expand_paths(env.ctx, [
+    expected_inputs = _expand_paths(env.ctx, [
         "{{source_dir}}/path A",
         "{{source_dir}}/path B",
         "{{source_dir}}/path C",
@@ -115,7 +119,7 @@ def _action_blank_contents_test_impl(ctx):
         "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin",
     ])
 
-    expected_outputs = expand_paths(env.ctx, [
+    expected_outputs = _expand_paths(env.ctx, [
         "{{output_dir}}/{{source_dir}}/test_target_blank_detekt_report.txt",
     ])
 
