@@ -1,6 +1,6 @@
 workspace(name = "rules_detekt")
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # Java
 
@@ -37,22 +37,22 @@ kotlin_repositories()
 
 kt_register_toolchains()
 
-# Detekt
+# JVM External (for dependencies)
 
-detekt_version = "1.2.2"
+rules_jvm_external_version = "3.0"
 
-detekt_sha = "f1559d27a0b9c9a2710042c423b49b531bbb993b136522e54b362adcb1b56d5f"
+rules_jvm_external_sha = "62133c125bf4109dfd9d2af64830208356ce4ef8b165a6ef15bbff7460b35c3a"
 
-http_file(
-    # Name is specifically _jar because we want to add JVM Persistent Worker support,
-    # thus we rely on binary to be .jar rather than some sort of executable.
-    name = "detekt_cli_jar",
-    sha256 = detekt_sha,
-    urls = [
-        "https://repo1.maven.org/maven2/io/gitlab/arturbosch/detekt/detekt-cli/{v}/detekt-cli-{v}-all.jar".format(v = detekt_version),
-        "https://repo.maven.apache.org/maven2/io/gitlab/arturbosch/detekt/detekt-cli/{v}/detekt-cli-{v}-all.jar".format(v = detekt_version),
-    ],
+http_archive(
+    name = "rules_jvm_external",
+    sha256 = rules_jvm_external_sha,
+    strip_prefix = "rules_jvm_external-{v}".format(v = rules_jvm_external_version),
+    url = "https://github.com/bazelbuild/rules_jvm_external/archive/{v}.zip".format(v = rules_jvm_external_version),
 )
+
+load("//detekt:distribution.bzl", "detekt_distribution")
+
+detekt_distribution()
 
 # Protocol Buffers (for worker protocol)
 
