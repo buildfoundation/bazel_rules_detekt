@@ -28,6 +28,7 @@ def rules_detekt_toolchains(detekt_version = "1.2.2"):
     rules_proto_toolchains()
 
     maven_install(
+        name = "rules_detekt_dependencies",
         artifacts = [
             "io.gitlab.arturbosch.detekt:detekt-cli:{v}".format(v = detekt_version),
         ],
