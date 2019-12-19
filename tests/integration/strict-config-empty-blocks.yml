@@ -1,7 +1,3 @@
-# Fail if at least one issue found.
-build:
-  maxIssues: 1
-
 empty-blocks:
   active: true
   EmptyFunctionBlock:
