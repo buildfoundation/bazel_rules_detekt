@@ -12,8 +12,8 @@ jobs:
         run: |
           curl --location --fail https://github.com/bazelbuild/buildtools/releases/download/0.29.0/buildifier --output /tmp/buildifier
           chmod +x /tmp/buildifier && echo "::add-path::/tmp/"
-      - name: "Lint Starlark files"
-        run: buildifier -mode check -lint warn -r .
+      - name: "Check Starlark files"
+        run: make fmt-check
   build:
     runs-on: ubuntu-latest
     steps:
