@@ -41,12 +41,12 @@ def rules_detekt_dependencies():
     # JVM External
 
     rules_jvm_external_version = "3.0"
-    rules_jvm_external_sha = "62133c125bf4109dfd9d2af64830208356ce4ef8b165a6ef15bbff7460b35c3a"
+    rules_jvm_external_sha = "baa842cbc67aec78408aec3e480b2e94dbdd14d6b0170d3a3ee14a0e1a5bb95f"
 
     maybe(
         repo_rule = http_archive,
         name = "rules_jvm_external",
-        url = "https://github.com/bazelbuild/rules_jvm_external/archive/{v}.zip".format(v = rules_jvm_external_version),
+        url = "https://github.com/bazelbuild/rules_jvm_external/archive/{v}.tar.gz".format(v = rules_jvm_external_version),
         strip_prefix = "rules_jvm_external-{v}".format(v = rules_jvm_external_version),
         sha256 = rules_jvm_external_sha,
     )
