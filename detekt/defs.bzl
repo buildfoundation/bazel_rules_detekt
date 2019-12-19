@@ -30,9 +30,9 @@ def _impl(ctx):
 
     detekt_arguments.add_joined("--input", ctx.files.srcs, join_with = ",")
 
-    if ctx.attr._baseline != None:
-        action_inputs.append(ctx.file._baseline)
-        detekt_arguments.add("--baseline", ctx.file._baseline)
+    if ctx.attr.baseline != None:
+        action_inputs.append(ctx.file.baseline)
+        detekt_arguments.add("--baseline", ctx.file.baseline)
 
     if ctx.attr.html_report:
         html_report = ctx.actions.declare_file("{}_detekt_report.html".format(ctx.label.name))
@@ -93,12 +93,12 @@ detekt = rule(
         "config": attr.label(
             default = None,
             allow_single_file = True,
-            doc = "Detekt config file. Otherwise [the default configuration](https://github.com/arturbosch/detekt/blob/master/detekt-cli/src/main/resources/default-detekt-config.yml) is used.",
+            doc = "[Detekt configuration file](https://arturbosch.github.io/detekt/configurations.html). Otherwise [the default configuration](https://github.com/arturbosch/detekt/blob/master/detekt-cli/src/main/resources/default-detekt-config.yml) is used.",
         ),
-        # TODO: Baselines are not fully supported yet due to Detekt relying on absolute paths which doesn't work with Bazel sandboxing.
-        "_baseline": attr.label(
+        "baseline": attr.label(
             default = None,
             allow_single_file = True,
+            doc = "[Detekt baseline file](https://arturbosch.github.io/detekt/baseline.html).",
         ),
         "html_report": attr.bool(
             default = False,

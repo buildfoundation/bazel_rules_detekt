@@ -12,6 +12,13 @@ detekt(
 )
 
 detekt(
+    name = "detekt_with_strict_config_and_baseline",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    baseline = "strict-config-baseline.xml",
+    config = "strict-config.yml",
+)
+
+detekt(
     name = "detekt_html_report",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
     html_report = True,

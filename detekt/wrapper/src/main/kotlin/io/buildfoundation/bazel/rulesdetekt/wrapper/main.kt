@@ -9,9 +9,6 @@ package io.buildfoundation.bazel.rulesdetekt.wrapper
  * What this wrapper does:
  * - Silents Detekt's stdout/stderr (it is not configurable in Detekt).
  * - Prints Detekt's stdout/stderr if Detekt exits with non-zero exit code.
- *
- * Later it might be enhanced:
- * - By fixing Detekt design issues like absolute paths in reports/baselines.
  */
 fun main(arguments: Array<String>) {
     val executor = SandboxExecutor.Impl(SandboxedExecutor.DetektExecutor())
