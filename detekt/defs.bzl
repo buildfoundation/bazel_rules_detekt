@@ -1,10 +1,9 @@
 """
-Contains declaration and implementation of "detekt" rule.
-Detekt is a static analysis tool for Kotlin: https://github.com/arturbosch/detekt
+The "detekt" rule declaration.
 """
 
 def _impl(ctx):
-    action_inputs = [] + ctx.files.srcs
+    action_inputs = []
     action_outputs = []
 
     action_arguments = ctx.actions.args()
@@ -24,11 +23,11 @@ def _impl(ctx):
     detekt_arguments.set_param_file_format("multiline")
     detekt_arguments.use_param_file("@%s", use_always = True)
 
-    if ctx.attr.config != None:
-        action_inputs.append(ctx.file.config)
-        detekt_arguments.add("--config", ctx.file.config)
-
+    action_inputs.extend(ctx.files.srcs)
     detekt_arguments.add_joined("--input", ctx.files.srcs, join_with = ",")
+
+    action_inputs.extend(ctx.files.cfgs)
+    detekt_arguments.add_joined("--config", ctx.files.cfgs, join_with = ",")
 
     if ctx.attr.baseline != None:
         action_inputs.append(ctx.file.baseline)
@@ -88,12 +87,13 @@ detekt = rule(
         "srcs": attr.label_list(
             mandatory = True,
             allow_files = True,
-            doc = "A glob or an explicit list of Kotlin files.",
+            allow_empty = False,
+            doc = "Kotlin source code files.",
         ),
-        "config": attr.label(
-            default = None,
-            allow_single_file = True,
-            doc = "[Detekt configuration file](https://arturbosch.github.io/detekt/configurations.html). Otherwise [the default configuration](https://github.com/arturbosch/detekt/blob/master/detekt-cli/src/main/resources/default-detekt-config.yml) is used.",
+        "cfgs": attr.label_list(
+            allow_files = True,
+            default = [],
+            doc = "[Detekt configuration files](https://arturbosch.github.io/detekt/configurations.html). Otherwise [the default configuration](https://github.com/arturbosch/detekt/blob/master/detekt-cli/src/main/resources/default-detekt-config.yml) is used.",
         ),
         "baseline": attr.label(
             default = None,
@@ -109,8 +109,7 @@ detekt = rule(
         ),
         "xml_report": attr.bool(
             default = False,
-            doc = """Enables / disables the XML report generation. The report file name is `{target_name}_detekt_report.xml`. FYI Detekt uses the Checkstyle XML reporting format which makes it compatible with tools like SonarQube and so on.
-            """,
+            doc = "Enables / disables the XML report generation. The report file name is `{target_name}_detekt_report.xml`. FYI Detekt uses the Checkstyle XML reporting format which makes it compatible with tools like SonarQube.",
         ),
         "build_upon_default_config": attr.bool(
             default = False,

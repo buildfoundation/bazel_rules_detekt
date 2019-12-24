@@ -8,14 +8,20 @@ detekt(
 detekt(
     name = "detekt_with_strict_config",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
-    config = "strict-config.yml",
+    cfgs = [
+        "strict-config-empty-blocks.yml",
+        "strict-config-max-issues.yml",
+    ],
 )
 
 detekt(
     name = "detekt_with_strict_config_and_baseline",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
     baseline = "strict-config-baseline.xml",
-    config = "strict-config.yml",
+    cfgs = [
+        "strict-config-empty-blocks.yml",
+        "strict-config-max-issues.yml",
+    ],
 )
 
 detekt(
