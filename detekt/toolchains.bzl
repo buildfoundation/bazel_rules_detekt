@@ -8,15 +8,15 @@ load("@rules_java//java:repositories.bzl", "remote_jdk11_repos")
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 
-def rules_detekt_toolchains(detekt_version = "1.2.2"):
+def rules_detekt_toolchains(detekt_version = "1.2.2", toolchain = "@rules_detekt//detekt:default_toolchain"):
     """Invokes `rules_detekt` toolchains.
-
 
     Declares toolchains that are dependencies of the `rules_detekt` workspace.
     Users should call this macro in their `WORKSPACE` file.
 
     Args:
-        detekt_version: "io.gitlab.arturbosch.detekt:detekt-cli" version used by the rule.
+        detekt_version: "io.gitlab.arturbosch.detekt:detekt-cli" version used by rules.
+        toolchain: `detekt_toolchain` used by rules.
     """
 
     remote_jdk11_repos()
@@ -26,6 +26,8 @@ def rules_detekt_toolchains(detekt_version = "1.2.2"):
 
     rules_proto_dependencies()
     rules_proto_toolchains()
+
+    native.register_toolchains(toolchain)
 
     maven_install(
         name = "rules_detekt_dependencies",

@@ -6,12 +6,11 @@ def _impl(ctx):
     action_inputs = []
     action_outputs = []
 
-    action_arguments = ctx.actions.args()
+    java_arguments = ctx.actions.args()
 
-    # The Bazel-generated execution script requires "=" between argument names and values.
-    # TODO: Allow customizing JVM options.
-    action_arguments.add("--jvm_flag=-Xms16m")
-    action_arguments.add("--jvm_flag=-Xmx128m")
+    for jvm_flag in ctx.toolchains["@rules_detekt//detekt:toolchain_type"].jvm_flags:
+        # The Bazel-generated execution script requires "=" between argument names and values.
+        java_arguments.add("--jvm_flag={}".format(jvm_flag))
 
     detekt_arguments = ctx.actions.args()
 
@@ -71,7 +70,7 @@ def _impl(ctx):
         execution_requirements = {
             "supports-workers": "1",
         },
-        arguments = [action_arguments, detekt_arguments],
+        arguments = [java_arguments, detekt_arguments],
     )
 
     return [DefaultInfo(files = depset(action_outputs))]
@@ -129,4 +128,5 @@ detekt = rule(
         ),
     },
     provides = [DefaultInfo],
+    toolchains = ["@rules_detekt//detekt:toolchain_type"],
 )
