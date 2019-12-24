@@ -7,9 +7,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
 def rules_detekt_dependencies():
-    """Fetches `rules_detekt` repositories.
+    """Fetches `rules_detekt` dependencies.
 
-    Declares repositories that are dependencies of the `rules_detekt` workspace.
+    Declares dependencies of the `rules_detekt` workspace.
     Users should call this macro in their `WORKSPACE` file.
     """
 

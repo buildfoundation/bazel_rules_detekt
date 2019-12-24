@@ -1,5 +1,5 @@
 """
-The "detekt" rule declaration.
+Rule declarations.
 """
 
 def _impl(ctx):
