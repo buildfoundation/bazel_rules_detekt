@@ -8,7 +8,7 @@ load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_jav
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 
-def rules_detekt_toolchains(detekt_version = "1.2.2", toolchain = "@rules_detekt//detekt:default_toolchain"):
+def rules_detekt_toolchains(detekt_version = "1.3.0", toolchain = "@rules_detekt//detekt:default_toolchain"):
     """Invokes `rules_detekt` toolchains.
 
     Declares toolchains that are dependencies of the `rules_detekt` workspace.
@@ -34,6 +34,8 @@ def rules_detekt_toolchains(detekt_version = "1.2.2", toolchain = "@rules_detekt
         name = "rules_detekt_dependencies",
         artifacts = [
             "io.gitlab.arturbosch.detekt:detekt-cli:{v}".format(v = detekt_version),
+            "io.reactivex.rxjava2:rxjava:2.2.16",
+            "junit:junit:4.12",
         ],
         repositories = [
             "https://repo1.maven.org/maven2",

@@ -2,6 +2,8 @@
 
 package io.buildfoundation.bazel.rulesdetekt.wrapper
 
+import io.reactivex.schedulers.Schedulers
+
 /**
  * The wrapper purpose:
  *
@@ -10,12 +12,13 @@ package io.buildfoundation.bazel.rulesdetekt.wrapper
  * - silence Detekt output on successful executions.
  */
 fun main(arguments: Array<String>) {
-    val executor = SandboxExecutor.Impl(SandboxedExecutor.DetektExecutor())
+    val executable = Executable.DetektImpl(Detekt.Impl())
+    val consoleStreams = Streams.system()
 
     val application = if ("--persistent_worker" in arguments) {
-        Application.Worker(executor)
+        Application.Worker(Schedulers.io(), WorkerExecutable.Impl(executable), WorkerStreams.Impl(consoleStreams))
     } else {
-        Application.OneShot(executor)
+        Application.OneShot(executable, consoleStreams, Platform.Impl())
     }
 
     application.run(arguments)

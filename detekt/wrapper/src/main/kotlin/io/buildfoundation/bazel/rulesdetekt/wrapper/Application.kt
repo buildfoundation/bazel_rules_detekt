@@ -1,44 +1,42 @@
 package io.buildfoundation.bazel.rulesdetekt.wrapper
 
-import bazel.worker.WorkerProtocol
-import kotlin.system.exitProcess
+import io.reactivex.Scheduler
 
-interface Application {
+internal interface Application {
 
-    fun run(arguments: Array<String>)
+    fun run(args: Array<String>)
 
-    class Worker(private val executor: SandboxExecutor) : Application {
+    class OneShot(
+            private val executable: Executable,
+            private val streams: Streams,
+            private val platform: Platform
+    ) : Application {
 
-        override fun run(arguments: Array<String>) {
-            while (true) {
-                val result = WorkerProtocol.WorkRequest.parseDelimitedFrom(System.`in`).let {
-                    executor.execute(it.argumentsList.toTypedArray())
-                }
+        override fun run(args: Array<String>) {
+            val result = executable.execute(args)
 
-                WorkerProtocol.WorkResponse.newBuilder()
-                        .apply {
-                            if (result.code != 0) {
-                                output = listOf(result.stdout, result.stderr).joinToString(separator = "\n")
-                            }
-                        }
-                        .setExitCode(result.code)
-                        .build()
-                        .writeDelimitedTo(System.out)
+            if (result is Result.Failure) {
+                streams.error.println(result.description)
             }
+
+            platform.exit(result.consoleStatusCode)
         }
     }
 
-    class OneShot(private val executor: SandboxExecutor) : Application {
+    class Worker(
+            private val scheduler: Scheduler,
+            private val executable: WorkerExecutable,
+            private val streams: WorkerStreams
+    ) : Application {
 
-        override fun run(arguments: Array<String>) {
-            val result = executor.execute(arguments)
-
-            if (result.code != 0) {
-                System.out.println(result.stdout)
-                System.err.println(result.stderr)
-            }
-
-            exitProcess(result.code)
+        override fun run(args: Array<String>) {
+            streams.request
+                    .subscribeOn(scheduler)
+                    .parallel()
+                    .runOn(scheduler)
+                    .map { executable.execute(it) }
+                    .sequential()
+                    .blockingSubscribe(streams.response)
         }
     }
 }
