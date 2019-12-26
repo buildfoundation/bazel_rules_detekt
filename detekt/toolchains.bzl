@@ -4,7 +4,7 @@ See https://docs.bazel.build/versions/master/skylark/deploying.html#registering-
 """
 
 load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")
-load("@rules_java//java:repositories.bzl", "remote_jdk11_repos")
+load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 
@@ -19,7 +19,8 @@ def rules_detekt_toolchains(detekt_version = "1.2.2", toolchain = "@rules_detekt
         toolchain: `detekt_toolchain` used by rules.
     """
 
-    remote_jdk11_repos()
+    rules_java_dependencies()
+    rules_java_toolchains()
 
     kotlin_repositories()
     kt_register_toolchains()
