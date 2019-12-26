@@ -26,7 +26,7 @@ internal interface WorkerStreams {
             }
         }
 
-        override val request = Flowable.create(requestSource, BackpressureStrategy.LATEST)
+        override val request = Flowable.create(requestSource, BackpressureStrategy.BUFFER)
         override val response = Consumer<WorkResponse> { it.writeDelimitedTo(streams.output) }
     }
 }
