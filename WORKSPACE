@@ -36,7 +36,7 @@ bazel_skylib_workspace()
 
 # Documenting
 
-# Stardoc
+## Stardoc
 
 stardoc_version = "0.4.0"
 

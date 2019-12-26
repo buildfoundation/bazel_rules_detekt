@@ -1,5 +1,5 @@
 """
-Detekt rules toolchain.
+Toolchain declaration.
 """
 
 def _impl(ctx):

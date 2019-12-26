@@ -5,11 +5,9 @@ for [the Bazel build system](https://bazel.build).
 
 ## Features
 
-- configuration files;
-- baseline files;
+- configuration and baseline files;
 - HTML, text and XML reports;
-- customizable Detekt version;
-- customizable JVM flags;
+- customizable Detekt version and JVM flags;
 - [persistent workers](https://blog.bazel.build/2015/12/10/java-workers.html) support;
 - [and more](docs/rule.md).
 
@@ -24,11 +22,11 @@ Please refer to [GitHub releases](https://github.com/buildfoundation/bazel_rules
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 rules_detekt_version = "see-github-releases-page"
-rules_detekt_sha256 = "see-github-releases-page"
+rules_detekt_sha = "see-github-releases-page"
 
 http_archive(
     name = "rules_detekt",
-    sha256 = rules_detekt_sha256,
+    sha256 = rules_detekt_sha,
     strip_prefix = "bazel_rules_detekt-{v}".format(v = rules_detekt_version),
     url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/{v}.tar.gz".format(v = rules_detekt_version),
 )
@@ -57,7 +55,7 @@ See [available attributes](docs/rule.md).
 
 ### Execution
 
-```
+```console
 $ bazel build //mypackage:my_detekt
 ```
 
@@ -95,7 +93,7 @@ toolchain(
 
 Change the `WORKSPACE` file:
 
-```python
+```diff
 - rules_detekt_toolchains()
 + rules_detekt_toolchains(toolchain = "//mypackage:my_detekt_toolchain")
 ```
