@@ -86,18 +86,18 @@ detekt = rule(
         ),
         "srcs": attr.label_list(
             mandatory = True,
-            allow_files = True,
+            allow_files = [".kt", ".kts"],
             allow_empty = False,
             doc = "Kotlin source code files.",
         ),
         "cfgs": attr.label_list(
-            allow_files = True,
+            allow_files = [".yml"],
             default = [],
             doc = "[Detekt configuration files](https://arturbosch.github.io/detekt/configurations.html). Otherwise [the default configuration](https://github.com/arturbosch/detekt/blob/master/detekt-cli/src/main/resources/default-detekt-config.yml) is used.",
         ),
         "baseline": attr.label(
             default = None,
-            allow_single_file = True,
+            allow_single_file = [".xml"],
             doc = "[Detekt baseline file](https://arturbosch.github.io/detekt/baseline.html).",
         ),
         "html_report": attr.bool(
