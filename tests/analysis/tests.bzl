@@ -29,7 +29,7 @@ def _action_full_contents_test_impl(ctx):
         "--jvm_flag=-Xms16m",
         "--jvm_flag=-Xmx128m",
         "--input",
-        "{{source_dir}}/path A,{{source_dir}}/path B,{{source_dir}}/path C",
+        "{{source_dir}}/path A.kt,{{source_dir}}/path B.kt,{{source_dir}}/path C.kt",
         "--config",
         "{{source_dir}}/config A.yml,{{source_dir}}/config B.yml,{{source_dir}}/config C.yml",
         "--baseline",
@@ -47,9 +47,9 @@ def _action_full_contents_test_impl(ctx):
     ])
 
     expected_inputs = _expand_paths(env.ctx, [
-        "{{source_dir}}/path A",
-        "{{source_dir}}/path B",
-        "{{source_dir}}/path C",
+        "{{source_dir}}/path A.kt",
+        "{{source_dir}}/path B.kt",
+        "{{source_dir}}/path C.kt",
         "{{source_dir}}/config A.yml",
         "{{source_dir}}/config B.yml",
         "{{source_dir}}/config C.yml",
@@ -78,7 +78,7 @@ action_full_contents_test = analysistest.make(_action_full_contents_test_impl)
 def _test_action_full_contents():
     detekt(
         name = "test_target_full",
-        srcs = ["path A", "path B", "path C"],
+        srcs = ["path A.kt", "path B.kt", "path C.kt"],
         cfgs = ["config A.yml", "config B.yml", "config C.yml"],
         baseline = "baseline.xml",
         html_report = True,
@@ -107,15 +107,15 @@ def _action_blank_contents_test_impl(ctx):
         "--jvm_flag=-Xms16m",
         "--jvm_flag=-Xmx128m",
         "--input",
-        "{{source_dir}}/path A,{{source_dir}}/path B,{{source_dir}}/path C",
+        "{{source_dir}}/path A.kt,{{source_dir}}/path B.kt,{{source_dir}}/path C.kt",
         "--report",
         "txt:{{output_dir}}/{{source_dir}}/test_target_blank_detekt_report.txt",
     ])
 
     expected_inputs = _expand_paths(env.ctx, [
-        "{{source_dir}}/path A",
-        "{{source_dir}}/path B",
-        "{{source_dir}}/path C",
+        "{{source_dir}}/path A.kt",
+        "{{source_dir}}/path B.kt",
+        "{{source_dir}}/path C.kt",
         "bazel-out/host/internal/_middlemen/external_Srules_Udetekt_Sdetekt_Swrapper_Sbin-runfiles",
         "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin.jar",
         "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin",
@@ -138,7 +138,7 @@ action_blank_contents_test = analysistest.make(_action_blank_contents_test_impl)
 def _test_action_blank_contents():
     detekt(
         name = "test_target_blank",
-        srcs = ["path A", "path B", "path C"],
+        srcs = ["path A.kt", "path B.kt", "path C.kt"],
     )
 
     action_blank_contents_test(
