@@ -2,8 +2,6 @@
 
 package io.buildfoundation.bazel.rulesdetekt.wrapper
 
-import io.reactivex.schedulers.Schedulers
-
 /**
  * The wrapper purpose:
  *
@@ -16,7 +14,7 @@ fun main(arguments: Array<String>) {
     val consoleStreams = Streams.system()
 
     val application = if ("--persistent_worker" in arguments) {
-        Application.Worker(Schedulers.io(), WorkerExecutable.Impl(executable), WorkerStreams.Impl(consoleStreams))
+        Application.Worker(WorkerExecutable.Impl(executable), WorkerStreams.Impl(consoleStreams))
     } else {
         Application.OneShot(executable, consoleStreams, Platform.Impl())
     }
