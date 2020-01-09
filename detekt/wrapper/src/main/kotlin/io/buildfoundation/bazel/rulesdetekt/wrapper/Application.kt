@@ -1,5 +1,7 @@
 package io.buildfoundation.bazel.rulesdetekt.wrapper
 
+import io.reactivex.Scheduler
+
 internal interface Application {
 
     fun run(args: Array<String>)
@@ -22,12 +24,14 @@ internal interface Application {
     }
 
     class Worker(
+            private val scheduler: Scheduler,
             private val executable: WorkerExecutable,
             private val streams: WorkerStreams
     ) : Application {
 
         override fun run(args: Array<String>) {
             streams.request
+                    .subscribeOn(scheduler)
                     .map { executable.execute(it) }
                     .blockingSubscribe(streams.response)
         }
