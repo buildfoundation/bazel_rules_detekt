@@ -32,10 +32,7 @@ internal interface Application {
         override fun run(args: Array<String>) {
             streams.request
                     .subscribeOn(scheduler)
-                    .parallel()
-                    .runOn(scheduler)
                     .map { executable.execute(it) }
-                    .sequential()
                     .blockingSubscribe(streams.response)
         }
     }
