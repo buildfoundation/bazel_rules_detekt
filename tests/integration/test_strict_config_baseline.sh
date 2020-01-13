@@ -2,11 +2,11 @@
 set -eou pipefail
 
 TARGET="detekt_with_strict_config_and_baseline"
-OUTPUT_DIR="$(bazelisk info bazel-bin)/tests/integration/"
+OUTPUT_DIR="$(bazel info bazel-bin)/tests/integration/"
 
 echo ":: Target with strict config and baseline should not fail (like the baseline-less does) and should generate text report."
 
-bazelisk build //tests/integration:${TARGET}
+bazel build //tests/integration:${TARGET}
 
 set -x
 

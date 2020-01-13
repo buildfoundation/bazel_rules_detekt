@@ -2,11 +2,11 @@
 set -eou pipefail
 
 TARGET="detekt_xml_report"
-OUTPUT_DIR="$(bazelisk info bazel-bin)/tests/integration/"
+OUTPUT_DIR="$(bazel info bazel-bin)/tests/integration/"
 
 echo ":: Target with XML report attribute should generate text and XML reports."
 
-bazelisk build //tests/integration:${TARGET}
+bazel build //tests/integration:${TARGET}
 
 set -x
 
