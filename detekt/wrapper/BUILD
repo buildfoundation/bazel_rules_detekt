@@ -36,7 +36,7 @@ kt_jvm_test(
         "src/testFixtures/kotlin/**/*.kt",
     ]),
     friends = [":lib"],
-    test_class = "bazek.detekt.TestsSuite",
+    test_class = "bazel.detekt.TestsSuite",
     deps = [
         ":lib",
         "@rules_detekt_dependencies//:junit_junit",
