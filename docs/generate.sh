@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eou pipefail
 
-bazelisk build //docs:docs
+bazel build //docs:docs
 
 mv bazel-bin/docs/rule.md docs/rule.md
 
