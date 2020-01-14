@@ -2,6 +2,7 @@ load("//detekt:toolchain.bzl", "detekt_toolchain")
 
 toolchain_type(
     name = "toolchain_type",
+    visibility = ["//visibility:public"],
 )
 
 detekt_toolchain(
