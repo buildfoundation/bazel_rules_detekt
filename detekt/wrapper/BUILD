@@ -24,7 +24,7 @@ kt_jvm_library(
 
 java_binary(
     name = "bin",
-    main_class = "io.buildfoundation.bazel.rulesdetekt.wrapper.Main",
+    main_class = "io.buildfoundation.bazel.detekt.Main",
     visibility = ["//visibility:public"],
     runtime_deps = [":lib"],
 )
@@ -36,7 +36,7 @@ kt_jvm_test(
         "src/testFixtures/kotlin/**/*.kt",
     ]),
     friends = [":lib"],
-    test_class = "io.buildfoundation.bazel.rulesdetekt.wrapper.TestsSuite",
+    test_class = "io.buildfoundation.bazel.detekt.TestsSuite",
     deps = [
         ":lib",
         "@rules_detekt_dependencies//:junit_junit",

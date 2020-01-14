@@ -1,4 +1,4 @@
-package io.buildfoundation.bazel.rulesdetekt.wrapper
+package io.buildfoundation.bazel.detekt
 
 import io.gitlab.arturbosch.detekt.cli.buildRunner
 import java.io.PrintStream

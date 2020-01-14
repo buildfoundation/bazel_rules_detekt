@@ -1,4 +1,6 @@
-package io.buildfoundation.bazel.rulesdetekt.wrapper
+package io.buildfoundation.bazel.detekt
+
+import io.buildfoundation.bazel.detekt.Platform
 
 internal class TestPlatform : Platform {
 

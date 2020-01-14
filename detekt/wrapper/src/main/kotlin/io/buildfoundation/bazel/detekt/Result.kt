@@ -1,4 +1,4 @@
-package io.buildfoundation.bazel.rulesdetekt.wrapper
+package io.buildfoundation.bazel.detekt
 
 internal sealed class Result {
     object Success : Result()

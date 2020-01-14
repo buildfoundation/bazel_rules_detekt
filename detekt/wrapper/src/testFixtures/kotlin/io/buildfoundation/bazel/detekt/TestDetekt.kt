@@ -1,4 +1,4 @@
-package io.buildfoundation.bazel.rulesdetekt.wrapper
+package io.buildfoundation.bazel.detekt
 
 import java.io.PrintStream
 
