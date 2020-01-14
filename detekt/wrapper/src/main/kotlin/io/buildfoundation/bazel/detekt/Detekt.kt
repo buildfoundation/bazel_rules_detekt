@@ -1,4 +1,4 @@
-package bazel.detekt
+package io.buildfoundation.bazel.detekt
 
 import io.gitlab.arturbosch.detekt.cli.buildRunner
 import java.io.PrintStream

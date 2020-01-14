@@ -1,4 +1,4 @@
-package bazel.detekt
+package io.buildfoundation.bazel.detekt
 
 import bazel.worker.WorkerProtocol.WorkRequest
 import bazel.worker.WorkerProtocol.WorkResponse

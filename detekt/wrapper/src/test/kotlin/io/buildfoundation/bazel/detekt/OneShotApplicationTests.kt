@@ -1,4 +1,4 @@
-package bazel.detekt
+package io.buildfoundation.bazel.detekt
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

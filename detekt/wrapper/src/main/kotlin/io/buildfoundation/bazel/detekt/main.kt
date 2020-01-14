@@ -1,6 +1,6 @@
 @file:JvmName("Main")
 
-package bazel.detekt
+package io.buildfoundation.bazel.detekt
 
 import io.reactivex.schedulers.Schedulers
 

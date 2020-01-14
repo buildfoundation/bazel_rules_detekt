@@ -1,4 +1,4 @@
-package bazel.detekt
+package io.buildfoundation.bazel.detekt
 
 import bazel.worker.WorkerProtocol
 import org.junit.Assert.assertEquals

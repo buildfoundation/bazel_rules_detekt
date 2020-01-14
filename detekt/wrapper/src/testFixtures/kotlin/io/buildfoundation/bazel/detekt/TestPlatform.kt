@@ -1,6 +1,6 @@
-package bazel.detekt
+package io.buildfoundation.bazel.detekt
 
-import bazel.detekt.Platform
+import io.buildfoundation.bazel.detekt.Platform
 
 internal class TestPlatform : Platform {
 
