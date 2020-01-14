@@ -1,4 +1,4 @@
-load("//detekt:toolchain.bzl", "detekt_toolchain")
+load("//detekt:defs.bzl", "detekt_toolchain")
 
 toolchain_type(
     name = "toolchain_type",
