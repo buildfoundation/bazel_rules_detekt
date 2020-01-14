@@ -15,7 +15,7 @@ fun main(arguments: Array<String>) {
     val executable = Executable.DetektImpl(Detekt.Impl())
     val consoleStreams = Streams.system()
 
-    val application = if ("--persistent_worker" in arguments) {
+    val application = if ("--persistent_worker_" in arguments) {
         Application.Worker(Schedulers.io(), WorkerExecutable.Impl(executable), WorkerStreams.Impl(consoleStreams))
     } else {
         Application.OneShot(executable, consoleStreams, Platform.Impl())
