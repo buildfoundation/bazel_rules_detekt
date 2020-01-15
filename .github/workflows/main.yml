@@ -31,6 +31,19 @@ jobs:
         run: |
           curl --location --fail "https://github.com/bazelbuild/bazelisk/releases/download/v${VERSION_BAZELISK}/bazelisk-linux-amd64" --output /tmp/bazel
           chmod +x /tmp/bazel && echo "::add-path::/tmp/"
+      - name: "Configure Bazel"
+        run: cp .github/workflows/.bazelrc .
+      - name: "Configure cache"
+        uses: actions/cache@v1.1.0
+        with:
+          path: .cache
+          key: ${{ runner.os }}-bazel-${{ hashFiles('WORKSPACE') }}
+          restore-keys: |
+            ${{ runner.os }}-bazel-
+      - name: "Fetch"
+        run: bazel fetch //detekt/wrapper:bin
+      - name: "Build"
+        run: bazel build //detekt/wrapper:bin
       - name: "Unit tests"
         run: bazel test //detekt/wrapper:tests
       - name: "Analysis tests"
