@@ -40,8 +40,9 @@ def rules_detekt_dependencies():
 
     # JVM External
 
-    rules_jvm_external_version = "3.0"
-    rules_jvm_external_sha = "baa842cbc67aec78408aec3e480b2e94dbdd14d6b0170d3a3ee14a0e1a5bb95f"
+    # Todo: switch to tag.
+    rules_jvm_external_version = "0a7cc6a0b6764232a0ddd31ad87b489e1d47b166"
+    rules_jvm_external_sha = "3d0e809a5a14cfe7e1071103e9e53528f2fa93e72b175fb43a8bdea74156382d"
 
     maybe(
         repo_rule = http_archive,

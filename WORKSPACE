@@ -16,6 +16,9 @@ load("//detekt:toolchains.bzl", "rules_detekt_toolchains")
 
 rules_detekt_toolchains()
 
+load("@rules_detekt_dependencies//:defs.bzl", "pinned_maven_install")
+pinned_maven_install()
+
 # Testing
 
 ## Skylib
