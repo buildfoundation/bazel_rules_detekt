@@ -45,5 +45,5 @@ def rules_detekt_toolchains(detekt_version = "1.4.0", toolchain = "@rules_detekt
             "org.jetbrains.kotlin:kotlin-reflect",
             "org.jetbrains.kotlin:kotlin-stdlib",
         ],
-        maven_install_json = "//:rules_detekt_dependencies_install.json",
+        maven_install_json = "@rules_detekt//detekt:rules_detekt_dependencies_install.json",
     )
