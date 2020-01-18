@@ -27,8 +27,8 @@ def rules_detekt_dependencies():
 
     # Kotlin
 
-    rules_kotlin_version = "legacy-1.3.0-rc3"
-    rules_kotlin_sha = "7cee5bd86d44ec7f643241197c28a2bced85614955adf0ed52a935296beb85b7"
+    rules_kotlin_version = "legacy-1.3.0-rc4"
+    rules_kotlin_sha = "c8dd5897b761a670a350f9f69426ae57226f2d20b1dc1a708f802bcaaaa534aa"
 
     maybe(
         repo_rule = http_archive,
@@ -40,8 +40,8 @@ def rules_detekt_dependencies():
 
     # JVM External
 
-    rules_jvm_external_version = "3.0"
-    rules_jvm_external_sha = "baa842cbc67aec78408aec3e480b2e94dbdd14d6b0170d3a3ee14a0e1a5bb95f"
+    rules_jvm_external_version = "3.1"
+    rules_jvm_external_sha = "19c5c43a84d3c631a047b8e499b00b3ffca2e6784a1e4abfe2facdf865951e43"
 
     maybe(
         repo_rule = http_archive,
