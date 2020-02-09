@@ -3,7 +3,7 @@ name: CI
 on: [push, pull_request]
 
 env:
-  VERSION_BAZELISK: "1.3.1"
+  VERSION_BAZELISK: "1.3.0"
   VERSION_BUILDIFIER: "1.0.0"
 
 jobs:
