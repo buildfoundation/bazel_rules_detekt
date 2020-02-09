@@ -8,7 +8,7 @@ load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_jav
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 
-def rules_detekt_toolchains(detekt_version = "1.4.0", toolchain = "@rules_detekt//detekt:default_toolchain"):
+def rules_detekt_toolchains(detekt_version = "1.5.1", toolchain = "@rules_detekt//detekt:default_toolchain"):
     """Invokes `rules_detekt` toolchains.
 
     Declares toolchains that are dependencies of the `rules_detekt` workspace.
