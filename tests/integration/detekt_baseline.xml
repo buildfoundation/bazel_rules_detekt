@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <SmellBaseline>
-  <Blacklist></Blacklist>
   <Whitelist>
-    <ID>EmptyFunctionBlock:Main.kt${ }</ID>
+    <ID>EmptyFunctionBlock:main.kt${ }</ID>
   </Whitelist>
 </SmellBaseline>

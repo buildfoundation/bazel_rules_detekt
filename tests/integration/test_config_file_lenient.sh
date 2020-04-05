@@ -1,15 +1,15 @@
 #!/bin/bash
 set -eou pipefail
 
-TARGET="detekt_html_report"
+TARGET="detekt_with_config_file_lenient"
 OUTPUT_DIR="$(bazel info bazel-bin)/tests/integration/"
 
-echo ":: Target with HTML report attribute should generate text and HTML reports."
+echo ":: Target with lenient config file should not fail and should generate text report."
 
 bazel build //tests/integration:${TARGET}
 
 set -x
 
-test -f "${OUTPUT_DIR}/${TARGET}_detekt_report.html"
+test ! -f "${OUTPUT_DIR}/${TARGET}_detekt_report.html"
 test -f "${OUTPUT_DIR}/${TARGET}_detekt_report.txt"
 test ! -f "${OUTPUT_DIR}/${TARGET}_detekt_report.xml"

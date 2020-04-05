@@ -1,3 +1,0 @@
-# Fail if at least one issue found.
-build:
-  maxIssues: 1
