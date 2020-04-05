@@ -3,50 +3,63 @@ name: CI
 on: [push, pull_request]
 
 env:
-  VERSION_BAZELISK: "1.2.1"
-  VERSION_BUILDIFIER: "0.29.0"
+  VERSION_BAZELISK: "1.3.0"
+  VERSION_BUILDIFIER: "2.2.1"
 
 jobs:
   buildifier:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout the source code"
-        uses: actions/checkout@v2.0.0
+        uses: actions/checkout@v2.1.0
+
       - name: "Download Buildifier"
         run: |
           curl --location --fail "https://github.com/bazelbuild/buildtools/releases/download/${VERSION_BUILDIFIER}/buildifier" --output /tmp/buildifier
           chmod +x /tmp/buildifier && echo "::add-path::/tmp/"
+
       - name: "Lint Starlark files"
         run: buildifier -mode check -lint warn -r .
+
   build:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout the source code"
-        uses: actions/checkout@v2.0.0
+        uses: actions/checkout@v2.1.0
+
       - name: "Install JDK"
         uses: actions/setup-java@v1.3.0
         with:
           java-version: "11.0.5"
+
       - name: "Download Bazelisk"
         run: |
           curl --location --fail "https://github.com/bazelbuild/bazelisk/releases/download/v${VERSION_BAZELISK}/bazelisk-linux-amd64" --output /tmp/bazel
           chmod +x /tmp/bazel && echo "::add-path::/tmp/"
+
       - name: "Configure Bazel"
         run: cp .github/workflows/.bazelrc .
+
       - name: "Configure cache"
-        uses: actions/cache@v1.1.0
+        uses: actions/cache@v1.1.2
         with:
           path: .cache
           key: ${{ runner.os }}-bazel-${{ hashFiles('WORKSPACE') }}
           restore-keys: |
             ${{ runner.os }}-bazel-
+
       - name: "Fetch"
         run: bazel fetch //detekt/wrapper:bin
+
       - name: "Build"
         run: bazel build //detekt/wrapper:bin
+
       - name: "Unit tests"
         run: bazel test //detekt/wrapper:tests
+
       - name: "Analysis tests"
         run: bazel test //tests/analysis:tests
+
       - name: "Integration tests"
         run: bash tests/integration/suite.sh
+
