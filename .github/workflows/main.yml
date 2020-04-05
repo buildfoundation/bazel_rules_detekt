@@ -4,14 +4,14 @@ on: [push, pull_request]
 
 env:
   VERSION_BAZELISK: "1.3.0"
-  VERSION_BUILDIFIER: "1.0.0"
+  VERSION_BUILDIFIER: "2.2.1"
 
 jobs:
   buildifier:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout the source code"
-        uses: actions/checkout@v2.0.0
+        uses: actions/checkout@v2.1.0
 
       - name: "Download Buildifier"
         run: |
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout the source code"
-        uses: actions/checkout@v2.0.0
+        uses: actions/checkout@v2.1.0
 
       - name: "Install JDK"
         uses: actions/setup-java@v1.3.0
