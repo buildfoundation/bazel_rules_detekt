@@ -1,4 +1,4 @@
-package io.buildfoundation.bazel.detekt
+package io.buildfoundation.bazel.detekt.execute
 
 import java.io.PrintStream
 

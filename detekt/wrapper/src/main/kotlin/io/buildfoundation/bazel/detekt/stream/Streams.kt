@@ -1,10 +1,10 @@
-package io.buildfoundation.bazel.detekt
+package io.buildfoundation.bazel.detekt.stream
 
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.PrintStream
 
-internal data class Streams(val input: InputStream, val output: PrintStream, val error: PrintStream) {
+data class Streams(val input: InputStream, val output: PrintStream, val error: PrintStream) {
 
     companion object {
         fun system(): Streams {
@@ -19,7 +19,7 @@ internal data class Streams(val input: InputStream, val output: PrintStream, val
         }
     }
 
-    class DevNullOutputStream : OutputStream() {
+    private class DevNullOutputStream : OutputStream() {
         override fun write(byte: Int) = Unit
     }
 }

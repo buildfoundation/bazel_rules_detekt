@@ -1,5 +1,8 @@
 package io.buildfoundation.bazel.detekt
 
+import io.buildfoundation.bazel.detekt.execute.Result
+import io.buildfoundation.bazel.detekt.execute.TestExecutable
+import io.buildfoundation.bazel.detekt.stream.Streams
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

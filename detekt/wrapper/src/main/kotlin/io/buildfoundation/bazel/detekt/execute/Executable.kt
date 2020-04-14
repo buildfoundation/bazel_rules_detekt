@@ -1,10 +1,10 @@
-package io.buildfoundation.bazel.detekt
+package io.buildfoundation.bazel.detekt.execute
 
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import java.nio.charset.Charset
 
-internal interface Executable {
+interface Executable {
 
     fun execute(args: Array<String>): Result
 

@@ -1,5 +1,10 @@
 package io.buildfoundation.bazel.detekt
 
+import io.buildfoundation.bazel.detekt.execute.Executable
+import io.buildfoundation.bazel.detekt.execute.Result
+import io.buildfoundation.bazel.detekt.execute.WorkerExecutable
+import io.buildfoundation.bazel.detekt.stream.Streams
+import io.buildfoundation.bazel.detekt.stream.WorkerStreams
 import io.reactivex.Scheduler
 
 internal interface Application {
@@ -24,9 +29,9 @@ internal interface Application {
     }
 
     class Worker(
-            private val scheduler: Scheduler,
             private val executable: WorkerExecutable,
-            private val streams: WorkerStreams
+            private val streams: WorkerStreams,
+            private val scheduler: Scheduler
     ) : Application {
 
         override fun run(args: Array<String>) {

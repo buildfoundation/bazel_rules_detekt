@@ -1,4 +1,4 @@
-package io.buildfoundation.bazel.detekt
+package io.buildfoundation.bazel.detekt.stream
 
 import bazel.worker.WorkerProtocol.WorkRequest
 import bazel.worker.WorkerProtocol.WorkResponse
@@ -7,7 +7,7 @@ import io.reactivex.Flowable
 import io.reactivex.FlowableEmitter
 import io.reactivex.functions.Consumer
 
-internal interface WorkerStreams {
+interface WorkerStreams {
 
     val request: Flowable<WorkRequest>
     val response: Consumer<WorkResponse>
