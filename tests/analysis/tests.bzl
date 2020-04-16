@@ -25,7 +25,7 @@ def _action_full_contents_test_impl(ctx):
     asserts.equals(env, 1, len(actions))
 
     expected_arguments = _expand_paths(env.ctx, [
-        "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin",
+        "bazel-out/host/bin/detekt/wrapper/bin",
         "--jvm_flag=-Xms16m",
         "--jvm_flag=-Xmx128m",
         "--input",
@@ -54,9 +54,9 @@ def _action_full_contents_test_impl(ctx):
         "{{source_dir}}/config B.yml",
         "{{source_dir}}/config C.yml",
         "{{source_dir}}/baseline.xml",
-        "bazel-out/host/internal/_middlemen/external_Srules_Udetekt_Sdetekt_Swrapper_Sbin-runfiles",
-        "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin.jar",
-        "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin",
+        "bazel-out/host/internal/_middlemen/detekt_Swrapper_Sbin-runfiles",
+        "bazel-out/host/bin/detekt/wrapper/bin.jar",
+        "bazel-out/host/bin/detekt/wrapper/bin",
     ])
 
     expected_outputs = _expand_paths(env.ctx, [
@@ -103,7 +103,7 @@ def _action_blank_contents_test_impl(ctx):
     asserts.equals(env, 1, len(actions))
 
     expected_arguments = _expand_paths(env.ctx, [
-        "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin",
+        "bazel-out/host/bin/detekt/wrapper/bin",
         "--jvm_flag=-Xms16m",
         "--jvm_flag=-Xmx128m",
         "--input",
@@ -116,9 +116,9 @@ def _action_blank_contents_test_impl(ctx):
         "{{source_dir}}/path A.kt",
         "{{source_dir}}/path B.kt",
         "{{source_dir}}/path C.kt",
-        "bazel-out/host/internal/_middlemen/external_Srules_Udetekt_Sdetekt_Swrapper_Sbin-runfiles",
-        "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin.jar",
-        "bazel-out/host/bin/external/rules_detekt/detekt/wrapper/bin",
+        "bazel-out/host/internal/_middlemen/detekt_Swrapper_Sbin-runfiles",
+        "bazel-out/host/bin/detekt/wrapper/bin.jar",
+        "bazel-out/host/bin/detekt/wrapper/bin",
     ])
 
     expected_outputs = _expand_paths(env.ctx, [
