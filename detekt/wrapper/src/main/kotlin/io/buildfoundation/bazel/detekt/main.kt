@@ -2,6 +2,11 @@
 
 package io.buildfoundation.bazel.detekt
 
+import io.buildfoundation.bazel.detekt.execute.Detekt
+import io.buildfoundation.bazel.detekt.execute.Executable
+import io.buildfoundation.bazel.detekt.execute.WorkerExecutable
+import io.buildfoundation.bazel.detekt.stream.Streams
+import io.buildfoundation.bazel.detekt.stream.WorkerStreams
 import io.reactivex.schedulers.Schedulers
 
 /**
@@ -13,12 +18,12 @@ import io.reactivex.schedulers.Schedulers
  */
 fun main(arguments: Array<String>) {
     val executable = Executable.DetektImpl(Detekt.Impl())
-    val consoleStreams = Streams.system()
+    val streams = Streams.system()
 
     val application = if ("--persistent_worker" in arguments) {
-        Application.Worker(Schedulers.io(), WorkerExecutable.Impl(executable), WorkerStreams.Impl(consoleStreams))
+        Application.Worker(WorkerExecutable.Impl(executable), WorkerStreams.Impl(streams), Schedulers.io())
     } else {
-        Application.OneShot(executable, consoleStreams, Platform.Impl())
+        Application.OneShot(executable, streams, Platform.Impl())
     }
 
     application.run(arguments)

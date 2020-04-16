@@ -1,9 +1,9 @@
-package io.buildfoundation.bazel.detekt
+package io.buildfoundation.bazel.detekt.execute
 
 import bazel.worker.WorkerProtocol.WorkRequest
 import bazel.worker.WorkerProtocol.WorkResponse
 
-internal interface WorkerExecutable {
+interface WorkerExecutable {
 
     fun execute(request: WorkRequest): WorkResponse
 

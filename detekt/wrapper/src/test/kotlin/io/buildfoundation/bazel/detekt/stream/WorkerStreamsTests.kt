@@ -1,4 +1,4 @@
-package io.buildfoundation.bazel.detekt
+package io.buildfoundation.bazel.detekt.stream
 
 import bazel.worker.WorkerProtocol.WorkRequest
 import org.junit.Test
