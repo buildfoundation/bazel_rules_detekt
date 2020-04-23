@@ -28,7 +28,7 @@ http_archive(
     name = "rules_detekt",
     sha256 = rules_detekt_sha,
     strip_prefix = "bazel_rules_detekt-{v}".format(v = rules_detekt_version),
-    url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/{v}.tar.gz".format(v = rules_detekt_version),
+    url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/v{v}.tar.gz".format(v = rules_detekt_version),
 )
 
 load("@rules_detekt//detekt:dependencies.bzl", "rules_detekt_dependencies")
