@@ -5,7 +5,7 @@ import io.buildfoundation.bazel.detekt.execute.Result
 import io.buildfoundation.bazel.detekt.execute.WorkerExecutable
 import io.buildfoundation.bazel.detekt.stream.Streams
 import io.buildfoundation.bazel.detekt.stream.WorkerStreams
-import io.reactivex.Scheduler
+import io.reactivex.rxjava3.core.Scheduler
 
 internal interface Application {
 
