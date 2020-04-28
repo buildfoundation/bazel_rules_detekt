@@ -2,10 +2,10 @@ package io.buildfoundation.bazel.detekt.stream
 
 import bazel.worker.WorkerProtocol.WorkRequest
 import bazel.worker.WorkerProtocol.WorkResponse
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
-import io.reactivex.FlowableEmitter
-import io.reactivex.functions.Consumer
+import io.reactivex.rxjava3.core.BackpressureStrategy
+import io.reactivex.rxjava3.core.Flowable
+import io.reactivex.rxjava3.core.FlowableEmitter
+import io.reactivex.rxjava3.functions.Consumer
 
 interface WorkerStreams {
 

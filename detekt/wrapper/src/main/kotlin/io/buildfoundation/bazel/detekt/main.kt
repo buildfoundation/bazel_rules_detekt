@@ -7,7 +7,7 @@ import io.buildfoundation.bazel.detekt.execute.Executable
 import io.buildfoundation.bazel.detekt.execute.WorkerExecutable
 import io.buildfoundation.bazel.detekt.stream.Streams
 import io.buildfoundation.bazel.detekt.stream.WorkerStreams
-import io.reactivex.schedulers.Schedulers
+import io.reactivex.rxjava3.schedulers.Schedulers
 
 /**
  * The wrapper purpose:

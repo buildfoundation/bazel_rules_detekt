@@ -18,7 +18,7 @@ kt_jvm_library(
     deps = [
         ":worker_protocol_java_proto",
         "@rules_detekt_dependencies//:io_gitlab_arturbosch_detekt_detekt_cli",
-        "@rules_detekt_dependencies//:io_reactivex_rxjava2_rxjava",
+        "@rules_detekt_dependencies//:io_reactivex_rxjava3_rxjava",
     ],
 )
 

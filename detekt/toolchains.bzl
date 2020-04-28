@@ -35,7 +35,7 @@ def rules_detekt_toolchains(detekt_version = "1.8.0", toolchain = "@rules_detekt
         name = "rules_detekt_dependencies",
         artifacts = [
             maven.artifact("io.gitlab.arturbosch.detekt", "detekt-cli", detekt_version),
-            maven.artifact("io.reactivex.rxjava2", "rxjava", "2.2.16"),
+            maven.artifact("io.reactivex.rxjava3", "rxjava", "3.0.2"),
             maven.artifact("junit", "junit", "4.13", testonly = True),
         ],
         repositories = [
