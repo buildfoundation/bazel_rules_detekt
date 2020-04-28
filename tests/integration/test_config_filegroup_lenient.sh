@@ -2,7 +2,7 @@
 set -eou pipefail
 
 TARGET="detekt_with_config_filegroup_lenient"
-OUTPUT_DIR="$(bazel info bazel-bin)/tests/integration/"
+OUTPUT_DIR="$(bazel info bazel-bin)/tests/integration"
 
 echo ":: Target with lenient config file group should not fail and should generate text report."
 

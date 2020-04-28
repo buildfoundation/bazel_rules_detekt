@@ -1,8 +1,8 @@
 #!/bin/bash
 set -eou pipefail
 
-TARGET="detekt_without_config_with_report_xml"
-OUTPUT_DIR="$(bazel info bazel-bin)/tests/integration/"
+TARGET="detekt_without_config_with_report_html"
+OUTPUT_DIR="$(bazel info bazel-bin)/tests/integration"
 
 echo ":: Target without config and with HTML report attribute should generate text and HTML reports."
 

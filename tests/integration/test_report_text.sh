@@ -2,7 +2,7 @@
 set -eou pipefail
 
 TARGET="detekt_without_config"
-OUTPUT_DIR="$(bazel info bazel-bin)/tests/integration/"
+OUTPUT_DIR="$(bazel info bazel-bin)/tests/integration"
 
 echo ":: Target without config should fail and generate text report."
 
