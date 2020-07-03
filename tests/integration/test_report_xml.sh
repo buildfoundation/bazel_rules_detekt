@@ -2,7 +2,7 @@
 set -eou pipefail
 
 TARGET="detekt_without_config_with_report_xml"
-OUTPUT_DIR="$(bazel info bazel-bin)/tests/integration/"
+OUTPUT_DIR="$(bazel info bazel-bin)/tests/integration"
 
 echo ":: Target without config and with XML report attribute should generate text and XML reports."
 

@@ -15,9 +15,11 @@ for STRATEGY in "local" "worker"; do
 
     # Generate a bit of code to keep Bazel working instead of pulling from cache to check strategies execution.
     rm -rf "${GENERATED_CODE_DIR}" && mkdir -p "${GENERATED_CODE_DIR}"
-    touch "${GENERATED_CODE_DIR}/${STRATEGY}.kt"
+    echo '@file:Suppress("EmptyKtFile")' > "${GENERATED_CODE_DIR}/${STRATEGY}.kt"
 
-    find "tests/integration" -type f -name "test_*.sh" -exec bash {} \;
+    for TEST in tests/integration/test_*.sh; do
+        bash $TEST
+    done
 
     rm -rf "${GENERATED_CODE_DIR}"
 done
