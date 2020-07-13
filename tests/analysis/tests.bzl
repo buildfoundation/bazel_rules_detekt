@@ -87,6 +87,8 @@ def _test_action_full_contents():
         disable_default_rulesets = True,
         fail_fast = True,
         parallel = True,
+        # The "plugins" option is skipped here since the path includes a declared Detekt version
+        # and we do not want to change the test every time the Detekt artifact is updated.
     )
 
     action_full_contents_test(

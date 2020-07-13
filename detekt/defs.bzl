@@ -62,6 +62,9 @@ def _impl(ctx):
     if ctx.attr.parallel:
         detekt_arguments.add("--parallel")
 
+    action_inputs.extend(ctx.files.plugins)
+    detekt_arguments.add_joined("--plugins", ctx.files.plugins, join_with = ",")
+
     ctx.actions.run(
         mnemonic = "Detekt",
         inputs = action_inputs,
@@ -126,6 +129,11 @@ detekt = rule(
         "parallel": attr.bool(
             default = False,
             doc = "See [Detekt `--parallel` option](https://arturbosch.github.io/detekt/cli.html).",
+        ),
+        "plugins": attr.label_list(
+            default = [],
+            doc = "[Detekt plugins](https://detekt.github.io/detekt/extensions.html). For example, [the formatting rule set](https://detekt.github.io/detekt/formatting.html). Labels should be JVM artifacts (generated via [`rules_jvm_external`](https://github.com/bazelbuild/rules_jvm_external) work).",
+            providers = [JavaInfo],
         ),
     },
     provides = [DefaultInfo],

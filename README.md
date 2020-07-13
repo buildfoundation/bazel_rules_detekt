@@ -7,6 +7,7 @@ for [the Bazel build system](https://bazel.build).
 
 - configuration and baseline files;
 - HTML, text and XML reports;
+- [plugins](https://detekt.github.io/detekt/extensions.html);
 - customizable Detekt version and JVM flags;
 - [persistent workers](https://blog.bazel.build/2015/12/10/java-workers.html) support;
 - [and more](docs/rule.md).
