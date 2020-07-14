@@ -3,15 +3,15 @@ name: CI
 on: [push, pull_request]
 
 env:
-  VERSION_BAZELISK: "1.4.0"
-  VERSION_BUILDIFIER: "2.2.1"
+  VERSION_BAZELISK: "1.5.0"
+  VERSION_BUILDIFIER: "3.3.0"
 
 jobs:
   buildifier:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout the source code"
-        uses: actions/checkout@v2.1.0
+        uses: actions/checkout@v2.3.1
 
       - name: "Download Buildifier"
         run: |
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout the source code"
-        uses: actions/checkout@v2.1.0
+        uses: actions/checkout@v2.3.1
 
       - name: "Install JDK"
         uses: actions/setup-java@v1.3.0
@@ -41,7 +41,7 @@ jobs:
         run: cp .github/workflows/.bazelrc .
 
       - name: "Configure cache"
-        uses: actions/cache@v1.1.2
+        uses: actions/cache@v2.0.0
         with:
           path: .cache
           key: ${{ runner.os }}-bazel-${{ hashFiles('WORKSPACE') }}
