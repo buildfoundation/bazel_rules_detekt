@@ -35,8 +35,10 @@ def rules_detekt_toolchains(detekt_version = "1.8.0", toolchain = "@rules_detekt
         name = "rules_detekt_dependencies",
         artifacts = [
             maven.artifact("io.gitlab.arturbosch.detekt", "detekt-cli", detekt_version),
+            maven.artifact("io.gitlab.arturbosch.detekt", "detekt-formatting", detekt_version),
             maven.artifact("io.reactivex.rxjava3", "rxjava", "3.0.2"),
-            maven.artifact("junit", "junit", "4.13", testonly = True),
+            # TODO: rollback "testonly = true" once JVM External resolves transitive test dependencies properly.
+            maven.artifact("junit", "junit", "4.13"),
         ],
         repositories = [
             "https://repo1.maven.org/maven2",

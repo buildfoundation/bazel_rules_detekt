@@ -29,6 +29,13 @@ detekt(
 )
 
 detekt(
+    name = "detekt_without_config_with_baseline_with_plugin",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    baseline = "detekt_baseline.xml",
+    plugins = ["@rules_detekt_dependencies//:io_gitlab_arturbosch_detekt_detekt_formatting"],
+)
+
+detekt(
     name = "detekt_with_config_file_lenient",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
     cfgs = ["detekt_config_lenient.yml"],
