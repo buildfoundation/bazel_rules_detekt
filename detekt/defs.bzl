@@ -119,7 +119,7 @@ detekt = rule(
         ),
         "autocorrect": attr.bool(
             default = False,
-            doc = "See [Detekt `--auto-correct` option](https://detekt.github.io/detekt/cli.html)."
+            doc = "See [Detekt `--auto-correct` option](https://detekt.github.io/detekt/cli.html).",
         ),
         "build_upon_default_config": attr.bool(
             default = False,
