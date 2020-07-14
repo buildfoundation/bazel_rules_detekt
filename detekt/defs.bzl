@@ -50,6 +50,9 @@ def _impl(ctx):
         action_outputs.append(xml_report)
         detekt_arguments.add("--report", "xml:{}".format(xml_report.path))
 
+    if ctx.attr.autocorrect:
+        detekt_arguments.add("--auto-correct")
+
     if ctx.attr.build_upon_default_config:
         detekt_arguments.add("--build-upon-default-config")
 
@@ -113,6 +116,10 @@ detekt = rule(
         "xml_report": attr.bool(
             default = False,
             doc = "Enables / disables the XML report generation. The report file name is `{target_name}_detekt_report.xml`. FYI Detekt uses the Checkstyle XML reporting format which makes it compatible with tools like SonarQube.",
+        ),
+        "autocorrect": attr.bool(
+            default = False,
+            doc = "See [Detekt `--auto-correct` option](https://detekt.github.io/detekt/cli.html)."
         ),
         "build_upon_default_config": attr.bool(
             default = False,

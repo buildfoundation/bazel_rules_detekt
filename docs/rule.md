@@ -5,6 +5,7 @@
 Name           | Type                               | Default            | Description
 ---------------|------------------------------------|--------------------|------------
 `name` | [`name`](https://docs.bazel.build/versions/master/build-ref.html#name) | — | A unique name for this target.
+`autocorrect` | [`bool`](https://docs.bazel.build/versions/master/skylark/lib/bool.html) | `False` | See [Detekt `--auto-correct` option](https://detekt.github.io/detekt/cli.html).
 `baseline` | [`Label`](https://docs.bazel.build/versions/master/skylark/lib/Label.html) | `None` | [Detekt baseline file](https://arturbosch.github.io/detekt/baseline.html).
 `build_upon_default_config` | [`bool`](https://docs.bazel.build/versions/master/skylark/lib/bool.html) | `False` | See [Detekt `--build-upon-default-config` option](https://arturbosch.github.io/detekt/cli.html).
 `cfgs` | [`[Label]`](https://docs.bazel.build/versions/master/skylark/lib/list.html) | `[]` | [Detekt configuration files](https://arturbosch.github.io/detekt/configurations.html). Otherwise [the default configuration](https://github.com/arturbosch/detekt/blob/master/detekt-cli/src/main/resources/default-detekt-config.yml) is used.
