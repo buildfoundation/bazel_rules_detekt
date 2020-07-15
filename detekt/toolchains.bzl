@@ -9,6 +9,7 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_jvm_external//:specs.bzl", "maven")
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 
+# buildifier: disable=unnamed-macro
 def rules_detekt_toolchains(detekt_version = "1.8.0", toolchain = "@rules_detekt//detekt:default_toolchain"):
     """Invokes `rules_detekt` toolchains.
 
