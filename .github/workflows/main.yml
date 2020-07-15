@@ -1,6 +1,10 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+      - "master"
 
 env:
   VERSION_BAZELISK: "1.4.0"
@@ -62,4 +66,3 @@ jobs:
 
       - name: "Integration tests"
         run: bash tests/integration/suite.sh
-
