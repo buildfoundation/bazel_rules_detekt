@@ -10,7 +10,7 @@ load("@rules_jvm_external//:specs.bzl", "maven")
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 
 # buildifier: disable=unnamed-macro
-def rules_detekt_toolchains(detekt_version = "1.8.0", toolchain = "@rules_detekt//detekt:default_toolchain"):
+def rules_detekt_toolchains(detekt_version = "1.10.0", toolchain = "@rules_detekt//detekt:default_toolchain"):
     """Invokes `rules_detekt` toolchains.
 
     Declares toolchains that are dependencies of the `rules_detekt` workspace.
@@ -37,7 +37,7 @@ def rules_detekt_toolchains(detekt_version = "1.8.0", toolchain = "@rules_detekt
         artifacts = [
             maven.artifact("io.gitlab.arturbosch.detekt", "detekt-cli", detekt_version),
             maven.artifact("io.gitlab.arturbosch.detekt", "detekt-formatting", detekt_version),
-            maven.artifact("io.reactivex.rxjava3", "rxjava", "3.0.2"),
+            maven.artifact("io.reactivex.rxjava3", "rxjava", "3.0.4"),
             # TODO: rollback "testonly = true" once JVM External resolves transitive test dependencies properly.
             maven.artifact("junit", "junit", "4.13"),
         ],

@@ -96,7 +96,7 @@ detekt = rule(
         "cfgs": attr.label_list(
             allow_files = [".yml"],
             default = [],
-            doc = "[Detekt configuration files](https://arturbosch.github.io/detekt/configurations.html). Otherwise [the default configuration](https://github.com/arturbosch/detekt/blob/master/detekt-cli/src/main/resources/default-detekt-config.yml) is used.",
+            doc = "[Detekt configuration files](https://arturbosch.github.io/detekt/configurations.html). Otherwise [the default configuration](https://github.com/detekt/detekt/blob/master/detekt-core/src/main/resources/default-detekt-config.yml) is used.",
         ),
         "baseline": attr.label(
             default = None,
