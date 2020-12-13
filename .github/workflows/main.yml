@@ -6,10 +6,6 @@ on:
     branches:
       - "master"
 
-env:
-  VERSION_BAZELISK: "1.5.0"
-  VERSION_BUILDIFIER: "3.3.0"
-
 jobs:
   buildifier:
     runs-on: ubuntu-latest
@@ -19,11 +15,13 @@ jobs:
 
       - name: "Download Buildifier"
         run: |
-          curl --location --fail "https://github.com/bazelbuild/buildtools/releases/download/${VERSION_BUILDIFIER}/buildifier" --output /tmp/buildifier
-          chmod +x /tmp/buildifier && echo "::add-path::/tmp/"
+          curl -LO "https://github.com/bazelbuild/buildtools/releases/download/3.3.0/buildifier"
+          mkdir -p "${GITHUB_WORKSPACE}/bin/"
+          mv buildifier "${GITHUB_WORKSPACE}/bin/buildifier"
+          chmod +x "${GITHUB_WORKSPACE}/bin/buildifier"
 
       - name: "Lint Starlark files"
-        run: buildifier -mode check -lint warn -r .
+        run: $GITHUB_WORKSPACE/bin/buildifier -mode check -lint warn -r .
 
   build:
     runs-on: ubuntu-latest
@@ -38,8 +36,10 @@ jobs:
 
       - name: "Download Bazelisk"
         run: |
-          curl --location --fail "https://github.com/bazelbuild/bazelisk/releases/download/v${VERSION_BAZELISK}/bazelisk-linux-amd64" --output /tmp/bazel
-          chmod +x /tmp/bazel && echo "::add-path::/tmp/"
+          curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.5.0/bazelisk-linux-amd64"
+          mkdir -p "${GITHUB_WORKSPACE}/bin/"
+          mv bazelisk-linux-amd64 "${GITHUB_WORKSPACE}/bin/bazel"
+          chmod +x "${GITHUB_WORKSPACE}/bin/bazel"
 
       - name: "Configure Bazel"
         run: cp .github/workflows/.bazelrc .
