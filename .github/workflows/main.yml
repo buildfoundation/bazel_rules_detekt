@@ -15,10 +15,8 @@ jobs:
 
       - name: "Download Buildifier"
         run: |
-          curl -LO "https://github.com/bazelbuild/buildtools/releases/download/3.3.0/buildifier"
-          mkdir -p "${GITHUB_WORKSPACE}/bin/"
-          mv buildifier "${GITHUB_WORKSPACE}/bin/buildifier"
-          chmod +x "${GITHUB_WORKSPACE}/bin/buildifier"
+          curl --location --fail "https://github.com/bazelbuild/buildtools/releases/download/3.3.0/buildifier" --output /tmp/buildifier
+          chmod +x /tmp/buildifier && echo "/tmp/" >> $GITHUB_PATH
 
       - name: "Lint Starlark files"
         run: $GITHUB_WORKSPACE/bin/buildifier -mode check -lint warn -r .
@@ -36,10 +34,8 @@ jobs:
 
       - name: "Download Bazelisk"
         run: |
-          curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.5.0/bazelisk-linux-amd64"
-          mkdir -p "${GITHUB_WORKSPACE}/bin/"
-          mv bazelisk-linux-amd64 "${GITHUB_WORKSPACE}/bin/bazel"
-          chmod +x "${GITHUB_WORKSPACE}/bin/bazel"
+          curl --location --fail "https://github.com/bazelbuild/bazelisk/releases/download/v1.5.0/bazelisk-linux-amd64" --output /tmp/bazel
+          chmod +x /tmp/bazel && echo "/tmp/" >> $GITHUB_PATH
 
       - name: "Configure Bazel"
         run: cp .github/workflows/.bazelrc .
