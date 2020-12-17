@@ -19,7 +19,7 @@ jobs:
           chmod +x /tmp/buildifier && echo "/tmp/" >> $GITHUB_PATH
 
       - name: "Lint Starlark files"
-        run: $GITHUB_WORKSPACE/bin/buildifier -mode check -lint warn -r .
+        run: buildifier -mode check -lint warn -r .
 
   build:
     runs-on: ubuntu-latest
