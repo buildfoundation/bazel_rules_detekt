@@ -5,6 +5,7 @@ See https://docs.bazel.build/versions/master/skylark/deploying.html#dependencies
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 def rules_detekt_dependencies():
     """Fetches `rules_detekt` dependencies.
@@ -12,6 +13,31 @@ def rules_detekt_dependencies():
     Declares dependencies of the `rules_detekt` workspace.
     Users should call this macro in their `WORKSPACE` file.
     """
+
+    # Pkg
+
+    rules_pkg_version = "0.2.4"
+    rules_pkg_sha = "4ba8f4ab0ff85f2484287ab06c0d871dcb31cc54d439457d28fd4ae14b18450a"
+
+    maybe(
+        http_archive,
+        name = "rules_pkg",
+        url = "https://github.com/bazelbuild/rules_pkg/releases/download/{v}/rules_pkg-{v}.tar.gz".format(v = rules_pkg_version),
+        sha256 = rules_pkg_sha,
+    )
+
+    # Stardoc
+
+    rules_java_version = "0.4.0"
+    rules_java_sha = "36b8d6c2260068b9ff82faea2f7add164bf3436eac9ba3ec14809f335346d66a"
+
+    maybe(
+        repo_rule = http_archive,
+        name = "io_bazel_stardoc",
+        sha256 = rules_java_sha,
+        strip_prefix = "stardoc-{}".format(rules_java_version),
+        url = "https://github.com/bazelbuild/stardoc/archive/{}.zip".format(rules_java_version),
+    )
 
     # Java
 
@@ -27,13 +53,13 @@ def rules_detekt_dependencies():
 
     # Kotlin
 
-    rules_kotlin_version = "legacy-1.3.0"
-    rules_kotlin_sha = "2ba27f0fa8305a28bc1b9b3a3f4e6b91064b3c0021365fa9344ba3af88657e1b"
+    rules_kotlin_version = "1.5.0-alpha-1"
+    rules_kotlin_sha = "14d5fed813fd75105e7621f1b50a1aec2749906b62888d28acbb488ac5dfcca5"
 
     maybe(
         repo_rule = http_archive,
         name = "io_bazel_rules_kotlin",
-        url = "https://github.com/bazelbuild/rules_kotlin/archive/{v}.tar.gz".format(v = rules_kotlin_version),
+        url = "https://github.com/bazelbuild/rules_kotlin/archive/v{}.tar.gz".format(rules_kotlin_version),
         strip_prefix = "rules_kotlin-{v}".format(v = rules_kotlin_version),
         sha256 = rules_kotlin_sha,
     )
