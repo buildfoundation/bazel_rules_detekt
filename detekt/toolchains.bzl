@@ -10,14 +10,14 @@ load("@rules_jvm_external//:specs.bzl", "maven")
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 
 # buildifier: disable=unnamed-macro
-def rules_detekt_toolchains(detekt_version = "1.10.0", toolchain = "@rules_detekt//detekt:default_toolchain"):
+def rules_detekt_toolchains(detekt_version = "1.15.0", toolchain = "@rules_detekt//detekt:default_toolchain"):
     """Invokes `rules_detekt` toolchains.
 
     Declares toolchains that are dependencies of the `rules_detekt` workspace.
     Users should call this macro in their `WORKSPACE` file.
 
     Args:
-        detekt_version: "io.gitlab.arturbosch.detekt:detekt-cli" version used by rules.
+        detekt_version: "io.gitlab.arturbosch.detekt:detekt-tools" version used by rules.
         toolchain: `detekt_toolchain` used by rules.
     """
 
@@ -52,4 +52,5 @@ def rules_detekt_toolchains(detekt_version = "1.10.0", toolchain = "@rules_detek
             "org.jetbrains.kotlin:kotlin-script-runtime",
             "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
         ],
+        fetch_sources = True,
     )
