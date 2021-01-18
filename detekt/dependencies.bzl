@@ -52,8 +52,8 @@ def rules_detekt_dependencies():
 
     # Kotlin
 
-    rules_kotlin_version = "1.5.0-alpha-2"
-    rules_kotlin_sha = "4bb069d76e490d873d6bc271d864d599490ab6c492edf270fcb1090ab11aa23c"
+    rules_kotlin_version = "1.5.0-alpha-3"
+    rules_kotlin_sha = "0b3b9fe1a07ef42abc715a25e44c07ac0650a8aa73e7836c1afbaad74e7cdc78"
 
     maybe(
         repo_rule = http_archive,
