@@ -27,14 +27,13 @@ def rules_detekt_dependencies():
 
     # Kotlin
 
-    rules_kotlin_version = "legacy-1.3.0"
-    rules_kotlin_sha = "2ba27f0fa8305a28bc1b9b3a3f4e6b91064b3c0021365fa9344ba3af88657e1b"
+    rules_kotlin_version = "1.5.0-alpha-3"
+    rules_kotlin_sha = "eeae65f973b70896e474c57aa7681e444d7a5446d9ec0a59bb88c59fc263ff62"
 
     maybe(
         repo_rule = http_archive,
         name = "io_bazel_rules_kotlin",
-        url = "https://github.com/bazelbuild/rules_kotlin/archive/{v}.tar.gz".format(v = rules_kotlin_version),
-        strip_prefix = "rules_kotlin-{v}".format(v = rules_kotlin_version),
+        url = "https://github.com/bazelbuild/rules_kotlin/releases/download/v{}/rules_kotlin_release.tgz".format(rules_kotlin_version),
         sha256 = rules_kotlin_sha,
     )
 
