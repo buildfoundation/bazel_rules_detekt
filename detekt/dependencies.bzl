@@ -13,31 +13,6 @@ def rules_detekt_dependencies():
     Users should call this macro in their `WORKSPACE` file.
     """
 
-    # Pkg
-
-    rules_pkg_version = "0.2.4"
-    rules_pkg_sha = "4ba8f4ab0ff85f2484287ab06c0d871dcb31cc54d439457d28fd4ae14b18450a"
-
-    maybe(
-        http_archive,
-        name = "rules_pkg",
-        url = "https://github.com/bazelbuild/rules_pkg/releases/download/{v}/rules_pkg-{v}.tar.gz".format(v = rules_pkg_version),
-        sha256 = rules_pkg_sha,
-    )
-
-    # Stardoc
-
-    rules_stardoc_version = "0.4.0"
-    rules_stardoc_sha = "36b8d6c2260068b9ff82faea2f7add164bf3436eac9ba3ec14809f335346d66a"
-
-    maybe(
-        repo_rule = http_archive,
-        name = "io_bazel_stardoc",
-        sha256 = rules_stardoc_sha,
-        strip_prefix = "stardoc-{}".format(rules_stardoc_version),
-        url = "https://github.com/bazelbuild/stardoc/archive/{}.zip".format(rules_stardoc_version),
-    )
-
     # Java
 
     rules_java_version = "0.1.1"
@@ -53,13 +28,12 @@ def rules_detekt_dependencies():
     # Kotlin
 
     rules_kotlin_version = "1.5.0-alpha-3"
-    rules_kotlin_sha = "0b3b9fe1a07ef42abc715a25e44c07ac0650a8aa73e7836c1afbaad74e7cdc78"
+    rules_kotlin_sha = "eeae65f973b70896e474c57aa7681e444d7a5446d9ec0a59bb88c59fc263ff62"
 
     maybe(
         repo_rule = http_archive,
         name = "io_bazel_rules_kotlin",
-        url = "https://github.com/bazelbuild/rules_kotlin/archive/v{}.tar.gz".format(rules_kotlin_version),
-        strip_prefix = "rules_kotlin-{v}".format(v = rules_kotlin_version),
+        url = "https://github.com/bazelbuild/rules_kotlin/releases/download/{}/rules_kotlin_release.tgz".format(rules_kotlin_version),
         sha256 = rules_kotlin_sha,
     )
 
