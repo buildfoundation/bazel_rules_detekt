@@ -33,7 +33,7 @@ def rules_detekt_dependencies():
     maybe(
         repo_rule = http_archive,
         name = "io_bazel_rules_kotlin",
-        url = "https://github.com/bazelbuild/rules_kotlin/releases/download/{}/rules_kotlin_release.tgz".format(rules_kotlin_version),
+        url = "https://github.com/bazelbuild/rules_kotlin/releases/download/v{}/rules_kotlin_release.tgz".format(rules_kotlin_version),
         sha256 = rules_kotlin_sha,
     )
 
