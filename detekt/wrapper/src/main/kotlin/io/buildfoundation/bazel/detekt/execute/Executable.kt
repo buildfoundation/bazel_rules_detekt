@@ -28,7 +28,7 @@ interface Executable {
                 errorPrinter.flush()
 
                 Result.Failure(arrayOf(outputBuffer, errorBuffer).joinToString(separator = "") {
-                    it.toString(Charset.defaultCharset())
+                    String(it.toByteArray(), Charset.defaultCharset())
                 })
             } finally {
                 outputPrinter.close()

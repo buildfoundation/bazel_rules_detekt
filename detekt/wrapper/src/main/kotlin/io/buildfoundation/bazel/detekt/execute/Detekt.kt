@@ -1,6 +1,6 @@
 package io.buildfoundation.bazel.detekt.execute
 
-import io.gitlab.arturbosch.detekt.cli.buildRunner
+import io.github.detekt.tooling.api.DetektCli
 import java.io.PrintStream
 
 interface Detekt {
@@ -10,7 +10,7 @@ interface Detekt {
     class Impl : Detekt {
 
         override fun execute(args: Array<String>, outputPrinter: PrintStream, errorPrinter: PrintStream) {
-            buildRunner(args, outputPrinter, errorPrinter).execute()
+            DetektCli.load().run(args = args, outputChannel = outputPrinter, errorChannel = errorPrinter)
         }
     }
 }
