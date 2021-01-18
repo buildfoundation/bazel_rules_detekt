@@ -27,15 +27,15 @@ def rules_detekt_dependencies():
 
     # Stardoc
 
-    rules_java_version = "0.4.0"
-    rules_java_sha = "36b8d6c2260068b9ff82faea2f7add164bf3436eac9ba3ec14809f335346d66a"
+    rules_stardoc_version = "0.4.0"
+    rules_stardoc_sha = "36b8d6c2260068b9ff82faea2f7add164bf3436eac9ba3ec14809f335346d66a"
 
     maybe(
         repo_rule = http_archive,
         name = "io_bazel_stardoc",
-        sha256 = rules_java_sha,
-        strip_prefix = "stardoc-{}".format(rules_java_version),
-        url = "https://github.com/bazelbuild/stardoc/archive/{}.zip".format(rules_java_version),
+        sha256 = rules_stardoc_sha,
+        strip_prefix = "stardoc-{}".format(rules_stardoc_version),
+        url = "https://github.com/bazelbuild/stardoc/archive/{}.zip".format(rules_stardoc_version),
     )
 
     # Java
