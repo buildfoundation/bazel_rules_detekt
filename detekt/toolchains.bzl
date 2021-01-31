@@ -44,12 +44,4 @@ def rules_detekt_toolchains(detekt_version = "1.15.0", toolchain = "@rules_detek
             "https://repo1.maven.org/maven2",
             "https://jcenter.bintray.com/",
         ],
-        excluded_artifacts = [
-            "org.jetbrains.kotlin:kotlin-reflect",
-            "org.jetbrains.kotlin:kotlin-stdlib",
-            "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
-            "org.jetbrains.kotlin:kotlin-script-runtime",
-            "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
-        ],
-        fetch_sources = True,
     )
