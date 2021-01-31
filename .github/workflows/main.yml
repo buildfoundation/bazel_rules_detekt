@@ -25,6 +25,9 @@ jobs:
       - name: "Lint Starlark files"
         run: buildifier -mode check -lint warn -r .
 
+      - name: "Lint Shell files"
+        run: for file in $(find . -type f -name "*.sh"); do shellcheck $file; done;
+
   build:
     runs-on: ubuntu-latest
     steps:
