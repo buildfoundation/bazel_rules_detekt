@@ -96,12 +96,12 @@ detekt = rule(
         "cfgs": attr.label_list(
             allow_files = [".yml"],
             default = [],
-            doc = "[Detekt configuration files](https://arturbosch.github.io/detekt/configurations.html). Otherwise [the default configuration](https://github.com/detekt/detekt/blob/master/detekt-core/src/main/resources/default-detekt-config.yml) is used.",
+            doc = "[Detekt configuration files](https://detekt.github.io/detekt/configurations.html). Otherwise [the default configuration](https://github.com/detekt/detekt/blob/master/detekt-core/src/main/resources/default-detekt-config.yml) is used.",
         ),
         "baseline": attr.label(
             default = None,
             allow_single_file = [".xml"],
-            doc = "[Detekt baseline file](https://arturbosch.github.io/detekt/baseline.html).",
+            doc = "[Detekt baseline file](https://detekt.github.io/detekt/baseline.html).",
         ),
         "html_report": attr.bool(
             default = False,
@@ -116,19 +116,19 @@ detekt = rule(
         ),
         "build_upon_default_config": attr.bool(
             default = False,
-            doc = "See [Detekt `--build-upon-default-config` option](https://arturbosch.github.io/detekt/cli.html).",
+            doc = "See [Detekt `--build-upon-default-config` option](https://detekt.github.io/detekt/cli.html).",
         ),
         "disable_default_rulesets": attr.bool(
             default = False,
-            doc = "See [Detekt `--disable-default-rulesets` option](https://arturbosch.github.io/detekt/cli.html).",
+            doc = "See [Detekt `--disable-default-rulesets` option](https://detekt.github.io/detekt/cli.html).",
         ),
         "fail_fast": attr.bool(
             default = False,
-            doc = "See [Detekt `--fail-fast` option](https://arturbosch.github.io/detekt/cli.html).",
+            doc = "See [Detekt `--fail-fast` option](https://detetk.github.io/detekt/cli.html).",
         ),
         "parallel": attr.bool(
             default = False,
-            doc = "See [Detekt `--parallel` option](https://arturbosch.github.io/detekt/cli.html).",
+            doc = "See [Detekt `--parallel` option](https://detekt.github.io/detekt/cli.html).",
         ),
         "plugins": attr.label_list(
             default = [],
