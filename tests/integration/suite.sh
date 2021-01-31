@@ -18,7 +18,7 @@ for STRATEGY in "local" "worker"; do
     echo '@file:Suppress("EmptyKtFile")' > "${GENERATED_CODE_DIR}/${STRATEGY}.kt"
 
     for TEST in tests/integration/test_*.sh; do
-        bash $TEST
+        bash "${TEST}"
     done
 
     rm -rf "${GENERATED_CODE_DIR}"
