@@ -1,6 +1,6 @@
 # `bazel_rules_detekt`
 
-The [Detekt](https://github.com/arturbosch/detekt) (a Kotlin static analysis tool) integration
+The [Detekt](https://github.com/detekt/detekt) (a Kotlin static analysis tool) integration
 for [the Bazel build system](https://bazel.build).
 
 ## Features
