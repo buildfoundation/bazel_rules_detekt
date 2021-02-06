@@ -30,15 +30,15 @@ java_binary(
 
 java_test(
     name = "tests",
-        srcs = glob([
-            "src/test/java/**/*.java",
-            "src/testFixtures/java/**/*.java",
-        ]),
-        deps = [
-            ":worker_protocol_java_proto",
-            ":wrapper",
-            "@rules_detekt_dependencies//:io_reactivex_rxjava3_rxjava",
-            "@rules_detekt_dependencies//:junit_junit",
-        ],
-        test_class = "io.buildfoundation.bazel.detekt.TestsSuite",
+    srcs = glob([
+        "src/test/java/**/*.java",
+        "src/testFixtures/java/**/*.java",
+    ]),
+    test_class = "io.buildfoundation.bazel.detekt.TestsSuite",
+    deps = [
+        ":worker_protocol_java_proto",
+        ":wrapper",
+        "@rules_detekt_dependencies//:io_reactivex_rxjava3_rxjava",
+        "@rules_detekt_dependencies//:junit_junit",
+    ],
 )
