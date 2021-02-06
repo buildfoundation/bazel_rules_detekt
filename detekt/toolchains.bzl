@@ -3,7 +3,6 @@ Macros for defining toolchains.
 See https://docs.bazel.build/versions/master/skylark/deploying.html#registering-toolchains
 """
 
-load("@io_bazel_rules_kotlin//kotlin:kotlin.bzl", "kotlin_repositories", "kt_register_toolchains")
 load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_jvm_external//:specs.bzl", "maven")
@@ -23,9 +22,6 @@ def rules_detekt_toolchains(detekt_version = "1.15.0", toolchain = "@rules_detek
 
     rules_java_dependencies()
     rules_java_toolchains()
-
-    kotlin_repositories()
-    kt_register_toolchains()
 
     rules_proto_dependencies()
     rules_proto_toolchains()

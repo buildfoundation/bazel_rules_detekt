@@ -25,18 +25,6 @@ def rules_detekt_dependencies():
         sha256 = rules_java_sha,
     )
 
-    # Kotlin
-
-    rules_kotlin_version = "1.5.0-alpha-3"
-    rules_kotlin_sha = "eeae65f973b70896e474c57aa7681e444d7a5446d9ec0a59bb88c59fc263ff62"
-
-    maybe(
-        repo_rule = http_archive,
-        name = "io_bazel_rules_kotlin",
-        url = "https://github.com/bazelbuild/rules_kotlin/releases/download/v{}/rules_kotlin_release.tgz".format(rules_kotlin_version),
-        sha256 = rules_kotlin_sha,
-    )
-
     # JVM External
 
     rules_jvm_external_version = "4.0"
