@@ -1,7 +1,7 @@
 package io.buildfoundation.bazel.detekt.execute;
 
-import bazel.worker.WorkerProtocol.WorkRequest;
-import bazel.worker.WorkerProtocol.WorkResponse;
+import io.buildfoundation.bazel.detekt.value.WorkRequest;
+import io.buildfoundation.bazel.detekt.value.WorkResponse;
 
 public interface WorkerExecutable {
 
@@ -17,16 +17,17 @@ public interface WorkerExecutable {
 
         @Override
         public WorkResponse execute(WorkRequest request) {
-            String[] arguments = new String[request.getArgumentsCount()];
-            request.getArgumentsList().toArray(arguments);
+            String[] arguments = new String[request.arguments.size()];
+            request.arguments.toArray(arguments);
 
             ExecutableResult result = executable.execute(arguments);
 
-            return WorkResponse.newBuilder()
-                .setRequestId(request.getRequestId())
-                .setOutput(result.output())
-                .setExitCode(result.statusCode())
-                .build();
+            WorkResponse response = new WorkResponse();
+            response.requestId = request.requestId;
+            response.output = result.output();
+            response.exitCode = result.statusCode();
+
+            return response;
         }
     }
 }

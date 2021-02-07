@@ -1,16 +1,20 @@
 package io.buildfoundation.bazel.detekt.stream;
 
-import bazel.worker.WorkerProtocol.WorkRequest;
-import bazel.worker.WorkerProtocol.WorkResponse;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+import io.buildfoundation.bazel.detekt.value.WorkRequest;
+import io.buildfoundation.bazel.detekt.value.WorkResponse;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.FlowableEmitter;
 import io.reactivex.rxjava3.core.FlowableOnSubscribe;
 import io.reactivex.rxjava3.functions.Consumer;
+import okio.BufferedSink;
+import okio.BufferedSource;
+import okio.Okio;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.IOException;
 
 public interface WorkerStreams {
 
@@ -27,21 +31,27 @@ public interface WorkerStreams {
 
         private static final class WorkRequestSource implements FlowableOnSubscribe<WorkRequest> {
 
-            private final InputStream requestInput;
+            private final BufferedSource requestSource;
+            private final JsonAdapter<WorkRequest> requestAdapter;
 
             WorkRequestSource(Streams streams) {
-                this.requestInput = streams.input();
+                this.requestSource = Okio.buffer(Okio.source(streams.input()));
+                this.requestAdapter = new Moshi.Builder().build().adapter(WorkRequest.class);
             }
 
             @Override
-            public void subscribe(@NonNull FlowableEmitter<WorkRequest> emitter) throws Throwable {
+            public void subscribe(@NonNull FlowableEmitter<WorkRequest> emitter) {
                 while (!emitter.isCancelled()) {
-                    WorkRequest request = WorkRequest.parseDelimitedFrom(requestInput);
+                    try {
+                        WorkRequest request = requestAdapter.fromJson(requestSource);
 
-                    if (request == null) {
+                        if (request == null) {
+                            emitter.onComplete();
+                        } else {
+                            emitter.onNext(request);
+                        }
+                    } catch (IOException e) {
                         emitter.onComplete();
-                    } else {
-                        emitter.onNext(request);
                     }
                 }
             }
@@ -49,15 +59,18 @@ public interface WorkerStreams {
 
         private static final class WorkResponseSink implements Consumer<WorkResponse> {
 
-            private final OutputStream responseOutput;
+            private final BufferedSink responseSink;
+            private final JsonAdapter<WorkResponse> responseAdapter;
 
             WorkResponseSink(Streams streams) {
-                this.responseOutput = streams.output();
+                this.responseSink = Okio.buffer(Okio.sink(streams.output()));
+                this.responseAdapter = new Moshi.Builder().build().adapter(WorkResponse.class);
             }
 
             @Override
             public void accept(WorkResponse response) throws Throwable {
-                response.writeDelimitedTo(responseOutput);
+                responseAdapter.toJson(responseSink, response);
+                responseSink.flush();
             }
         }
 
