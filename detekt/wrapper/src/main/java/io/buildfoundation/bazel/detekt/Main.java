@@ -9,7 +9,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 import java.util.Arrays;
 
-public class Main {
+public final class Main {
 
     public static void main(String[] args) {
         createApplication(args).run(args);

@@ -25,7 +25,7 @@ public interface WorkerStreams {
             this.streams = streams;
         }
 
-        private static class WorkRequestSource implements FlowableOnSubscribe<WorkRequest> {
+        private static final class WorkRequestSource implements FlowableOnSubscribe<WorkRequest> {
 
             private final InputStream requestInput;
 
@@ -47,7 +47,7 @@ public interface WorkerStreams {
             }
         }
 
-        private static class WorkResponseSink implements Consumer<WorkResponse> {
+        private static final class WorkResponseSink implements Consumer<WorkResponse> {
 
             private final OutputStream responseOutput;
 

@@ -8,17 +8,18 @@ public class DetektExecutableTests {
 
     @Test
     public void successResultOnDetektExecutionSuccess() {
-        Executable executable = new Executable.DetektImpl(new TestDetekt(TestDetekt.ExecuteResult.Success));
-        ExecutableResult executableResult = executable.execute(new String[0]);
-
-        assertEquals(executableResult.getClass(), ExecutableResult.Success.class);
+        check(TestDetekt.ExecuteResult.Success, ExecutableResult.Success.class);
     }
 
     @Test
     public void failureResultOnDetektExecutionFailure() {
-        Executable executable = new Executable.DetektImpl(new TestDetekt(TestDetekt.ExecuteResult.Failure));
+        check(TestDetekt.ExecuteResult.Failure, ExecutableResult.Failure.class);
+    }
+
+    private <T extends ExecutableResult> void check(TestDetekt.ExecuteResult detektResult, Class<T> result) {
+        Executable executable = new Executable.DetektImpl(new TestDetekt(detektResult));
         ExecutableResult executableResult = executable.execute(new String[0]);
 
-        assertEquals(executableResult.getClass(), ExecutableResult.Failure.class);
+        assertEquals(result, executableResult.getClass());
     }
 }

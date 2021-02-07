@@ -19,26 +19,26 @@ public class WorkerStreamsTests {
         TestStreams streams = new TestStreams();
         WorkerStreams workerStreams = new WorkerStreams.Impl(streams);
 
-        WorkRequest request24 = WorkRequest.getDefaultInstance()
+        WorkRequest request1 = WorkRequest.getDefaultInstance()
             .toBuilder()
-            .setRequestId(24)
+            .setRequestId(1)
             .build();
 
-        WorkRequest request42 = WorkRequest.getDefaultInstance()
+        WorkRequest request2 = WorkRequest.getDefaultInstance()
             .toBuilder()
-            .setRequestId(42)
+            .setRequestId(2)
             .build();
 
         try {
-            request24.writeDelimitedTo(streams.inputSink);
-            request42.writeDelimitedTo(streams.inputSink);
+            request1.writeDelimitedTo(streams.inputSink);
+            request2.writeDelimitedTo(streams.inputSink);
         } catch (IOException ignored) {
             fail();
         }
 
         workerStreams.request()
             .test()
-            .assertResult(request24, request42);
+            .assertResult(request1, request2);
     }
 
     @Test
@@ -46,21 +46,21 @@ public class WorkerStreamsTests {
         TestStreams streams = new TestStreams();
         WorkerStreams workerStreams = new WorkerStreams.Impl(streams);
 
-        WorkResponse response24 = WorkResponse.getDefaultInstance()
+        WorkResponse response1 = WorkResponse.getDefaultInstance()
             .toBuilder()
-            .setRequestId(24)
+            .setRequestId(1)
             .build();
 
-        WorkResponse response42 = WorkResponse.getDefaultInstance()
+        WorkResponse response2 = WorkResponse.getDefaultInstance()
             .toBuilder()
-            .setRequestId(42)
+            .setRequestId(2)
             .build();
 
         Consumer<WorkResponse> workerStreamsResponse = workerStreams.response();
 
         try {
-            workerStreamsResponse.accept(response24);
-            workerStreamsResponse.accept(response42);
+            workerStreamsResponse.accept(response1);
+            workerStreamsResponse.accept(response2);
         } catch (Throwable ignored) {
             fail();
         }
@@ -68,11 +68,11 @@ public class WorkerStreamsTests {
         InputStream streamsOutputSource = new ByteArrayInputStream(streams.outputSink.toByteArray());
 
         try {
-            WorkResponse outputResponse24 = WorkResponse.parseDelimitedFrom(streamsOutputSource);
-            WorkResponse outputResponse42 = WorkResponse.parseDelimitedFrom(streamsOutputSource);
+            WorkResponse outputResponse1 = WorkResponse.parseDelimitedFrom(streamsOutputSource);
+            WorkResponse outputResponse2 = WorkResponse.parseDelimitedFrom(streamsOutputSource);
 
-            assertEquals(outputResponse24, response24);
-            assertEquals(outputResponse42, response42);
+            assertEquals(response1, outputResponse1);
+            assertEquals(response2, outputResponse2);
         } catch (IOException ignored) {
             fail();
         }

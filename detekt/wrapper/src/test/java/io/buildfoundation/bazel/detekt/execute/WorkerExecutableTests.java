@@ -26,7 +26,7 @@ public class WorkerExecutableTests {
             .setRequestId(42)
             .build();
 
-        WorkResponse workResponse = workerExecutable.execute(workRequest);
+        WorkResponse workResponseActual = workerExecutable.execute(workRequest);
 
         WorkResponse workResponseExpected = WorkResponse.getDefaultInstance()
             .toBuilder()
@@ -35,6 +35,6 @@ public class WorkerExecutableTests {
             .setExitCode(executableResult.statusCode())
             .build();
 
-        assertEquals(workResponse, workResponseExpected);
+        assertEquals(workResponseExpected, workResponseActual);
     }
 }
