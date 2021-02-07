@@ -9,6 +9,7 @@ import io.reactivex.rxjava3.core.FlowableEmitter;
 import io.reactivex.rxjava3.core.FlowableOnSubscribe;
 import io.reactivex.rxjava3.functions.Consumer;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -34,15 +35,23 @@ public interface WorkerStreams {
             }
 
             @Override
-            public void subscribe(@NonNull FlowableEmitter<WorkRequest> emitter) throws Throwable {
+            public void subscribe(@NonNull FlowableEmitter<WorkRequest> emitter) {
                 while (!emitter.isCancelled()) {
-                    WorkRequest request = WorkRequest.parseDelimitedFrom(requestInput);
+                    WorkRequest request = readRequest();
 
                     if (request == null) {
                         emitter.onComplete();
                     } else {
                         emitter.onNext(request);
                     }
+                }
+            }
+
+            private WorkRequest readRequest() {
+                try {
+                    return WorkRequest.parseDelimitedFrom(requestInput);
+                } catch (IOException e) {
+                    return null;
                 }
             }
         }
@@ -56,8 +65,11 @@ public interface WorkerStreams {
             }
 
             @Override
-            public void accept(WorkResponse response) throws Throwable {
-                response.writeDelimitedTo(responseOutput);
+            public void accept(WorkResponse response) {
+                try {
+                    response.writeDelimitedTo(responseOutput);
+                } catch (IOException ignored) {
+                }
             }
         }
 
