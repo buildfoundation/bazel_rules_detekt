@@ -8,7 +8,7 @@ on:
 
 env:
   VERSION_BAZELISK: "1.7.4"
-  VERSION_BUILDIFIER: "3.5.0"
+  VERSION_BUILDIFIER: "4.0.0"
 
 jobs:
   buildifier:
