@@ -51,7 +51,11 @@ public interface Application {
         public void run(String[] args) {
             streams.request()
                 .subscribeOn(scheduler)
+                .parallel()
+                .runOn(scheduler)
                 .map(executable::execute)
+                .sequential()
+                .observeOn(scheduler)
                 .blockingSubscribe(streams.response());
         }
     }
