@@ -72,7 +72,7 @@ def _impl(ctx):
         executable = ctx.executable._detekt_wrapper,
         execution_requirements = {
             "supports-workers": "1",
-            "supports-multiplex-workers": "0",
+            "supports-multiplex-workers": "1",
         },
         arguments = [java_arguments, detekt_arguments],
     )
