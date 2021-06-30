@@ -1,7 +1,7 @@
 package io.buildfoundation.bazel.detekt.stream;
 
-import bazel.worker.WorkerProtocol.WorkRequest;
-import bazel.worker.WorkerProtocol.WorkResponse;
+import com.google.devtools.build.lib.worker.WorkerProtocol.WorkRequest;
+import com.google.devtools.build.lib.worker.WorkerProtocol.WorkResponse;
 import io.reactivex.rxjava3.functions.Consumer;
 import org.junit.Test;
 

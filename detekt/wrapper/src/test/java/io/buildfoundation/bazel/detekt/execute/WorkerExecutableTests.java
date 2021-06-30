@@ -1,7 +1,7 @@
 package io.buildfoundation.bazel.detekt.execute;
 
-import bazel.worker.WorkerProtocol.WorkRequest;
-import bazel.worker.WorkerProtocol.WorkResponse;
+import com.google.devtools.build.lib.worker.WorkerProtocol.WorkRequest;
+import com.google.devtools.build.lib.worker.WorkerProtocol.WorkResponse;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
