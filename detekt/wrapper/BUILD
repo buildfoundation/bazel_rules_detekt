@@ -1,14 +1,8 @@
-load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_proto_library", "java_test")
-load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
 
-proto_library(
-    name = "worker_protocol_proto",
-    srcs = ["src/main/proto/worker_protocol.proto"],
-)
-
-java_proto_library(
+alias(
     name = "worker_protocol_java_proto",
-    deps = [":worker_protocol_proto"],
+    actual = "@bazel_tools//src/main/protobuf:worker_protocol_java_proto",
 )
 
 java_library(
