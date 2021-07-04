@@ -38,5 +38,6 @@ def rules_detekt_toolchains(detekt_version = "1.17.1", toolchain = "@rules_detek
         ],
         repositories = [
             "https://repo1.maven.org/maven2",
+            "https://jcenter.bintray.com/",
         ],
     )
