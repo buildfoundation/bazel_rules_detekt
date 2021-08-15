@@ -20,7 +20,10 @@ toolchain(
 
 detekt_release_pkg_tar(
     name = "pkg",
-    srcs = ["defs.bzl", "toolchain.bzl"],
+    srcs = [
+        "defs.bzl",
+        "toolchain.bzl",
+    ],
     package_dir = "detekt",
     srcs_map = {
         "BUILD.release.bazel": "BUILD",

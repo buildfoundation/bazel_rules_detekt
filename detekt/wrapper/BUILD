@@ -41,8 +41,11 @@ java_test(
 
 detekt_release_pkg_tar(
     name = "pkg",
+    srcs = [
+        ":worker_protocol_java_proto",
+        ":wrapper",
+    ],
     package_dir = "wrapper",
-    srcs = [":worker_protocol_java_proto", ":wrapper"],
     srcs_map = {
         "BUILD.release.bazel": "BUILD",
     },
