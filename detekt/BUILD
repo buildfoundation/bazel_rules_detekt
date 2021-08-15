@@ -1,4 +1,7 @@
 load("//detekt:toolchain.bzl", "detekt_toolchain")
+load("@rules_detekt//utils:detekt_release.bzl", "detekt_release_pkg_tar")
+
+exports_files(["defs.bzl"])
 
 toolchain_type(
     name = "toolchain_type",
@@ -15,4 +18,15 @@ toolchain(
     toolchain_type = "//detekt:toolchain_type",
 )
 
-exports_files(["defs.bzl"])
+detekt_release_pkg_tar(
+    name = "pkg",
+    srcs = ["defs.bzl", "toolchain.bzl"],
+    package_dir = "detekt",
+    srcs_map = {
+        "BUILD.release.bazel": "BUILD",
+        "dependencies.release.bzl": "dependencies.bzl",
+        "toolchains.release.bzl": "toolchains.bzl",
+    },
+    visibility = ["//visibility:public"],
+    deps = ["//detekt/wrapper:pkg"],
+)

@@ -1,4 +1,6 @@
-load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
+load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_proto_library", "java_test")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_detekt//utils:detekt_release.bzl", "detekt_release_pkg_tar")
 
 alias(
     name = "worker_protocol_java_proto",
@@ -35,4 +37,14 @@ java_test(
         "@rules_detekt_dependencies//:io_reactivex_rxjava3_rxjava",
         "@rules_detekt_dependencies//:junit_junit",
     ],
+)
+
+detekt_release_pkg_tar(
+    name = "pkg",
+    package_dir = "wrapper",
+    srcs = [":worker_protocol_java_proto", ":wrapper"],
+    srcs_map = {
+        "BUILD.release.bazel": "BUILD",
+    },
+    visibility = ["//visibility:public"],
 )

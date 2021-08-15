@@ -1,0 +1,18 @@
+load("@rules_java//java:defs.bzl", "java_binary", "java_import")
+
+java_import(
+    name = "deps",
+    jars = glob(["*.jar"]),
+    visibility = ["//visibility:private"],
+)
+
+java_binary(
+    name = "bin",
+    main_class = "io.buildfoundation.bazel.detekt.Main",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        ":deps",
+        "@rules_detekt_dependencies//:io_gitlab_arturbosch_detekt_detekt_cli",
+        "@rules_detekt_dependencies//:io_reactivex_rxjava3_rxjava",
+    ],
+)
