@@ -14,6 +14,17 @@ def detekt_release_pkg_tar(
         deps = [],
         visibility = ["//visibility:public"]):
     """Macro for creating release archives
+
+    Args:
+        name: name of target to create
+        srcs: srcs to include in the archive
+        srcs_map: dict of files to include where keys are the original file, and values are final
+            name within the archive
+        strip_prefix: prefix to strip from entries in the archive
+        package_dir: name of the directory to create within the archive
+        extension: file extension to apply to the final tar archive
+        deps: dependencies to pass to pkg_tar
+        visibility: visibility to apply to the release package target
     """
 
     if srcs == None:

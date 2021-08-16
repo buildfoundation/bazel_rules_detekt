@@ -1,5 +1,4 @@
-load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_proto_library", "java_test")
-load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
 load("@rules_detekt//utils:detekt_release.bzl", "detekt_release_pkg_tar")
 
 alias(
