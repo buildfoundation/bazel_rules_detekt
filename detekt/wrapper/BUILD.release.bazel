@@ -1,8 +1,15 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_import")
 
 java_import(
-    name = "deps",
-    jars = glob(["*.jar"]),
+    name = "wrapper",
+    jars = ["libwrapper.jar"],
+    visibility = ["//visibility:private"],
+)
+
+java_import(
+    name = "worker_protocol_java_proto",
+    jars = ["libworker_protocol_proto-speed.jar"],
+    srcjar = "worker_protocol_proto-speed-src.jar",
     visibility = ["//visibility:private"],
 )
 
@@ -11,7 +18,8 @@ java_binary(
     main_class = "io.buildfoundation.bazel.detekt.Main",
     visibility = ["//visibility:public"],
     runtime_deps = [
-        ":deps",
+        ":wrapper",
+        ":worker_protocol_java_proto",
         "@rules_detekt_dependencies//:io_gitlab_arturbosch_detekt_detekt_cli",
         "@rules_detekt_dependencies//:io_reactivex_rxjava3_rxjava",
     ],
