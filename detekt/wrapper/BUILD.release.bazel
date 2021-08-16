@@ -18,8 +18,8 @@ java_binary(
     main_class = "io.buildfoundation.bazel.detekt.Main",
     visibility = ["//visibility:public"],
     runtime_deps = [
-        ":wrapper",
         ":worker_protocol_java_proto",
+        ":wrapper",
         "@rules_detekt_dependencies//:io_gitlab_arturbosch_detekt_detekt_cli",
         "@rules_detekt_dependencies//:io_reactivex_rxjava3_rxjava",
     ],
