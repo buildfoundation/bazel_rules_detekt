@@ -23,6 +23,7 @@ detekt_release_pkg_tar(
     srcs = [
         "defs.bzl",
         "toolchain.bzl",
+        "versions.bzl",
     ],
     package_dir = "detekt",
     srcs_map = {
