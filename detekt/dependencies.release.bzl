@@ -3,8 +3,9 @@ Macros for defining prebuilt release dependencies.
 See https://docs.bazel.build/versions/master/skylark/deploying.html#dependencies
 """
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_jar")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load(":versions.bzl", "versions")
 
 def rules_detekt_dependencies(detekt_cli_all_release = versions.DETEKT_CLI_ALL_RELEASE):
     """Fetches `rules_detekt` dependencies.
