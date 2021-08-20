@@ -6,11 +6,14 @@ See https://docs.bazel.build/versions/master/skylark/deploying.html#dependencies
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
-def rules_detekt_dependencies():
+def rules_detekt_dependencies(detekt_cli_all_release = versions.DETEKT_CLI_ALL_RELEASE):
     """Fetches `rules_detekt` dependencies.
 
     Declares dependencies of the `rules_detekt` workspace.
     Users should call this macro in their `WORKSPACE` file.
+
+    Args:
+        detekt_cli_all_release: "detekt_cli_all" URL and download link.
     """
 
     # Java
@@ -23,6 +26,15 @@ def rules_detekt_dependencies():
         name = "rules_java",
         url = "https://github.com/bazelbuild/rules_java/releases/download/{v}/rules_java-{v}.tar.gz".format(v = rules_java_version),
         sha256 = rules_java_sha,
+    )
+
+    # Detekt CLI
+
+    maybe(
+        repo_rule = http_jar,
+        name = "rules_detekt_detekt_cli",
+        urls = detekt_cli_all_release["urls"],
+        sha256 = detekt_cli_all_release["sha256"],
     )
 
     # JVM External

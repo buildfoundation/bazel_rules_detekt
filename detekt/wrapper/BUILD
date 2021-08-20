@@ -11,8 +11,8 @@ java_library(
     srcs = glob(["src/main/java/**/*.java"]),
     deps = [
         ":worker_protocol_java_proto",
-        "@rules_detekt_dependencies//:io_gitlab_arturbosch_detekt_detekt_cli",
         "@rules_detekt_dependencies//:io_reactivex_rxjava3_rxjava",
+        "@rules_detekt_detekt_cli//jar",
     ],
 )
 
