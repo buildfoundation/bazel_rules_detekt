@@ -67,6 +67,7 @@ def _impl(ctx):
         # Collect the transitive classpath compile jars to pass to Detekt for classpath information
         # compile_jars should contain mostly ijar/header jars that are faster to load onto the classpath
         classpath = depset([], transitive = [dep[JavaInfo].compile_jars for dep in ctx.attr.deps])
+        action_inputs.extend(classpath.to_list())
         detekt_arguments.add_joined("--classpath", classpath, join_with = ",")
 
     detekt_arguments.add("--language-version", detekt_toolchain.language_version)

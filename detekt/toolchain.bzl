@@ -24,7 +24,7 @@ detekt_toolchain = rule(
             doc = """Flag for toggling experimental type resoution which is expected to be stable in
             the Detekt 2.x [see](https://detekt.github.io/detekt/type-resolution.html)
             """,
-            default = False,
+            default = True,
         ),
         "language_version": attr.string(
             doc = """Target version of the generated JVM bytecode that was generated during compilation and
