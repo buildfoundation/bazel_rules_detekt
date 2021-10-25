@@ -63,11 +63,7 @@ def _impl(ctx):
         detekt_arguments.add("--parallel")
 
     # Collect the transitive classpath compile jars to pass to Detekt for classpath information
-    transitive = []
-    for dep in ctx.attr.deps:
-        if JavaInfo in dep:
-            transitive += dep[JavaInfo].compile_jars
-    classpath = depset(transitive = transitive)
+    classpath = depset([], transitive = [dep[JavaInfo].compile_jars for dep in ctx.attr.deps])
     for jar in classpath.to_list():
         action_inputs.append(jar)
         detekt_arguments.add("--classpath", jar.short_path)
