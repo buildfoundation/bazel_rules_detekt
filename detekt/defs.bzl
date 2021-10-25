@@ -62,6 +62,15 @@ def _impl(ctx):
     if ctx.attr.parallel:
         detekt_arguments.add("--parallel")
 
+    # Collect the transitive classpath compile jars to pass to Detekt for classpath information
+    classpath = depset()
+    for dep in ctx.attr.deps:
+        if JavaInfo in dep:
+            classpath = depset(transitive = [classpath, dep[JavaInfo].compile_jars])
+    for jar in classpath.to_list():
+        action_inputs.append(jar)
+        detekt_arguments.add("--classpath", jar.short_path)
+
     action_inputs.extend(ctx.files.plugins)
     detekt_arguments.add_joined("--plugins", ctx.files.plugins, join_with = ",")
 
@@ -92,6 +101,11 @@ detekt = rule(
             allow_files = [".kt", ".kts"],
             allow_empty = False,
             doc = "Kotlin source code files.",
+        ),
+        "deps": attr.label_list(
+            default = [],
+            doc = "Dependencies to provide to Detekt for classpath type resolution.",
+            providers = [JavaInfo],
         ),
         "cfgs": attr.label_list(
             allow_files = [".yml"],
