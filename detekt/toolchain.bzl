@@ -21,7 +21,7 @@ detekt_toolchain = rule(
             allow_empty = False,
         ),
         "experimental_type_resolution": attr.bool(
-            doc = """Flag for toggling experimental type resoution which is expected to be stable in
+            doc = """Flag for toggling experimental type resolution which is expected to be stable in
             the Detekt 2.x [see](https://detekt.github.io/detekt/type-resolution.html)
             """,
             default = True,
