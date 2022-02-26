@@ -15,20 +15,21 @@ def rules_detekt_dependencies():
 
     # Java
 
-    rules_java_version = "4.0.0"
-    rules_java_sha = "34b41ec683e67253043ab1a3d1e8b7c61e4e8edefbcad485381328c934d072fe"
+    rules_java_version = "5.0.0"
+    rules_java_sha = "ddc9e11f4836265fea905d2845ac1d04ebad12a255f791ef7fd648d1d2215a5b"
 
     maybe(
         repo_rule = http_archive,
         name = "rules_java",
-        url = "https://github.com/bazelbuild/rules_java/releases/download/{v}/rules_java-{v}.tar.gz".format(v = rules_java_version),
+        url = "https://github.com/bazelbuild/rules_java/archive/refs/tags/{v}.tar.gz".format(v = rules_java_version),
+        strip_prefix = "rules_java-{v}".format(v = rules_java_version),
         sha256 = rules_java_sha,
     )
 
     # JVM External
 
-    rules_jvm_external_version = "4.1"
-    rules_jvm_external_sha = "995ea6b5f41e14e1a17088b727dcff342b2c6534104e73d6f06f1ae0422c2308"
+    rules_jvm_external_version = "4.2"
+    rules_jvm_external_sha = "2cd77de091e5376afaf9cc391c15f093ebd0105192373b334f0a855d89092ad5"
 
     maybe(
         repo_rule = http_archive,
