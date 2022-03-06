@@ -66,7 +66,7 @@ def _impl(ctx):
     if detekt_toolchain.experimental_type_resolution == True:
         # Collect the transitive classpath compile jars to pass to Detekt for classpath information
         # compile_jars should contain mostly ijar/header jars that are faster to load onto the classpath
-        classpath = depset([], transitive = [dep[JavaInfo].compile_jars for dep in ctx.attr.deps])
+        classpath = depset([], transitive = [dep[JavaInfo].transitive_compile_time_jars for dep in ctx.attr.deps])
         action_inputs.extend(classpath.to_list())
         detekt_arguments.add_joined("--classpath", classpath, join_with = ",")
 
