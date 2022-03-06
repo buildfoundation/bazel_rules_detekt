@@ -63,7 +63,7 @@ def _impl(ctx):
     if ctx.attr.parallel:
         detekt_arguments.add("--parallel")
 
-    if detekt_toolchain.experimental_type_resolution == True:
+    if detekt_toolchain.experimental_type_resolution == True and "detekt_type_resolution_incompatible" not in ctx.attr.tags:
         # Collect the transitive classpath compile jars to pass to Detekt for classpath information
         # compile_jars should contain mostly ijar/header jars that are faster to load onto the classpath
         classpath = depset([], transitive = [dep[JavaInfo].transitive_compile_time_jars for dep in ctx.attr.deps])
