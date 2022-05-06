@@ -51,4 +51,3 @@ def rules_detekt_dependencies():
         strip_prefix = "rules_jvm_external-{v}".format(v = rules_jvm_external_version),
         sha256 = rules_jvm_external_sha,
     )
-
