@@ -52,3 +52,22 @@ http_archive(
 load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
 
 stardoc_repositories()
+
+# Linting
+
+## Buildifier
+
+http_archive(
+    name = "buildifier_prebuilt",
+    sha256 = "b3fd85ae7e45c2f36bce52cfdbdb6c20261761ea5928d1686edc8873b0d0dad0",
+    strip_prefix = "buildifier-prebuilt-5.1.0",
+    url = "http://github.com/keith/buildifier-prebuilt/archive/5.1.0.tar.gz",
+)
+
+load("@buildifier_prebuilt//:deps.bzl", "buildifier_prebuilt_deps")
+
+buildifier_prebuilt_deps()
+
+load("@buildifier_prebuilt//:defs.bzl", "buildifier_prebuilt_register_toolchains")
+
+buildifier_prebuilt_register_toolchains()
