@@ -13,6 +13,19 @@ def rules_detekt_dependencies():
     Users should call this macro in their `WORKSPACE` file.
     """
 
+    # Protocol Buffers
+
+    rules_proto_version = "4.0.0-3.20.0"
+    rules_proto_sha = "e017528fd1c91c5a33f15493e3a398181a9e821a804eb7ff5acdd1d2d6c2b18d"
+
+    maybe(
+        repo_rule = http_archive,
+        name = "rules_proto",
+        url = "https://github.com/bazelbuild/rules_proto/archive/{v}.tar.gz".format(v = rules_proto_version),
+        strip_prefix = "rules_proto-{v}".format(v = rules_proto_version),
+        sha256 = rules_proto_sha,
+    )
+
     # Java
 
     rules_java_version = "5.0.0"
@@ -37,17 +50,4 @@ def rules_detekt_dependencies():
         url = "https://github.com/bazelbuild/rules_jvm_external/archive/{v}.tar.gz".format(v = rules_jvm_external_version),
         strip_prefix = "rules_jvm_external-{v}".format(v = rules_jvm_external_version),
         sha256 = rules_jvm_external_sha,
-    )
-
-    # Protocol Buffers
-
-    rules_proto_version = "97d8af4dc474595af3900dd85cb3a29ad28cc313"
-    rules_proto_sha = "602e7161d9195e50246177e7c55b2f39950a9cf7366f74ed5f22fd45750cd208"
-
-    maybe(
-        repo_rule = http_archive,
-        name = "rules_proto",
-        url = "https://github.com/bazelbuild/rules_proto/archive/{v}.tar.gz".format(v = rules_proto_version),
-        strip_prefix = "rules_proto-{v}".format(v = rules_proto_version),
-        sha256 = rules_proto_sha,
     )
