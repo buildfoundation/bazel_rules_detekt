@@ -25,7 +25,7 @@ def _action_full_contents_test_impl(ctx):
     asserts.equals(env, 1, len(actions))
 
     expected_arguments = _expand_paths(env.ctx, [
-        "bazel-out/host/bin/detekt/wrapper/bin",
+        "bazel-out/exec/bin/detekt/wrapper/bin",
         "--jvm_flag=-Xms16m",
         "--jvm_flag=-Xmx128m",
         "--input",
