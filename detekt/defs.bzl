@@ -85,7 +85,7 @@ detekt = rule(
         "_detekt_wrapper": attr.label(
             default = "//detekt/wrapper:bin",
             executable = True,
-            cfg = "host",
+            cfg = "exec",
         ),
         "srcs": attr.label_list(
             mandatory = True,
