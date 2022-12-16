@@ -73,7 +73,7 @@ def _impl(ctx):
         execution_requirements = {
             "requires-worker-protocol": "json",
             "supports-workers": "1",
-            "supports-multiplex-workers": "0",
+            "supports-multiplex-workers": "1",
         },
         arguments = [java_arguments, detekt_arguments],
     )

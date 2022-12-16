@@ -15,6 +15,7 @@ import okio.BufferedSource;
 import okio.Okio;
 
 import java.io.IOException;
+import java.io.IOException;
 
 public interface WorkerStreams {
 
@@ -68,9 +69,12 @@ public interface WorkerStreams {
             }
 
             @Override
-            public void accept(WorkResponse response) throws Throwable {
-                responseAdapter.toJson(responseSink, response);
+            public void accept(WorkResponse response) {
+                try {
+                    responseAdapter.toJson(responseSink, response);
                 responseSink.flush();
+                } catch (IOException ignored) {
+                }
             }
         }
 

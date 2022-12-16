@@ -13,22 +13,36 @@ def rules_detekt_dependencies():
     Users should call this macro in their `WORKSPACE` file.
     """
 
+    # Protocol Buffers
+
+    rules_proto_version = "4.0.0-3.20.0"
+    rules_proto_sha = "e017528fd1c91c5a33f15493e3a398181a9e821a804eb7ff5acdd1d2d6c2b18d"
+
+    maybe(
+        repo_rule = http_archive,
+        name = "rules_proto",
+        url = "https://github.com/bazelbuild/rules_proto/archive/{v}.tar.gz".format(v = rules_proto_version),
+        strip_prefix = "rules_proto-{v}".format(v = rules_proto_version),
+        sha256 = rules_proto_sha,
+    )
+
     # Java
 
-    rules_java_version = "4.0.0"
-    rules_java_sha = "34b41ec683e67253043ab1a3d1e8b7c61e4e8edefbcad485381328c934d072fe"
+    rules_java_version = "5.0.0"
+    rules_java_sha = "ddc9e11f4836265fea905d2845ac1d04ebad12a255f791ef7fd648d1d2215a5b"
 
     maybe(
         repo_rule = http_archive,
         name = "rules_java",
-        url = "https://github.com/bazelbuild/rules_java/releases/download/{v}/rules_java-{v}.tar.gz".format(v = rules_java_version),
+        url = "https://github.com/bazelbuild/rules_java/archive/refs/tags/{v}.tar.gz".format(v = rules_java_version),
+        strip_prefix = "rules_java-{v}".format(v = rules_java_version),
         sha256 = rules_java_sha,
     )
 
     # JVM External
 
-    rules_jvm_external_version = "4.0"
-    rules_jvm_external_sha = "31d226a6b3f5362b59d261abf9601116094ea4ae2aa9f28789b6c105e4cada68"
+    rules_jvm_external_version = "4.4.2"
+    rules_jvm_external_sha = "9004ff5980b3eac3b00041078a7b0abf5d75d30497fbde2c432a838281e22860"
 
     maybe(
         repo_rule = http_archive,

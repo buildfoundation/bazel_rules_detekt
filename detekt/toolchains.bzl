@@ -8,7 +8,7 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_jvm_external//:specs.bzl", "maven")
 
 # buildifier: disable=unnamed-macro
-def rules_detekt_toolchains(detekt_version = "1.15.0", toolchain = "@rules_detekt//detekt:default_toolchain"):
+def rules_detekt_toolchains(detekt_version = "1.21.0", toolchain = "@rules_detekt//detekt:default_toolchain"):
     """Invokes `rules_detekt` toolchains.
 
     Declares toolchains that are dependencies of the `rules_detekt` workspace.
@@ -31,11 +31,10 @@ def rules_detekt_toolchains(detekt_version = "1.15.0", toolchain = "@rules_detek
             maven.artifact("com.squareup.okio", "okio", "2.10.0"),
             maven.artifact("io.gitlab.arturbosch.detekt", "detekt-cli", detekt_version),
             maven.artifact("io.gitlab.arturbosch.detekt", "detekt-formatting", detekt_version),
-            maven.artifact("io.reactivex.rxjava3", "rxjava", "3.0.9"),
-            maven.artifact("junit", "junit", "4.13.1", testonly = True),
+            maven.artifact("io.reactivex.rxjava3", "rxjava", "3.0.12"),
+            maven.artifact("junit", "junit", "4.13.2", testonly = True),
         ],
         repositories = [
             "https://repo1.maven.org/maven2",
-            "https://jcenter.bintray.com/",
         ],
     )
