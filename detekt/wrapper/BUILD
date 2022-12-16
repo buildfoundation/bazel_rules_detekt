@@ -5,7 +5,7 @@ java_library(
     srcs = glob(["src/main/java/**/*.java"]),
     deps = [
         "@rules_detekt_dependencies//:com_squareup_moshi_moshi",
-        "@rules_detekt_dependencies//:com_squareup_okio_okio",
+        "@rules_detekt_dependencies//:com_squareup_okio_okio_jvm",
         "@rules_detekt_dependencies//:io_gitlab_arturbosch_detekt_detekt_cli",
         "@rules_detekt_dependencies//:io_reactivex_rxjava3_rxjava",
     ],
@@ -27,7 +27,7 @@ java_test(
     test_class = "io.buildfoundation.bazel.detekt.TestsSuite",
     deps = [
         ":wrapper",
-        "@rules_detekt_dependencies//:com_squareup_okio_okio",
+        "@rules_detekt_dependencies//:com_squareup_okio_okio_jvm",
         "@rules_detekt_dependencies//:io_reactivex_rxjava3_rxjava",
         "@rules_detekt_dependencies//:junit_junit",
     ],
