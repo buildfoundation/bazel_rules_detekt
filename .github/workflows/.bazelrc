@@ -2,7 +2,6 @@ common --curses=no
 
 build --verbose_failures
 build --worker_verbose
-build --experimental_worker_allow_json_protocol
 
 build --repository_cache=.cache
 fetch --repository_cache=.cache
