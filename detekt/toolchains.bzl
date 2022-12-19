@@ -8,7 +8,7 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_jvm_external//:specs.bzl", "maven")
 
 # buildifier: disable=unnamed-macro
-def rules_detekt_toolchains(detekt_version = "1.21.0", toolchain = "@rules_detekt//detekt:default_toolchain"):
+def rules_detekt_toolchains(detekt_version = "1.22.0", toolchain = "@rules_detekt//detekt:default_toolchain"):
     """Invokes `rules_detekt` toolchains.
 
     Declares toolchains that are dependencies of the `rules_detekt` workspace.
