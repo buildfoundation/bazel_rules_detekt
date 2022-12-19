@@ -39,6 +39,16 @@ load("@rules_detekt//detekt:toolchains.bzl", "rules_detekt_toolchains")
 rules_detekt_toolchains()
 ```
 
+### bazelrc Configuration
+
+Users on Bazel releases prior to 5.1.0 need to enable the JSON Persistent Worker protocol in their `.bazelrc` like so:
+
+```bash
+build --experimental_worker_allow_json_protocol
+```
+
+This option [became stable](https://github.com/bazelbuild/bazel/commit/9e16a6484e94c358aa77a6ed7b1ded3243b65e8f) and [enabled by default for newer Bazel releases](https://github.com/bazelbuild/bazel/commit/09df7c0a14b9bf13d4aa18f5a02b4651e626d5f4).
+
 ### `BUILD` Configuration
 
 Once declared in the `WORSKPACE` file, the rule can be loaded in the `BUILD` file.

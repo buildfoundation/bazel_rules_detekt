@@ -71,6 +71,7 @@ def _impl(ctx):
         outputs = action_outputs,
         executable = ctx.executable._detekt_wrapper,
         execution_requirements = {
+            "requires-worker-protocol": "json",
             "supports-workers": "1",
             "supports-multiplex-workers": "1",
         },
