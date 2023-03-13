@@ -39,7 +39,7 @@ jobs:
       - name: "Configure Bazel"
         run: cp .github/workflows/.bazelrc .
       - name: "Configure cache"
-        uses: actions/cache@v3.2.6
+        uses: actions/cache@v3.3.1
         with:
           path: .cache
           key: ${{ runner.os }}-bazel-${{ hashFiles('WORKSPACE') }}
