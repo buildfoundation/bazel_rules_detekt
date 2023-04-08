@@ -44,6 +44,16 @@ def _action_full_contents_test_impl(ctx):
         "--disable-default-rulesets",
         "--fail-fast",
         "--parallel",
+        "--classpath",
+        ",".join([
+            "{{output_dir}}/external/rules_detekt_dependencies/v1/https/repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.5.21/header_kotlin-stdlib-1.5.21.jar",
+            "{{output_dir}}/external/rules_detekt_dependencies/v1/https/repo1.maven.org/maven2/org/jetbrains/annotations/13.0/header_annotations-13.0.jar",
+            "{{output_dir}}/external/rules_detekt_dependencies/v1/https/repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.5.21/header_kotlin-stdlib-common-1.5.21.jar",
+        ]),
+        "--language-version",
+        "1.5",
+        "--jvm-target",
+        "1.8",
     ])
 
     expected_inputs = _expand_paths(env.ctx, [
@@ -54,6 +64,9 @@ def _action_full_contents_test_impl(ctx):
         "{{source_dir}}/config B.yml",
         "{{source_dir}}/config C.yml",
         "{{source_dir}}/baseline.xml",
+        "{{output_dir}}/external/rules_detekt_dependencies/v1/https/repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.5.21/header_kotlin-stdlib-1.5.21.jar",
+        "{{output_dir}}/external/rules_detekt_dependencies/v1/https/repo1.maven.org/maven2/org/jetbrains/annotations/13.0/header_annotations-13.0.jar",
+        "{{output_dir}}/external/rules_detekt_dependencies/v1/https/repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.5.21/header_kotlin-stdlib-common-1.5.21.jar",
         "bazel-out/host/internal/_middlemen/detekt_Swrapper_Sbin-runfiles",
         "bazel-out/host/bin/detekt/wrapper/bin.jar",
         "bazel-out/host/bin/detekt/wrapper/bin",
@@ -89,6 +102,7 @@ def _test_action_full_contents():
         parallel = True,
         # The "plugins" option is skipped here since the path includes a declared Detekt version
         # and we do not want to change the test every time the Detekt artifact is updated.
+        deps = ["@rules_detekt_dependencies//:org_jetbrains_kotlin_kotlin_stdlib"],
     )
 
     action_full_contents_test(
@@ -112,6 +126,10 @@ def _action_blank_contents_test_impl(ctx):
         "{{source_dir}}/path A.kt,{{source_dir}}/path B.kt,{{source_dir}}/path C.kt",
         "--report",
         "txt:{{output_dir}}/{{source_dir}}/test_target_blank_detekt_report.txt",
+        "--language-version",
+        "1.5",
+        "--jvm-target",
+        "1.8",
     ])
 
     expected_inputs = _expand_paths(env.ctx, [

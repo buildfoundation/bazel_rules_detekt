@@ -8,7 +8,8 @@ def _impl(ctx):
 
     java_arguments = ctx.actions.args()
 
-    for jvm_flag in ctx.toolchains["@rules_detekt//detekt:toolchain_type"].jvm_flags:
+    detekt_toolchain = ctx.toolchains["@rules_detekt//detekt:toolchain_type"]
+    for jvm_flag in detekt_toolchain.jvm_flags:
         # The Bazel-generated execution script requires "=" between argument names and values.
         java_arguments.add("--jvm_flag={}".format(jvm_flag))
 
@@ -62,6 +63,16 @@ def _impl(ctx):
     if ctx.attr.parallel:
         detekt_arguments.add("--parallel")
 
+    if detekt_toolchain.experimental_type_resolution == True and "detekt_type_resolution_incompatible" not in ctx.attr.tags:
+        # Collect the transitive classpath compile jars to pass to Detekt for classpath information
+        # compile_jars should contain mostly ijar/header jars that are faster to load onto the classpath
+        classpath = depset([], transitive = [dep[JavaInfo].transitive_compile_time_jars for dep in ctx.attr.deps])
+        action_inputs.extend(classpath.to_list())
+        detekt_arguments.add_joined("--classpath", classpath, join_with = ",")
+
+    detekt_arguments.add("--language-version", detekt_toolchain.language_version)
+    detekt_arguments.add("--jvm-target", detekt_toolchain.jvm_target)
+
     action_inputs.extend(ctx.files.plugins)
     detekt_arguments.add_joined("--plugins", ctx.files.plugins, join_with = ",")
 
@@ -93,6 +104,11 @@ detekt = rule(
             allow_files = [".kt", ".kts"],
             allow_empty = False,
             doc = "Kotlin source code files.",
+        ),
+        "deps": attr.label_list(
+            default = [],
+            doc = "Dependencies to provide to Detekt for classpath type resolution.",
+            providers = [JavaInfo],
         ),
         "cfgs": attr.label_list(
             allow_files = [".yml"],
