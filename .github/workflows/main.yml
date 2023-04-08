@@ -37,13 +37,6 @@ jobs:
         uses: bazelbuild/setup-bazelisk@v2
       - name: "Configure Bazel"
         run: cp .github/workflows/.bazelrc .
-      - name: "Configure cache"
-        uses: actions/cache@v3
-        with:
-          path: .cache
-          key: ${{ runner.os }}-bazel-${{ hashFiles('WORKSPACE') }}
-          restore-keys: |
-            ${{ runner.os }}-bazel-
       - name: "Build"
         run: bazel build //detekt/wrapper:bin
       - name: "Unit tests"
