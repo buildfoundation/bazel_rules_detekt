@@ -20,9 +20,9 @@ rules_detekt_toolchains()
 
 ## Skylib
 
-skylib_version = "1.0.3"
+skylib_version = "1.4.1"
 
-skylib_sha = "1c531376ac7e5a180e0237938a2536de0c54d93f5c278634818e0efc952dd56c"
+skylib_sha = "b8a1527901774180afc798aeb28c4634bdccf19c4d98e7bdd1ce79d1fe9aaad7"
 
 http_archive(
     name = "bazel_skylib",
@@ -38,15 +38,14 @@ bazel_skylib_workspace()
 
 ## Stardoc
 
-stardoc_version = "0.4.0"
+stardoc_version = "0.5.3"
 
-stardoc_sha = "6d07d18c15abb0f6d393adbd6075cd661a2219faab56a9517741f0fc755f6f3c"
+stardoc_sha = "3fd8fec4ddec3c670bd810904e2e33170bedfe12f90adf943508184be458c8bb"
 
 http_archive(
     name = "io_bazel_stardoc",
     sha256 = stardoc_sha,
-    strip_prefix = "stardoc-{v}".format(v = stardoc_version),
-    url = "https://github.com/bazelbuild/stardoc/archive/{v}.tar.gz".format(v = stardoc_version),
+    url = "https://github.com/bazelbuild/stardoc/releases/download/{v}/stardoc-{v}.tar.gz".format(v = stardoc_version),
 )
 
 load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
@@ -59,9 +58,9 @@ stardoc_repositories()
 
 http_archive(
     name = "buildifier_prebuilt",
-    sha256 = "b3fd85ae7e45c2f36bce52cfdbdb6c20261761ea5928d1686edc8873b0d0dad0",
-    strip_prefix = "buildifier-prebuilt-5.1.0",
-    url = "http://github.com/keith/buildifier-prebuilt/archive/5.1.0.tar.gz",
+    sha256 = "e46c16180bc49487bfd0f1ffa7345364718c57334fa0b5b67cb5f27eba10f309",
+    strip_prefix = "buildifier-prebuilt-6.1.0",
+    url = "http://github.com/keith/buildifier-prebuilt/archive/6.1.0.tar.gz",
 )
 
 load("@buildifier_prebuilt//:deps.bzl", "buildifier_prebuilt_deps")

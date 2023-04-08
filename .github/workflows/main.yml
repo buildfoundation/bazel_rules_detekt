@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout the sources"
-        uses: actions/checkout@v3.5.0
+        uses: actions/checkout@v3
       - name: "Install JDK 11"
         uses: actions/setup-java@v3
         with:
@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout the sources"
-        uses: actions/checkout@v3.5.0
+        uses: actions/checkout@v3
       - name: "Install JDK 11"
         uses: actions/setup-java@v3
         with:
@@ -38,15 +38,6 @@ jobs:
         uses: bazelbuild/setup-bazelisk@v2
       - name: "Configure Bazel"
         run: cp .github/workflows/.bazelrc .
-      - name: "Configure cache"
-        uses: actions/cache@v3.3.1
-        with:
-          path: .cache
-          key: ${{ runner.os }}-bazel-${{ hashFiles('WORKSPACE') }}
-          restore-keys: |
-            ${{ runner.os }}-bazel-
-      - name: "Fetch"
-        run: bazel fetch //detekt/wrapper:bin
       - name: "Build"
         run: bazel build //detekt/wrapper:bin
       - name: "Unit tests"
