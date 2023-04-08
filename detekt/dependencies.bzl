@@ -15,34 +15,33 @@ def rules_detekt_dependencies():
 
     # Java
 
-    rules_java_version = "5.0.0"
-    rules_java_sha = "ddc9e11f4836265fea905d2845ac1d04ebad12a255f791ef7fd648d1d2215a5b"
+    rules_java_version = "5.4.1"
+    rules_java_sha = "a1f82b730b9c6395d3653032bd7e3a660f9d5ddb1099f427c1e1fe768f92e395"
 
     maybe(
         repo_rule = http_archive,
         name = "rules_java",
-        url = "https://github.com/bazelbuild/rules_java/archive/refs/tags/{v}.tar.gz".format(v = rules_java_version),
-        strip_prefix = "rules_java-{v}".format(v = rules_java_version),
+        url = "https://github.com/bazelbuild/rules_java/releases/download/{v}/rules_java-{v}.tar.gz".format(v = rules_java_version),
         sha256 = rules_java_sha,
     )
 
     # JVM External
 
-    rules_jvm_external_version = "4.2"
-    rules_jvm_external_sha = "2cd77de091e5376afaf9cc391c15f093ebd0105192373b334f0a855d89092ad5"
+    rules_jvm_external_version = "5.1"
+    rules_jvm_external_sha = "8c3b207722e5f97f1c83311582a6c11df99226e65e2471086e296561e57cc954"
 
     maybe(
         repo_rule = http_archive,
         name = "rules_jvm_external",
-        url = "https://github.com/bazelbuild/rules_jvm_external/archive/{v}.tar.gz".format(v = rules_jvm_external_version),
+        url = "https://github.com/bazelbuild/rules_jvm_external/releases/download/{v}/rules_jvm_external-{v}.tar.gz".format(v = rules_jvm_external_version),
         strip_prefix = "rules_jvm_external-{v}".format(v = rules_jvm_external_version),
         sha256 = rules_jvm_external_sha,
     )
 
     # Protocol Buffers
 
-    rules_proto_version = "97d8af4dc474595af3900dd85cb3a29ad28cc313"
-    rules_proto_sha = "602e7161d9195e50246177e7c55b2f39950a9cf7366f74ed5f22fd45750cd208"
+    rules_proto_version = "5.3.0-21.7"
+    rules_proto_sha = "dc3fb206a2cb3441b485eb1e423165b231235a1ea9b031b4433cf7bc1fa460dd"
 
     maybe(
         repo_rule = http_archive,
