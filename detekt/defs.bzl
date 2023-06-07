@@ -2,6 +2,62 @@
 Rule declarations.
 """
 
+_ATTRS = {
+    "_detekt_wrapper": attr.label(
+        default = "//detekt/wrapper:bin",
+        executable = True,
+        cfg = "exec",
+    ),
+    "srcs": attr.label_list(
+        mandatory = True,
+        allow_files = [".kt", ".kts"],
+        allow_empty = False,
+        doc = "Kotlin source code files.",
+    ),
+    "cfgs": attr.label_list(
+        allow_files = [".yml"],
+        default = [],
+        doc = "[Detekt configuration files](https://detekt.github.io/detekt/configurations.html). Otherwise [the default configuration](https://github.com/detekt/detekt/blob/master/detekt-core/src/main/resources/default-detekt-config.yml) is used.",
+    ),
+    "baseline": attr.label(
+        default = None,
+        allow_single_file = [".xml"],
+        doc = "[Detekt baseline file](https://detekt.github.io/detekt/baseline.html).",
+    ),
+    "html_report": attr.bool(
+        default = False,
+        doc = "Enables / disables the HTML report generation. The report file name is `{target_name}_detekt_report.html`.",
+    ),
+    "_txt_report": attr.bool(
+        default = True,
+    ),
+    "xml_report": attr.bool(
+        default = False,
+        doc = "Enables / disables the XML report generation. The report file name is `{target_name}_detekt_report.xml`. FYI Detekt uses the Checkstyle XML reporting format which makes it compatible with tools like SonarQube.",
+    ),
+    "build_upon_default_config": attr.bool(
+        default = False,
+        doc = "See [Detekt `--build-upon-default-config` option](https://detekt.github.io/detekt/cli.html).",
+    ),
+    "disable_default_rulesets": attr.bool(
+        default = False,
+        doc = "See [Detekt `--disable-default-rulesets` option](https://detekt.github.io/detekt/cli.html).",
+    ),
+    "fail_fast": attr.bool(
+        default = False,
+        doc = "See [Detekt `--fail-fast` option](https://detetk.github.io/detekt/cli.html).",
+    ),
+    "parallel": attr.bool(
+        default = False,
+        doc = "See [Detekt `--parallel` option](https://detekt.github.io/detekt/cli.html).",
+    ),
+    "plugins": attr.label_list(
+        default = [],
+        doc = "[Detekt plugins](https://detekt.github.io/detekt/extensions.html). For example, [the formatting rule set](https://detekt.github.io/detekt/formatting.html). Labels should be JVM artifacts (generated via [`rules_jvm_external`](https://github.com/bazelbuild/rules_jvm_external) work).",
+        providers = [JavaInfo],
+    ),
+}
+
 def _impl(ctx):
     action_inputs = []
     action_outputs = []
@@ -82,61 +138,7 @@ def _impl(ctx):
 
 detekt = rule(
     implementation = _impl,
-    attrs = {
-        "_detekt_wrapper": attr.label(
-            default = "//detekt/wrapper:bin",
-            executable = True,
-            cfg = "exec",
-        ),
-        "srcs": attr.label_list(
-            mandatory = True,
-            allow_files = [".kt", ".kts"],
-            allow_empty = False,
-            doc = "Kotlin source code files.",
-        ),
-        "cfgs": attr.label_list(
-            allow_files = [".yml"],
-            default = [],
-            doc = "[Detekt configuration files](https://detekt.github.io/detekt/configurations.html). Otherwise [the default configuration](https://github.com/detekt/detekt/blob/master/detekt-core/src/main/resources/default-detekt-config.yml) is used.",
-        ),
-        "baseline": attr.label(
-            default = None,
-            allow_single_file = [".xml"],
-            doc = "[Detekt baseline file](https://detekt.github.io/detekt/baseline.html).",
-        ),
-        "html_report": attr.bool(
-            default = False,
-            doc = "Enables / disables the HTML report generation. The report file name is `{target_name}_detekt_report.html`.",
-        ),
-        "_txt_report": attr.bool(
-            default = True,
-        ),
-        "xml_report": attr.bool(
-            default = False,
-            doc = "Enables / disables the XML report generation. The report file name is `{target_name}_detekt_report.xml`. FYI Detekt uses the Checkstyle XML reporting format which makes it compatible with tools like SonarQube.",
-        ),
-        "build_upon_default_config": attr.bool(
-            default = False,
-            doc = "See [Detekt `--build-upon-default-config` option](https://detekt.github.io/detekt/cli.html).",
-        ),
-        "disable_default_rulesets": attr.bool(
-            default = False,
-            doc = "See [Detekt `--disable-default-rulesets` option](https://detekt.github.io/detekt/cli.html).",
-        ),
-        "fail_fast": attr.bool(
-            default = False,
-            doc = "See [Detekt `--fail-fast` option](https://detetk.github.io/detekt/cli.html).",
-        ),
-        "parallel": attr.bool(
-            default = False,
-            doc = "See [Detekt `--parallel` option](https://detekt.github.io/detekt/cli.html).",
-        ),
-        "plugins": attr.label_list(
-            default = [],
-            doc = "[Detekt plugins](https://detekt.github.io/detekt/extensions.html). For example, [the formatting rule set](https://detekt.github.io/detekt/formatting.html). Labels should be JVM artifacts (generated via [`rules_jvm_external`](https://github.com/bazelbuild/rules_jvm_external) work).",
-            providers = [JavaInfo],
-        ),
-    },
+    attrs = _ATTRS,
     provides = [DefaultInfo],
     toolchains = ["@rules_detekt//detekt:toolchain_type"],
 )
