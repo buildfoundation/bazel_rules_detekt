@@ -58,7 +58,7 @@ _ATTRS = {
     ),
 }
 
-def _impl(ctx):
+def _impl(ctx, run_as_test_target):
     action_inputs = []
     action_outputs = []
 
@@ -94,7 +94,7 @@ def _impl(ctx):
         action_outputs.append(html_report)
         detekt_arguments.add("--report", "html:{}".format(html_report.path))
 
-    if ctx.attr._txt_report:
+    if ctx.attr._txt_report or run_as_test_target:
         txt_report = ctx.actions.declare_file("{}_detekt_report.txt".format(ctx.label.name))
 
         action_outputs.append(txt_report)
@@ -118,8 +118,15 @@ def _impl(ctx):
     if ctx.attr.parallel:
         detekt_arguments.add("--parallel")
 
+    if run_as_test_target:
+        detekt_arguments.add("--run-as-test-target")
+
     action_inputs.extend(ctx.files.plugins)
     detekt_arguments.add_joined("--plugins", ctx.files.plugins, join_with = ",")
+
+    execution_result = ctx.actions.declare_file("{}_exit_code.txt".format(ctx.label.name))
+    action_outputs.append(execution_result)
+    detekt_arguments.add("--execution-result", "{}".format(execution_result.path))
 
     ctx.actions.run(
         mnemonic = "Detekt",
@@ -134,11 +141,38 @@ def _impl(ctx):
         arguments = [java_arguments, detekt_arguments],
     )
 
-    return [DefaultInfo(files = depset(action_outputs))]
+    # note: this implementation is not compatible with windows
+    final_result = ctx.actions.declare_file(ctx.attr.name + ".sh")
+    ctx.actions.run_shell(
+        inputs = [execution_result],
+        outputs = [final_result],
+        command = "exit_code=$(cat %s); echo -e \"#!/bin/bash\\n\\nexit $exit_code\" > %s" % (execution_result.path, final_result.path),
+    )
+
+    return [
+        DefaultInfo(
+            files = depset(action_outputs),
+            executable = final_result,
+        ),
+    ]
+
+def _detekt_impl(ctx):
+    return _impl(ctx = ctx, run_as_test_target = False)
+
+def _detekt_test_impl(ctx):
+    return _impl(ctx = ctx, run_as_test_target = True)
 
 detekt = rule(
-    implementation = _impl,
+    implementation = _detekt_impl,
     attrs = _ATTRS,
     provides = [DefaultInfo],
     toolchains = ["@rules_detekt//detekt:toolchain_type"],
+)
+
+detekt_test = rule(
+    implementation = _detekt_test_impl,
+    attrs = _ATTRS,
+    provides = [DefaultInfo],
+    toolchains = ["@rules_detekt//detekt:toolchain_type"],
+    test = True,
 )
