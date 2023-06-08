@@ -1,7 +1,6 @@
 package io.buildfoundation.bazel.detekt;
 
 import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,6 +12,12 @@ import java.util.List;
 import java.util.Set;
 
 public class ExecutionUtils {
+    private final WriterFactory writerFactory;
+
+    public ExecutionUtils(WriterFactory writerFactory) {
+        this.writerFactory = writerFactory;
+    }
+
     /**
      * Returns true if run-as-test-target flag is included in arguments
      */
@@ -24,7 +29,7 @@ public class ExecutionUtils {
      * Retrieves the output path for the test result from the input arguments.
      */
     public static String getRequiredArgumentValue(List<String> arguments, String argumentName) {
-        String outputPath = getArgument(arguments, argumentName);
+        String outputPath = getValueForArgumentName(arguments, argumentName);
         if (outputPath == null) {
             throw new IllegalStateException("Value not found for argument " + argumentName);
         }
@@ -34,8 +39,8 @@ public class ExecutionUtils {
     /**
      * Writes the execution result to a file
      */
-    public static void writeExecutionResultToFile(Integer exitCode, String executionResultOutputPath) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(executionResultOutputPath))) {
+    public void writeExecutionResultToFile(Integer exitCode, String executionResultOutputPath) {
+        try (BufferedWriter writer = writerFactory.getBufferedWriter(executionResultOutputPath)) {
             writer.write(String.format("%d", exitCode));
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -68,10 +73,14 @@ public class ExecutionUtils {
      * @param argName The name of the argument whose value needs to be fetched.
      * @return The value associated with the given argument name or null if the argument is not found.
      */
-    public static String getArgument(List<String> inputArgs, String argName) {
+    public static String getValueForArgumentName(List<String> inputArgs, String argName) {
         try {
             // Get the index of the argument and return the value at the next index.
-            return inputArgs.get(inputArgs.indexOf(argName) + 1);
+            int indexOfArgument = inputArgs.indexOf(argName);
+            if (indexOfArgument == -1) {
+                return null;
+            }
+            return inputArgs.get(indexOfArgument + 1);
         } catch (IndexOutOfBoundsException ignored) {
             // Return null if the argument is not found or there's no value after it.
             return null;
@@ -99,8 +108,8 @@ public class ExecutionUtils {
             if (!excludeArgs.contains(value)) {
                 filteredList.add(value);
             } else {
-                if (!args.get(index + 1).startsWith("--")) {
-                    // Skip the arg-value pair since matching argument was found
+                if (index + 1 < args.size() && !args.get(index + 1).startsWith("--")) {
+                    // Skip the arg-value pair since the next list-item is the value
                     index += 1;
                 }
             }

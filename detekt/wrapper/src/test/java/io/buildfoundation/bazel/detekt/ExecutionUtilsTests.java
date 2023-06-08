@@ -35,13 +35,13 @@ public class ExecutionUtilsTests {
     @Test
     public void testGetArgumentWhenArgumentExists() {
         List<String> args = new ArrayList<>(Arrays.asList("--input", "one", "--execution-result", "/some/file/path"));
-        assertEquals(ExecutionUtils.getArgument(args, "--execution-result"), "/some/file/path");
+        assertEquals(ExecutionUtils.getValueForArgumentName(args, "--execution-result"), "/some/file/path");
     }
 
     @Test
     public void testGetArgumentWhenArgumentDoesNotExist() {
         List<String> args = new ArrayList<>(Arrays.asList("--input", "one"));
-        assertNull(ExecutionUtils.getArgument(args, "--execution-result"));
+        assertNull(ExecutionUtils.getValueForArgumentName(args, "--execution-result"));
     }
 
     @Test
@@ -54,7 +54,7 @@ public class ExecutionUtilsTests {
     @Test
     public void testSanitizeDetektArgumentsWhenPassedInAtMiddleOfArgs() {
         List<String> args = new ArrayList<>(Arrays.asList("--input", "one", "--execution-result", "/some/file/path", "--run-as-test-target", "--another", "value"));
-        List<String> expectedArgs = new ArrayList<>(Arrays.asList("--input", "one", "--execution-result", "/some/file/path"));
+        List<String> expectedArgs = new ArrayList<>(Arrays.asList("--input", "one", "--another", "value"));
         assertEquals(ExecutionUtils.sanitizeDetektArguments(args), expectedArgs);
     }
 

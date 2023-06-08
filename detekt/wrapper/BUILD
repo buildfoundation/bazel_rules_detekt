@@ -30,5 +30,6 @@ java_test(
         "@rules_detekt_dependencies//:com_squareup_okio_okio_jvm",
         "@rules_detekt_dependencies//:io_reactivex_rxjava3_rxjava",
         "@rules_detekt_dependencies//:junit_junit",
+        "@rules_detekt_dependencies//:org_mockito_mockito_core",
     ],
 )
