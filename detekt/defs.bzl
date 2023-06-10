@@ -141,7 +141,7 @@ def _impl(ctx, run_as_test_target):
         arguments = [java_arguments, detekt_arguments],
     )
 
-    # note: this implementation is not compatible with windows
+    # Note: this is not compatible with Windows, feel free to submit PR!
     final_result = ctx.actions.declare_file(ctx.attr.name + ".sh")
     ctx.actions.run_shell(
         inputs = [execution_result],
