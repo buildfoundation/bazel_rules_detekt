@@ -7,6 +7,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
@@ -38,7 +40,7 @@ public interface Executable {
             }
 
             ExecutableResult result;
-            String executionResultOutputPath = ExecutionUtils.getRequiredArgumentValue(detektWrapperArguments, "--execution-result");
+            Path executionResultOutputPath = Paths.get(ExecutionUtils.getRequiredArgumentValue(detektWrapperArguments, "--execution-result"));
 
             try {
                 List<String> detektExecutableArguments = ExecutionUtils.sanitizeDetektArguments(detektWrapperArguments);

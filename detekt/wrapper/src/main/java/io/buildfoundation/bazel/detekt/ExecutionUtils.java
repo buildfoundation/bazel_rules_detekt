@@ -1,10 +1,12 @@
 package io.buildfoundation.bazel.detekt;
 
 import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -33,9 +35,9 @@ public class ExecutionUtils {
     /**
      * Writes the execution result to a file
      */
-    public static void writeExecutionResultToFile(Integer exitCode, String executionResultOutputPath) {
-        try (BufferedWriter writer = new WriterFactory().getBufferedWriter(executionResultOutputPath)) {
-            writer.write(String.format("%d", exitCode));
+    public static void writeExecutionResultToFile(Integer exitCode, Path executionResultOutputPath) {
+        try {
+            Files.write(executionResultOutputPath, exitCode.toString().getBytes(), StandardOpenOption.WRITE);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
