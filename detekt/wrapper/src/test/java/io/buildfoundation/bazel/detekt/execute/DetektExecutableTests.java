@@ -4,11 +4,10 @@ import io.buildfoundation.bazel.detekt.ExecutionUtils;
 import io.buildfoundation.bazel.detekt.WriterFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,14 +16,7 @@ import java.io.BufferedWriter;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(MockitoJUnitRunner.class)
 public class DetektExecutableTests {
-    @Mock
-    WriterFactory mockWriterFactory;
-
-    @Mock
-    BufferedWriter mockBufferedWriter;
-
     @Test
     public void successResultOnDetektExecutionSuccessAsBuildTarget() throws IOException {
         check(TestDetekt.ExecuteResult.Success, ExecutableResult.Success.class, false);
@@ -46,12 +38,12 @@ public class DetektExecutableTests {
     }
 
     private <T extends ExecutableResult> void check(TestDetekt.ExecuteResult detektResult, Class<T> result, boolean runAsTestTarget) throws IOException {
-        when(mockWriterFactory.getBufferedWriter("/some/path/execution_result.txt")).thenReturn(mockBufferedWriter);
-        List<String> args = new ArrayList<>(Arrays.asList("--input", "one", "--execution-result", "/some/path/execution_result.txt"));
+        Path tempFile = Files.createTempFile("execution-result", "txt");
+        List<String> args = new ArrayList<>(Arrays.asList("--input", "one", "--execution-result", tempFile.toFile().getAbsolutePath()));
         if (runAsTestTarget) {
             args.add("--run-as-test-target");
         }
-        Executable executable = new Executable.DetektImpl(new TestDetekt(detektResult), new ExecutionUtils(mockWriterFactory));
+        Executable executable = new Executable.DetektImpl(new TestDetekt(detektResult), new ExecutionUtils());
         ExecutableResult executableResult = executable.execute(args.toArray(new String[0]));
         assertEquals(result, executableResult.getClass());
     }

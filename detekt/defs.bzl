@@ -142,17 +142,25 @@ def _impl(ctx, run_as_test_target):
     )
 
     # Note: this is not compatible with Windows, feel free to submit PR!
+    # text report-contents are always printed to shell
     final_result = ctx.actions.declare_file(ctx.attr.name + ".sh")
-    ctx.actions.run_shell(
-        inputs = [execution_result],
-        outputs = [final_result],
-        command = "exit_code=$(cat %s); echo -e \"#!/bin/bash\\n\\nexit $exit_code\" > %s" % (execution_result.path, final_result.path),
+    ctx.actions.write(
+        output = final_result,
+        content = """
+#!/bin/bash
+set -euo pipefail
+exit_code=$(cat {execution_result})
+cat {text_report}
+exit "$exit_code"
+""".format(execution_result = execution_result.short_path, text_report = txt_report.short_path),
+        is_executable = True,
     )
 
     return [
         DefaultInfo(
             files = depset(action_outputs),
             executable = final_result,
+            runfiles = ctx.runfiles(files = [execution_result, txt_report]),
         ),
     ]
 

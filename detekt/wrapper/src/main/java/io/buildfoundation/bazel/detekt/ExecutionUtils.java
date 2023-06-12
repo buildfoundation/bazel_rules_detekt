@@ -12,12 +12,6 @@ import java.util.List;
 import java.util.Set;
 
 public class ExecutionUtils {
-    private final WriterFactory writerFactory;
-
-    public ExecutionUtils(WriterFactory writerFactory) {
-        this.writerFactory = writerFactory;
-    }
-
     /**
      * Returns true if run-as-test-target flag is included in arguments
      */
@@ -40,7 +34,7 @@ public class ExecutionUtils {
      * Writes the execution result to a file
      */
     public void writeExecutionResultToFile(Integer exitCode, String executionResultOutputPath) {
-        try (BufferedWriter writer = writerFactory.getBufferedWriter(executionResultOutputPath)) {
+        try (BufferedWriter writer = new WriterFactory().getBufferedWriter(executionResultOutputPath)) {
             writer.write(String.format("%d", exitCode));
         } catch (IOException e) {
             throw new RuntimeException(e);
