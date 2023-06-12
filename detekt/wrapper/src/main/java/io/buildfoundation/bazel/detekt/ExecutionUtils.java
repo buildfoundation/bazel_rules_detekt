@@ -37,7 +37,7 @@ public class ExecutionUtils {
      */
     public static void writeExecutionResultToFile(Integer exitCode, Path executionResultOutputPath) {
         try {
-            Files.write(executionResultOutputPath, exitCode.toString().getBytes(), StandardOpenOption.WRITE);
+            Files.write(executionResultOutputPath, exitCode.toString().getBytes(), StandardOpenOption.CREATE);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
