@@ -43,7 +43,7 @@ public class DetektExecutableTests {
         if (runAsTestTarget) {
             args.add("--run-as-test-target");
         }
-        Executable executable = new Executable.DetektImpl(new TestDetekt(detektResult), new ExecutionUtils());
+        Executable executable = new Executable.DetektImpl(new TestDetekt(detektResult));
         ExecutableResult executableResult = executable.execute(args.toArray(new String[0]));
         assertEquals(result, executableResult.getClass());
     }

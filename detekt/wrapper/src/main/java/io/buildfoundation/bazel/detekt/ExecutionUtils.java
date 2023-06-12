@@ -33,7 +33,7 @@ public class ExecutionUtils {
     /**
      * Writes the execution result to a file
      */
-    public void writeExecutionResultToFile(Integer exitCode, String executionResultOutputPath) {
+    public static void writeExecutionResultToFile(Integer exitCode, String executionResultOutputPath) {
         try (BufferedWriter writer = new WriterFactory().getBufferedWriter(executionResultOutputPath)) {
             writer.write(String.format("%d", exitCode));
         } catch (IOException e) {

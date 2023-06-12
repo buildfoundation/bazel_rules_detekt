@@ -16,7 +16,7 @@ public final class Main {
     }
 
     private static Application createApplication(String[] args) {
-        Executable executable = new Executable.DetektImpl(new Detekt.Impl(), new ExecutionUtils());
+        Executable executable = new Executable.DetektImpl(new Detekt.Impl());
         Streams streams = new Streams.Impl();
 
         if (Arrays.asList(args).contains("--persistent_worker")) {

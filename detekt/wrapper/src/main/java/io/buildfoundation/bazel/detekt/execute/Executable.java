@@ -18,12 +18,10 @@ public interface Executable {
 
         private final Detekt detekt;
         private final String charset;
-        private final ExecutionUtils executionUtils;
 
-        public DetektImpl(Detekt detekt, ExecutionUtils executionUtils) {
+        public DetektImpl(Detekt detekt) {
             this.detekt = detekt;
             this.charset = Charset.defaultCharset().name();
-            this.executionUtils = executionUtils;
         }
 
         @Override
@@ -64,7 +62,7 @@ public interface Executable {
                 errorPrinter.close();
             }
 
-            executionUtils.writeExecutionResultToFile(result.statusCode(), executionResultOutputPath);
+            ExecutionUtils.writeExecutionResultToFile(result.statusCode(), executionResultOutputPath);
 
             if (ExecutionUtils.shouldRunAsTestTarget(detektWrapperArguments)) {
                 result = new ExecutableResult.Success();
