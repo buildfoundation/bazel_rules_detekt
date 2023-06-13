@@ -28,9 +28,6 @@ _ATTRS = {
         default = False,
         doc = "Enables / disables the HTML report generation. The report file name is `{target_name}_detekt_report.html`.",
     ),
-    "_txt_report": attr.bool(
-        default = True,
-    ),
     "xml_report": attr.bool(
         default = False,
         doc = "Enables / disables the XML report generation. The report file name is `{target_name}_detekt_report.xml`. FYI Detekt uses the Checkstyle XML reporting format which makes it compatible with tools like SonarQube.",
