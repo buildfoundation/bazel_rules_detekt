@@ -146,7 +146,10 @@ def _impl(ctx, run_as_test_target):
 #!/bin/bash
 set -euo pipefail
 exit_code=$(cat {execution_result})
-cat {text_report}
+report=$(cat {text_report})
+if [ ! -z "$report" ]; then
+    echo "$report"
+fi
 exit "$exit_code"
 """.format(execution_result = execution_result.short_path, text_report = txt_report.short_path),
         is_executable = True,
