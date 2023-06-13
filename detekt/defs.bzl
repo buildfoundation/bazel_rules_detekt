@@ -94,11 +94,10 @@ def _impl(ctx, run_as_test_target):
         action_outputs.append(html_report)
         detekt_arguments.add("--report", "html:{}".format(html_report.path))
 
-    if ctx.attr._txt_report or run_as_test_target:
-        txt_report = ctx.actions.declare_file("{}_detekt_report.txt".format(ctx.label.name))
+    txt_report = ctx.actions.declare_file("{}_detekt_report.txt".format(ctx.label.name))
 
-        action_outputs.append(txt_report)
-        detekt_arguments.add("--report", "txt:{}".format(txt_report.path))
+    action_outputs.append(txt_report)
+    detekt_arguments.add("--report", "txt:{}".format(txt_report.path))
 
     if ctx.attr.xml_report:
         xml_report = ctx.actions.declare_file("{}_detekt_report.xml".format(ctx.label.name))
