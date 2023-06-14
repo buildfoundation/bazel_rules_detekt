@@ -50,13 +50,9 @@ public class ExecutionUtils {
     /**
      * Read-in arguments from a params-file
      */
-    public static List<String> readArgumentsFromFile(String filePath) {
+    public static List<String> readArgumentsFromFile(Path filePath) {
         try {
-            if (isParamsFile(filePath)) {
-                filePath = filePath.substring(1);
-            }
-            Path path = Paths.get(filePath);
-            return Files.readAllLines(path);
+            return Files.readAllLines(filePath);
         } catch (IOException e) {
             throw new IllegalStateException("An error occurred while reading the params file: " + e.getMessage());
         }

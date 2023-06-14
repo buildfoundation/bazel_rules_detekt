@@ -36,7 +36,9 @@ public interface Executable {
 
             List<String> detektWrapperArguments = Arrays.asList(args);
             if (args.length == 1 && ExecutionUtils.isParamsFile(args[0])) {
-                detektWrapperArguments = ExecutionUtils.readArgumentsFromFile(args[0]);
+                // drop leading `@` from params-file
+                Path paramsFilePath = Paths.get(args[0].substring(1));
+                detektWrapperArguments = ExecutionUtils.readArgumentsFromFile(paramsFilePath);
             }
 
             ExecutableResult result;
