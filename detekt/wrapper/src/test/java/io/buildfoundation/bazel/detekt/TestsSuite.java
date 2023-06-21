@@ -7,9 +7,10 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    ApplicationOneShotTests.class,
-    DetektExecutableTests.class,
-    WorkerExecutableTests.class,
+        ApplicationOneShotTests.class,
+        DetektExecutableTests.class,
+        ExecutionUtilsTests.class,
+        WorkerExecutableTests.class,
 })
 public class TestsSuite {
 }

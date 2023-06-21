@@ -42,7 +42,7 @@ def _action_full_contents_test_impl(ctx):
     env = analysistest.begin(ctx)
 
     actions = analysistest.target_actions(env)
-    asserts.equals(env, 1, len(actions))
+    asserts.equals(env, 5, len(actions))
 
     action = actions[0]
     assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/detekt/wrapper/bin")
@@ -60,6 +60,8 @@ def _action_full_contents_test_impl(ctx):
     assert_argv_contains(env, action, _expand_path(ctx, "txt:{{output_dir}}/{{source_dir}}/test_target_full_detekt_report.txt"))
     assert_argv_contains(env, action, "--report")
     assert_argv_contains(env, action, _expand_path(ctx, "xml:{{output_dir}}/{{source_dir}}/test_target_full_detekt_report.xml"))
+    assert_argv_contains(env, action, "--execution-result")
+    assert_argv_contains(env, action, _expand_path(ctx, "{{output_dir}}/{{source_dir}}/test_target_full_exit_code.txt"))
     assert_argv_contains(env, action, "--build-upon-default-config")
     assert_argv_contains(env, action, "--disable-default-rulesets")
     assert_argv_contains(env, action, "--fail-fast")
@@ -82,6 +84,7 @@ def _action_full_contents_test_impl(ctx):
         "{{source_dir}}/test_target_full_detekt_report.html",
         "{{source_dir}}/test_target_full_detekt_report.txt",
         "{{source_dir}}/test_target_full_detekt_report.xml",
+        "{{source_dir}}/test_target_full_exit_code.txt",
     ])
 
     asserts.equals(env, expected_inputs, [file.short_path for file in action.inputs.to_list()])
@@ -118,7 +121,7 @@ def _action_blank_contents_test_impl(ctx):
     env = analysistest.begin(ctx)
 
     actions = analysistest.target_actions(env)
-    asserts.equals(env, 1, len(actions))
+    asserts.equals(env, 5, len(actions))
 
     action = actions[0]
     assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/detekt/wrapper/bin")
@@ -140,6 +143,7 @@ def _action_blank_contents_test_impl(ctx):
 
     expected_outputs = _expand_paths(env.ctx, [
         "{{source_dir}}/test_target_blank_detekt_report.txt",
+        "{{source_dir}}/test_target_blank_exit_code.txt",
     ])
 
     asserts.equals(env, expected_inputs, [file.short_path for file in action.inputs.to_list()])

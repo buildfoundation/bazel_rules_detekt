@@ -28,9 +28,6 @@ _ATTRS = {
         default = False,
         doc = "Enables / disables the HTML report generation. The report file name is `{target_name}_detekt_report.html`.",
     ),
-    "_txt_report": attr.bool(
-        default = True,
-    ),
     "xml_report": attr.bool(
         default = False,
         doc = "Enables / disables the XML report generation. The report file name is `{target_name}_detekt_report.xml`. FYI Detekt uses the Checkstyle XML reporting format which makes it compatible with tools like SonarQube.",
@@ -58,7 +55,7 @@ _ATTRS = {
     ),
 }
 
-def _impl(ctx):
+def _impl(ctx, run_as_test_target):
     action_inputs = []
     action_outputs = []
 
@@ -94,11 +91,10 @@ def _impl(ctx):
         action_outputs.append(html_report)
         detekt_arguments.add("--report", "html:{}".format(html_report.path))
 
-    if ctx.attr._txt_report:
-        txt_report = ctx.actions.declare_file("{}_detekt_report.txt".format(ctx.label.name))
+    txt_report = ctx.actions.declare_file("{}_detekt_report.txt".format(ctx.label.name))
 
-        action_outputs.append(txt_report)
-        detekt_arguments.add("--report", "txt:{}".format(txt_report.path))
+    action_outputs.append(txt_report)
+    detekt_arguments.add("--report", "txt:{}".format(txt_report.path))
 
     if ctx.attr.xml_report:
         xml_report = ctx.actions.declare_file("{}_detekt_report.xml".format(ctx.label.name))
@@ -118,8 +114,15 @@ def _impl(ctx):
     if ctx.attr.parallel:
         detekt_arguments.add("--parallel")
 
+    if run_as_test_target:
+        detekt_arguments.add("--run-as-test-target")
+
     action_inputs.extend(ctx.files.plugins)
     detekt_arguments.add_joined("--plugins", ctx.files.plugins, join_with = ",")
+
+    execution_result = ctx.actions.declare_file("{}_exit_code.txt".format(ctx.label.name))
+    action_outputs.append(execution_result)
+    detekt_arguments.add("--execution-result", "{}".format(execution_result.path))
 
     ctx.actions.run(
         mnemonic = "Detekt",
@@ -134,11 +137,49 @@ def _impl(ctx):
         arguments = [java_arguments, detekt_arguments],
     )
 
-    return [DefaultInfo(files = depset(action_outputs))]
+    # Note: this is not compatible with Windows, feel free to submit PR!
+    # text report-contents are always printed to shell
+    final_result = ctx.actions.declare_file(ctx.attr.name + ".sh")
+    ctx.actions.write(
+        output = final_result,
+        content = """
+#!/bin/bash
+set -euo pipefail
+exit_code=$(cat {execution_result})
+report=$(cat {text_report})
+if [ ! -z "$report" ]; then
+    echo "$report"
+fi
+exit "$exit_code"
+""".format(execution_result = execution_result.short_path, text_report = txt_report.short_path),
+        is_executable = True,
+    )
+
+    return [
+        DefaultInfo(
+            files = depset(action_outputs),
+            executable = final_result,
+            runfiles = ctx.runfiles(files = [execution_result, txt_report]),
+        ),
+    ]
+
+def _detekt_impl(ctx):
+    return _impl(ctx = ctx, run_as_test_target = False)
+
+def _detekt_test_impl(ctx):
+    return _impl(ctx = ctx, run_as_test_target = True)
 
 detekt = rule(
-    implementation = _impl,
+    implementation = _detekt_impl,
     attrs = _ATTRS,
     provides = [DefaultInfo],
     toolchains = ["@rules_detekt//detekt:toolchain_type"],
+)
+
+detekt_test = rule(
+    implementation = _detekt_test_impl,
+    attrs = _ATTRS,
+    provides = [DefaultInfo],
+    toolchains = ["@rules_detekt//detekt:toolchain_type"],
+    test = True,
 )
