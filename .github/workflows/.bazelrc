@@ -1,4 +1,5 @@
 common --curses=no
+common --enable_bzlmod
 
 build --verbose_failures
 build --worker_verbose
