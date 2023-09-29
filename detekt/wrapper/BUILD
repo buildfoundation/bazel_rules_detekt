@@ -4,9 +4,9 @@ java_library(
     name = "wrapper",
     srcs = glob(["src/main/java/**/*.java"]),
     deps = [
+        "@detekt_cli_all//jar",
         "@rules_detekt_dependencies//:com_squareup_moshi_moshi",
         "@rules_detekt_dependencies//:com_squareup_okio_okio_jvm",
-        "@rules_detekt_dependencies//:io_gitlab_arturbosch_detekt_detekt_cli",
         "@rules_detekt_dependencies//:io_reactivex_rxjava3_rxjava",
     ],
 )
