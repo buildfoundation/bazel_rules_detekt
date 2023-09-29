@@ -3,7 +3,7 @@ The rule analysis tests.
 """
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
-load("@rules_detekt//detekt:defs.bzl", "detekt")
+load("//detekt:defs.bzl", "detekt")
 
 def _expand_path(ctx, value):
     source_dir = ctx.build_file_path.replace("/BUILD", "")
@@ -42,7 +42,7 @@ def _action_full_contents_test_impl(ctx):
     env = analysistest.begin(ctx)
 
     actions = analysistest.target_actions(env)
-    asserts.equals(env, 5, len(actions))
+    asserts.equals(env, 6, len(actions))
 
     action = actions[0]
     assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/detekt/wrapper/bin")
@@ -121,7 +121,7 @@ def _action_blank_contents_test_impl(ctx):
     env = analysistest.begin(ctx)
 
     actions = analysistest.target_actions(env)
-    asserts.equals(env, 5, len(actions))
+    asserts.equals(env, 6, len(actions))
 
     action = actions[0]
     assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/detekt/wrapper/bin")
