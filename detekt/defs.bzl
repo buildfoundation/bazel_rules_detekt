@@ -55,13 +55,15 @@ _ATTRS = {
     ),
 }
 
+TOOLCHAIN_TYPE = Label("//detekt:toolchain_type")
+
 def _impl(ctx, run_as_test_target):
     action_inputs = []
     action_outputs = []
 
     java_arguments = ctx.actions.args()
 
-    for jvm_flag in ctx.toolchains["@rules_detekt//detekt:toolchain_type"].jvm_flags:
+    for jvm_flag in ctx.toolchains[TOOLCHAIN_TYPE].jvm_flags:
         # The Bazel-generated execution script requires "=" between argument names and values.
         java_arguments.add("--jvm_flag={}".format(jvm_flag))
 
@@ -173,13 +175,13 @@ detekt = rule(
     implementation = _detekt_impl,
     attrs = _ATTRS,
     provides = [DefaultInfo],
-    toolchains = ["@rules_detekt//detekt:toolchain_type"],
+    toolchains = ["//detekt:toolchain_type"],
 )
 
 detekt_test = rule(
     implementation = _detekt_test_impl,
     attrs = _ATTRS,
     provides = [DefaultInfo],
-    toolchains = ["@rules_detekt//detekt:toolchain_type"],
+    toolchains = ["//detekt:toolchain_type"],
     test = True,
 )
