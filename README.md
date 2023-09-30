@@ -14,19 +14,17 @@ for [the Bazel build system](https://bazel.build).
 
 ## Usage
 
-
-
 ### `MODULE.bazel` Configuration
 
 ```python
 bazel_dep(name = "rules_detekt", version = "...")
-``
 ```
 
 ### `WORKSPACE` Configuration
 
 First of all you need to declare the rule in the `WORKSPACE` file.
-Please refer to [GitHub releases](https://github.com/buildfoundation/bazel_rules_detekt/releases) for the version and the SHA-256 hashsum.
+Please refer to [GitHub releases](https://github.com/buildfoundation/bazel_rules_detekt/releases) for the version and
+the SHA-256 hashsum.
 
 ```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
@@ -56,7 +54,8 @@ Users on Bazel releases prior to 5.1.0 need to enable the JSON Persistent Worker
 build --experimental_worker_allow_json_protocol
 ```
 
-This option [became stable](https://github.com/bazelbuild/bazel/commit/9e16a6484e94c358aa77a6ed7b1ded3243b65e8f) and [enabled by default for newer Bazel releases](https://github.com/bazelbuild/bazel/commit/09df7c0a14b9bf13d4aa18f5a02b4651e626d5f4).
+This option [became stable](https://github.com/bazelbuild/bazel/commit/9e16a6484e94c358aa77a6ed7b1ded3243b65e8f)
+and [enabled by default for newer Bazel releases](https://github.com/bazelbuild/bazel/commit/09df7c0a14b9bf13d4aa18f5a02b4651e626d5f4).
 
 ### `BUILD` Configuration
 
