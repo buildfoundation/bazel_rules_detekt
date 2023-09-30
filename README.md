@@ -14,6 +14,15 @@ for [the Bazel build system](https://bazel.build).
 
 ## Usage
 
+
+
+### `MODULE.bazel` Configuration
+
+```python
+bazel_dep(name = "rules_detekt", version = "...")
+``
+```
+
 ### `WORKSPACE` Configuration
 
 First of all you need to declare the rule in the `WORKSPACE` file.
