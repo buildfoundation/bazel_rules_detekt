@@ -21,6 +21,7 @@ maven.install(
         "com.squareup.okio:okio-jvm:3.2.0",
         "io.reactivex.rxjava3:rxjava:3.0.12",
         "junit:junit:4.13.2",
+        "io.gitlab.arturbosch.detekt:detekt-formatting:1.22.0",
     ],
 )
 use_repo(maven, "rules_detekt_dependencies")
