@@ -27,7 +27,7 @@ def _detekt_impl(mctx):
     for mod in mctx.modules:
         for override in mod.tags.detekt_version:
             if detekt_version:
-                fail("Only one detekt_version is supported right now!")
+                fail("Only a single detekt_version at once is supported right now!")
             detekt_version = _detekt_version(version = override.version, sha256 = override.sha256)
 
     kwargs = dict(detekt = _DEFAULT_DETEKT_RELEASE)
