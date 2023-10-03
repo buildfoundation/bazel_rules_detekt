@@ -13,18 +13,6 @@ use_repo(detekt, "detekt_cli_all")
 bazel_dep(name = "rules_java", version = "5.4.1")
 bazel_dep(name = "rules_proto", version = "5.3.0-21.7")
 bazel_dep(name = "rules_jvm_external", version = "5.3")
-
-# TODO(bencodes) Remove this when the next release of rules_jvm_external is out
-# Using HEAD is needed to work around a testonly bug
-archive_override(
-    module_name = "rules_jvm_external",
-    integrity = "sha256-T/hNVzSx37wbJYGfZfZtTwyZDApu4rcvIN/QmM+DA78=",
-    strip_prefix = "rules_jvm_external-d0cfd9d293f37a600eb380bb4b1a7ce751472429",
-    urls = [
-        "https://github.com/bazelbuild/rules_jvm_external/archive/d0cfd9d293f37a600eb380bb4b1a7ce751472429.tar.gz",
-    ],
-)
-
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
     name = "rules_detekt_dependencies",
@@ -32,24 +20,11 @@ maven.install(
         "com.squareup.moshi:moshi:1.14.0",
         "com.squareup.okio:okio-jvm:3.2.0",
         "io.reactivex.rxjava3:rxjava:3.0.12",
-    ],
-    fail_if_repin_required = True,
-    lock_file = "@//:rules_detekt_dependencies_install.json",
-    repositories = [
-        "https://maven.google.com",
-        "https://repo1.maven.org/maven2",
-    ],
-)
-
-[
-    maven.artifact(name = "rules_detekt_dependencies", artifact = artifact, group = group, version = version, testonly = True)
-    for group, artifact, version in [coord.split(":") for coord in [
         "junit:junit:4.13.2",
         "io.gitlab.arturbosch.detekt:detekt-formatting:1.22.0",
-    ]]
-]
-
-use_repo(maven, "rules_detekt_dependencies", "unpinned_rules_detekt_dependencies")
+    ],
+)
+use_repo(maven, "rules_detekt_dependencies")
 
 bazel_dep(name = "bazel_skylib", version = "1.4.1", dev_dependency = True)
 bazel_dep(name = "stardoc", version = "0.5.3", repo_name = "io_bazel_stardoc", dev_dependency = True)
