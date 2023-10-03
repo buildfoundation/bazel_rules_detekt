@@ -1,0 +1,20 @@
+{
+  "homepage": "https://github.com/buildfoundation/bazel_rules_detekt",
+  "maintainers": [
+    {
+      "email": "ben@ben.cm",
+      "github": "Bencodes",
+      "name": "Ben Lee"
+    },
+    {
+      "email": "ceo@artemzin.com",
+      "github": "artem-zinnatullin ",
+      "name": "Artem Zinnatullin"
+    }
+  ],
+  "repository": [
+    "github:buildfoundation/bazel_rules_detekt"
+  ],
+  "versions": [],
+  "yanked_versions": {}
+}
