@@ -20,10 +20,10 @@ maven.install(
         "com.squareup.moshi:moshi:1.14.0",
         "com.squareup.okio:okio-jvm:3.2.0",
         "io.reactivex.rxjava3:rxjava:3.0.12",
-        "junit:junit:4.13.2",
-        "io.gitlab.arturbosch.detekt:detekt-formatting:1.22.0",
     ],
 )
+maven.artifact(artifact = "junit", group = "junit", version = "4.13.2", testonly = True)
+maven.artifact(artifact = "io.gitlab.arturbosch.detekt", group = "detekt", version = "1.22.0", testonly = True)
 use_repo(maven, "rules_detekt_dependencies")
 
 bazel_dep(name = "bazel_skylib", version = "1.4.1", dev_dependency = True)
