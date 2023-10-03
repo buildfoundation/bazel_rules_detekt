@@ -3,15 +3,24 @@ Macros for defining dependencies.
 See https://docs.bazel.build/versions/master/skylark/deploying.html#dependencies
 """
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_jar")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load(":versions.bzl", _DEFAULT_DETEKT_VERSION = "DEFAULT_DETEKT_RELEASE")
 
-def rules_detekt_dependencies():
+def rules_detekt_dependencies(detekt = _DEFAULT_DETEKT_VERSION):
     """Fetches `rules_detekt` dependencies.
 
     Declares dependencies of the `rules_detekt` workspace.
     Users should call this macro in their `WORKSPACE` file.
     """
+
+    # Detekt
+
+    http_jar(
+        name = "detekt_cli_all",
+        sha256 = detekt.sha256,
+        urls = [url.format(version = detekt.version) for url in detekt.url_templates],
+    )
 
     # Protocol Buffers
 
@@ -38,11 +47,10 @@ def rules_detekt_dependencies():
         sha256 = rules_java_sha,
     )
 
-
     # JVM External
 
-    rules_jvm_external_version = "5.1"
-    rules_jvm_external_sha = "8c3b207722e5f97f1c83311582a6c11df99226e65e2471086e296561e57cc954"
+    rules_jvm_external_version = "5.3"
+    rules_jvm_external_sha = "d31e369b854322ca5098ea12c69d7175ded971435e55c18dd9dd5f29cc5249ac"
 
     maybe(
         repo_rule = http_archive,

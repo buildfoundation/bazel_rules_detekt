@@ -1,4 +1,4 @@
-load("@rules_detekt//detekt:defs.bzl", "detekt")
+load("//detekt:defs.bzl", "detekt")
 
 filegroup(
     name = "detekt_config_lenient",
