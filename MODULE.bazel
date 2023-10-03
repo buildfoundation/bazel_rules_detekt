@@ -34,13 +34,22 @@ maven.install(
         "io.reactivex.rxjava3:rxjava:3.0.12",
     ],
     fail_if_repin_required = True,
-    strict_visibility = True,
     lock_file = "@//:rules_detekt_dependencies_install.json",
+    repositories = [
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
 )
 
-maven.artifact(artifact = "junit", group = "junit", version = "4.13.2", testonly = True)
-maven.artifact(artifact = "io.gitlab.arturbosch.detekt", group = "detekt-formatting", version = "1.22.0", testonly = True)
-use_repo(maven, "rules_detekt_dependencies")
+[
+    maven.artifact(name = "rules_detekt_dependencies", artifact = artifact, group = group, version = version, testonly = True)
+    for group, artifact, version in [coord.split(":") for coord in [
+        "junit:junit:4.13.2",
+        "io.gitlab.arturbosch.detekt:detekt-formatting:1.22.0",
+    ]]
+]
+
+use_repo(maven, "rules_detekt_dependencies", "unpinned_rules_detekt_dependencies")
 
 bazel_dep(name = "bazel_skylib", version = "1.4.1", dev_dependency = True)
 bazel_dep(name = "stardoc", version = "0.5.3", repo_name = "io_bazel_stardoc", dev_dependency = True)
