@@ -62,9 +62,9 @@ and [enabled by default for newer Bazel releases](https://github.com/bazelbuild/
 Once declared in the `WORSKPACE` or `MODULE.bazel` file, the rule can be loaded in the `BUILD` file.
 
 ```python
-load("@rules_detekt//detekt:defs.bzl", "detekt")
+load("@rules_detekt//detekt:defs.bzl", "detekt_test")
 
-detekt(
+detekt_test(
     name = "my_detekt",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
 )
