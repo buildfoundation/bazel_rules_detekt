@@ -30,7 +30,7 @@ def rules_detekt_toolchains(toolchain = "@rules_detekt//detekt:default_toolchain
             maven.artifact("com.squareup.okio", "okio-jvm", "3.2.0"),
             maven.artifact("io.reactivex.rxjava3", "rxjava", "3.0.12"),
             maven.artifact("junit", "junit", "4.13.2", testonly = True),
-            maevn.artifact("io.gitlab.arturbosch.detekt", "detekt-cli", "1.22.0", testonly = True),
+            maevn.artifact("io.gitlab.arturbosch.detekt", "detekt-cli", "1.23.1", testonly = True),
         ],
         repositories = [
             "https://repo1.maven.org/maven2",

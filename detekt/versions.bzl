@@ -16,6 +16,6 @@ def detekt_version(version, sha256):
     )
 
 DEFAULT_DETEKT_RELEASE = detekt_version(
-    version = "1.22.0",
-    sha256 = "34238c05c02d93b70e94fdc7f01cff85f47fdf4e63fc37daa05af0739d386ffe",
+    version = "1.23.1",
+    sha256 = "089c15405ec5563adba285d09ceccff047ebc7888b8bbc3a386bbc6c6744d788",
 )
