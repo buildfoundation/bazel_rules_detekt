@@ -59,7 +59,7 @@ and [enabled by default for newer Bazel releases](https://github.com/bazelbuild/
 
 ### `BUILD` Configuration
 
-Once declared in the `WORSKPACE` file, the rule can be loaded in the `BUILD` file.
+Once declared in the `WORSKPACE` or `MODULE.bazel` file, the rule can be loaded in the `BUILD` file.
 
 ```python
 load("@rules_detekt//detekt:defs.bzl", "detekt")
@@ -84,11 +84,29 @@ Results will be cached on successful runs.
 
 #### Detekt Version
 
-Change the `WORKSPACE` file:
+Change the `MODULE.bazel` file:
 
-```diff
-- rules_detekt_toolchains()
-+ rules_detekt_toolchains(detekt_version = "x.y.z")
+```python
+detekt = use_extension("//detekt:extensions.bzl", "detekt")
+detekt.detekt_version(
+    version = "x.x.x",
+    sha256 = "x.x.x.sha256",
+)
+use_repo(detekt, "detekt_cli_all")
+```
+
+Or change the `WORKSPACE` file:
+
+```python
+load("@rules_detekt//detekt:versions.bzl", "detekt_version")
+load("@rules_detekt//detekt:dependencies.bzl", "rules_detekt_dependencies")
+
+rules_detekt_dependencies(
+    detekt_version = detekt_version(
+        version = "x.x.x",
+        sha256 = "x.x.x.sha256",
+    )
+)
 ```
 
 #### JVM Flags
@@ -112,7 +130,8 @@ toolchain(
 
 Change the `WORKSPACE` file:
 
-```diff
-- rules_detekt_toolchains()
-+ rules_detekt_toolchains(toolchain = "//mypackage:my_detekt_toolchain")
+```python
+load("@rules_detekt//detekt:toolchains.bzl", "rules_detekt_toolchains")
+
+rules_detekt_toolchains(toolchain = "//mypackage:my_detekt_toolchain")
 ```
