@@ -1,0 +1,5 @@
+{
+  "integrity": "",
+  "strip_prefix": "bazel_rules_detekt-{TAG}",
+  "url": "https://github.com/buildfoundation/bazel_rules_detekt/archive/refs/tags/{TAG}.tar.gz"
+}
