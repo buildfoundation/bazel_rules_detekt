@@ -15,7 +15,6 @@ def rules_detekt_toolchains(toolchain = "@rules_detekt//detekt:default_toolchain
     Users should call this macro in their `WORKSPACE` file.
 
     Args:
-        detekt_version: "io.gitlab.arturbosch.detekt:detekt-cli" version used by rules.
         toolchain: `detekt_toolchain` used by rules.
     """
 
