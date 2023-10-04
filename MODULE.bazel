@@ -23,6 +23,7 @@ maven.install(
         "junit:junit:4.13.2",
         "io.gitlab.arturbosch.detekt:detekt-formatting:1.22.0",
     ],
+    fail_if_repin_required = True,
     lock_file = "//:maven_install.json",
 )
 use_repo(maven, "rules_detekt_dependencies", "unpinned_rules_detekt_dependencies")
