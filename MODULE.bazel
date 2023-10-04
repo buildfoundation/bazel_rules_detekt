@@ -23,8 +23,9 @@ maven.install(
         "junit:junit:4.13.2",
         "io.gitlab.arturbosch.detekt:detekt-formatting:1.22.0",
     ],
+    lock_file = "//:maven_install.json",
 )
-use_repo(maven, "rules_detekt_dependencies")
+use_repo(maven, "rules_detekt_dependencies", "unpinned_rules_detekt_dependencies")
 
 bazel_dep(name = "bazel_skylib", version = "1.4.1", dev_dependency = True)
 bazel_dep(name = "stardoc", version = "0.5.3", repo_name = "io_bazel_stardoc", dev_dependency = True)
