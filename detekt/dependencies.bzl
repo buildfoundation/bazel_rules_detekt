@@ -12,6 +12,9 @@ def rules_detekt_dependencies(detekt = _DEFAULT_DETEKT_VERSION):
 
     Declares dependencies of the `rules_detekt` workspace.
     Users should call this macro in their `WORKSPACE` file.
+
+    Args:
+        detekt: The version of `detekt` to use. Defaults to the latest release.
     """
 
     # Detekt
