@@ -40,9 +40,7 @@ jobs:
         run: cp .github/workflows/ci.bazelrc .
       - name: "Build"
         run: bazel build //detekt/wrapper:bin
-      - name: "Unit tests"
-        run: bazel test //detekt/wrapper:tests
       - name: "Analysis tests"
-        run: bazel test //tests/analysis:tests
+        run: bazel test //...
       - name: "Integration tests"
         run: bash tests/integration/suite.sh
