@@ -1,1 +1,4 @@
 common --enable_bzlmod
+common --test_tag_filters=-manual
+
+try-import %workspace%/ci.bazelrc

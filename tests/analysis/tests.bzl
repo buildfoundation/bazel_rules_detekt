@@ -108,6 +108,7 @@ def _test_action_full_contents():
         parallel = True,
         # The "plugins" option is skipped here since the path includes a declared Detekt version
         # and we do not want to change the test every time the Detekt artifact is updated.
+        tags = ["manual"],
     )
 
     action_full_contents_test(
@@ -157,6 +158,7 @@ def _test_action_blank_contents():
     detekt(
         name = "test_target_blank",
         srcs = ["path A.kt", "path B.kt", "path C.kt"],
+        tags = ["manual"],
     )
 
     action_blank_contents_test(
