@@ -22,7 +22,7 @@ jobs:
       - name: "Linting Starlark"
         run: bazel run @buildifier_prebuilt//:buildifier -- -mode check -lint warn -r .
       - name: "Lint Shell files"
-        run: for file in $(find . -type f -not -path ".github/*" -name "*.sh"); do shellcheck $file; done;
+        run: for file in $(ind . -type f -name "*.sh" -not -path "./.github/*"); do shellcheck $file; done;
 
   build:
     runs-on: ubuntu-latest
