@@ -10,7 +10,6 @@ tasks:
     test_flags:
       - "--enable_bzlmod=true"
     build_targets:
-      - "//detekt/wrapper:bin"
+      - "@rules_detekt//..."
     test_targets:
-      - "//detekt/wrapper:tests"
-      - "//tests/analysis:tests"
+      - "@rules_detekt//..."
