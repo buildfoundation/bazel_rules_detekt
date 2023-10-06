@@ -1,6 +1,6 @@
 module(
     name = "rules_detekt",
-    version = "0.8.0",
+    version = "0.8.1.1",
     compatibility_level = 1,
     repo_name = "bazel_rules_detekt",
 )
