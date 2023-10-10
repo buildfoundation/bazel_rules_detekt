@@ -3,7 +3,7 @@ Macros for defining toolchains.
 See https://docs.bazel.build/versions/master/skylark/deploying.html#registering-toolchains
 """
 
-load("@rules_java//java:repositories.bzl", "remote_jdk19_repos", "rules_java_dependencies", "rules_java_toolchains")
+load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_jvm_external//:specs.bzl", "maven")
 
@@ -19,7 +19,6 @@ def rules_detekt_toolchains(toolchain = "@rules_detekt//detekt:default_toolchain
     """
 
     rules_java_dependencies()
-    remote_jdk19_repos()
     rules_java_toolchains()
 
     native.register_toolchains(toolchain)
