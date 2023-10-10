@@ -24,7 +24,7 @@ jobs:
       - name: "Lint Shell files"
         run: for file in $(ind . -type f -name "*.sh" -not -path "./.github/*"); do shellcheck $file; done;
 
-  build:
+  build-bzlmod:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout the sources"
@@ -39,8 +39,26 @@ jobs:
       - name: "Configure Bazel"
         run: cp .github/workflows/ci.bazelrc .
       - name: "Build"
-        run: bazel build //detekt/wrapper:bin
+        run: bazel build //detekt/wrapper:bin --enable_bzlmod=True
       - name: "Unit tests"
-        run: bazel test //...
+        run: bazel test //... --enable_bzlmod=True
       - name: "Integration tests"
         run: bash tests/integration/suite.sh
+  build-workspace:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout the sources"
+        uses: actions/checkout@v4
+      - name: "Install JDK 11"
+        uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "11"
+      - name: "Setup Bazelisk"
+        uses: bazelbuild/setup-bazelisk@v2
+      - name: "Configure Bazel"
+        run: cp .github/workflows/ci.bazelrc .
+      - name: "Build"
+        run: bazel build //detekt/wrapper:bin --enable_bzlmod=False
+      - name: "Unit tests"
+        run: bazel test //detekt/... --enable_bzlmod=False

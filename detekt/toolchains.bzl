@@ -3,7 +3,6 @@ Macros for defining toolchains.
 See https://docs.bazel.build/versions/master/skylark/deploying.html#registering-toolchains
 """
 
-load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 load("@rules_jvm_external//:specs.bzl", "maven")
 
@@ -17,10 +16,6 @@ def rules_detekt_toolchains(toolchain = "@rules_detekt//detekt:default_toolchain
     Args:
         toolchain: `detekt_toolchain` used by rules.
     """
-
-    rules_java_dependencies()
-    rules_java_toolchains()
-
     native.register_toolchains(toolchain)
 
     maven_install(
@@ -30,7 +25,7 @@ def rules_detekt_toolchains(toolchain = "@rules_detekt//detekt:default_toolchain
             maven.artifact("com.squareup.okio", "okio-jvm", "3.2.0"),
             maven.artifact("io.reactivex.rxjava3", "rxjava", "3.0.12"),
             maven.artifact("junit", "junit", "4.13.2", testonly = True),
-            maevn.artifact("io.gitlab.arturbosch.detekt", "detekt-cli", "1.23.1", testonly = True),
+            maven.artifact("io.gitlab.arturbosch.detekt", "detekt-cli", "1.23.1", testonly = True),
         ],
         repositories = [
             "https://repo1.maven.org/maven2",
