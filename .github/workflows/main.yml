@@ -59,8 +59,8 @@ jobs:
       - name: "Configure Bazel"
         run: cp .github/workflows/ci.bazelrc .
       - name: "Build"
-        run: bazel build //detekt/wrapper:bin --enable_bzlmod=True
+        run: bazel build //detekt/wrapper:bin --enable_bzlmod=False
       - name: "Unit tests"
-        run: bazel test //... --enable_bzlmod=True
+        run: bazel test //... --enable_bzlmod=False
       - name: "Integration tests"
         run: bash tests/integration/suite.sh
