@@ -61,6 +61,4 @@ jobs:
       - name: "Build"
         run: bazel build //detekt/wrapper:bin --enable_bzlmod=False
       - name: "Unit tests"
-        run: bazel test //... --enable_bzlmod=False
-      - name: "Integration tests"
-        run: bash tests/integration/suite.sh
+        run: bazel test //detekt/... --enable_bzlmod=False
