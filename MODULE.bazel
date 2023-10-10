@@ -10,7 +10,7 @@ register_toolchains("//detekt:default_toolchain")
 detekt = use_extension("//detekt:extensions.bzl", "detekt")
 use_repo(detekt, "detekt_cli_all")
 
-bazel_dep(name = "rules_java", version = "6.5.1")
+bazel_dep(name = "rules_java", version = "5.5.0")
 bazel_dep(name = "rules_proto", version = "5.3.0-21.7")
 bazel_dep(name = "rules_jvm_external", version = "5.3")
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
