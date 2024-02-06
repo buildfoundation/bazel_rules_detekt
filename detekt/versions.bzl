@@ -1,3 +1,6 @@
+"""Macro for defining detekt versions.
+"""
+
 def detekt_version(version, sha256):
     """Create a detekt version.
 

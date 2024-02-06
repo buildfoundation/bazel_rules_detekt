@@ -37,8 +37,8 @@ detekt(
     name = "detekt_without_config_with_baseline_with_plugin",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
     baseline = "detekt_baseline.xml",
-    tags = ["manual"],
     plugins = ["@rules_detekt_dependencies//:io_gitlab_arturbosch_detekt_detekt_formatting"],
+    tags = ["manual"],
 )
 
 detekt(

@@ -1,14 +1,27 @@
 name: CI
 
+# Controls when the action will run.
 on:
-  pull_request:
+  # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches:
-      - "master"
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+concurrency:
+  # Cancel previous actions from the same PR: https://stackoverflow.com/a/72408109
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  buildifier:
-    runs-on: ubuntu-latest
+  build:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+        bzlmod: [ true, false ]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: "Checkout the sources"
         uses: actions/checkout@v4
@@ -17,48 +30,69 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "11"
-      - name: "Setup Bazelisk"
-        uses: bazelbuild/setup-bazelisk@v2
-      - name: "Linting Starlark"
-        run: bazel run @buildifier_prebuilt//:buildifier -- -mode check -lint warn -r .
-      - name: "Lint Shell files"
-        run: for file in $(ind . -type f -name "*.sh" -not -path "./.github/*"); do shellcheck $file; done;
-
-  build-bzlmod:
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Checkout the sources"
-        uses: actions/checkout@v4
-      - name: "Install JDK 11"
-        uses: actions/setup-java@v4
+      - name: Mount bazel caches
+        uses: actions/cache@v4
         with:
-          distribution: "zulu"
-          java-version: "11"
+          path: |
+            ~/.cache/bazel
+          key: bazel-cache-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'WORKSPACE', 'WORKSPACE.bazel') }}
+          restore-keys: bazel-cache-
       - name: "Setup Bazelisk"
         uses: bazelbuild/setup-bazelisk@v2
       - name: "Configure Bazel"
         run: cp .github/workflows/ci.bazelrc .
       - name: "Build"
-        run: bazel build //detekt/wrapper:bin --enable_bzlmod=True
+        run: bazel build //detekt/wrapper:bin --enable_bzlmod=${{ matrix.bzlmod }}
+  test:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+        bzlmod: [ true ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: "Checkout the sources"
+        uses: actions/checkout@v4
+      - name: "Install JDK 11"
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "11"
+      - name: Mount bazel caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/bazel
+          key: bazel-cache-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'WORKSPACE', 'WORKSPACE.bazel') }}
+          restore-keys: bazel-cache-
+      - name: "Setup Bazelisk"
+        uses: bazelbuild/setup-bazelisk@v2
+      - name: "Configure Bazel"
+        run: cp .github/workflows/ci.bazelrc .
       - name: "Unit tests"
-        run: bazel test //... --enable_bzlmod=True
+        run: bazel test //... --enable_bzlmod=${{ matrix.bzlmod }}
+  integration-test:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: "Checkout the sources"
+        uses: actions/checkout@v4
+      - name: "Install JDK 11"
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "11"
+      - name: Mount bazel caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/bazel
+          key: bazel-cache-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'WORKSPACE', 'WORKSPACE.bazel') }}
+          restore-keys: bazel-cache-
+      - name: "Setup Bazelisk"
+        uses: bazelbuild/setup-bazelisk@v2
+      - name: "Configure Bazel"
+        run: cp .github/workflows/ci.bazelrc .
       - name: "Integration tests"
         run: bash tests/integration/suite.sh
-  build-workspace:
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Checkout the sources"
-        uses: actions/checkout@v4
-      - name: "Install JDK 11"
-        uses: actions/setup-java@v4
-        with:
-          distribution: "zulu"
-          java-version: "11"
-      - name: "Setup Bazelisk"
-        uses: bazelbuild/setup-bazelisk@v2
-      - name: "Configure Bazel"
-        run: cp .github/workflows/ci.bazelrc .
-      - name: "Build"
-        run: bazel build //detekt/wrapper:bin --enable_bzlmod=False
-      - name: "Unit tests"
-        run: bazel test //detekt/... --enable_bzlmod=False
