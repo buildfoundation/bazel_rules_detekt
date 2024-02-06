@@ -134,12 +134,11 @@ def _action_blank_contents_test_impl(ctx):
     assert_argv_contains_prefix_suffix(env, action, "txt:", _expand_path(ctx, "{{source_dir}}/test_target_blank_detekt_report.txt"))
 
     expected_inputs = _expand_paths(env.ctx, [
-        "{{source_dir}}/path A.kt",
-        "{{source_dir}}/path B.kt",
-        "{{source_dir}}/path C.kt",
-        "_middlemen/detekt_Swrapper_Sbin-runfiles",
-        "detekt/wrapper/bin.jar",
+        "tests/analysis/path A.kt",
+        "tests/analysis/path B.kt",
+        "tests/analysis/path C.kt",
         "detekt/wrapper/bin",
+        "detekt/wrapper/bin.jar",
         "_middlemen/detekt_Swrapper_Sbin-runfiles",
     ])
 
