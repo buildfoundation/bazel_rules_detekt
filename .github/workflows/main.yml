@@ -30,6 +30,13 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "11"
+      - name: Mount bazel caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/bazel
+          key: bazel-cache-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'WORKSPACE', 'WORKSPACE.bazel') }}
+          restore-keys: bazel-cache-
       - name: "Setup Bazelisk"
         uses: bazelbuild/setup-bazelisk@v2
       - name: "Configure Bazel"
@@ -50,6 +57,13 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "11"
+      - name: Mount bazel caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/bazel
+          key: bazel-cache-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'WORKSPACE', 'WORKSPACE.bazel') }}
+          restore-keys: bazel-cache-
       - name: "Setup Bazelisk"
         uses: bazelbuild/setup-bazelisk@v2
       - name: "Configure Bazel"
@@ -69,6 +83,13 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "11"
+      - name: Mount bazel caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/bazel
+          key: bazel-cache-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'WORKSPACE', 'WORKSPACE.bazel') }}
+          restore-keys: bazel-cache-
       - name: "Setup Bazelisk"
         uses: bazelbuild/setup-bazelisk@v2
       - name: "Configure Bazel"
