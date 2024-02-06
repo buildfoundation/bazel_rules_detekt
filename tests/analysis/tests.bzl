@@ -133,7 +133,6 @@ def _action_blank_contents_test_impl(ctx):
     assert_argv_contains(env, action, "--report")
     assert_argv_contains_prefix_suffix(env, action, "txt:", _expand_path(ctx, "{{source_dir}}/test_target_blank_detekt_report.txt"))
 
-    print()
     expected_inputs = _expand_paths(env.ctx, [
         "{{source_dir}}/path A.kt",
         "{{source_dir}}/path B.kt",
