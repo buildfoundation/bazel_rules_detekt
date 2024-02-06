@@ -38,7 +38,7 @@ jobs:
           key: bazel-cache-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'WORKSPACE', 'WORKSPACE.bazel') }}
           restore-keys: bazel-cache-
       - name: "Setup Bazelisk"
-        uses: bazelbuild/setup-bazelisk@v2
+        uses: bazelbuild/setup-bazelisk@v3
       - name: "Configure Bazel"
         run: cp .github/workflows/ci.bazelrc .
       - name: "Build"
@@ -65,7 +65,7 @@ jobs:
           key: bazel-cache-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'WORKSPACE', 'WORKSPACE.bazel') }}
           restore-keys: bazel-cache-
       - name: "Setup Bazelisk"
-        uses: bazelbuild/setup-bazelisk@v2
+        uses: bazelbuild/setup-bazelisk@v3
       - name: "Configure Bazel"
         run: cp .github/workflows/ci.bazelrc .
       - name: "Unit tests"
@@ -91,7 +91,7 @@ jobs:
           key: bazel-cache-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'WORKSPACE', 'WORKSPACE.bazel') }}
           restore-keys: bazel-cache-
       - name: "Setup Bazelisk"
-        uses: bazelbuild/setup-bazelisk@v2
+        uses: bazelbuild/setup-bazelisk@v3
       - name: "Configure Bazel"
         run: cp .github/workflows/ci.bazelrc .
       - name: "Integration tests"
