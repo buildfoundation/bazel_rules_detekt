@@ -68,16 +68,16 @@ def _action_full_contents_test_impl(ctx):
     assert_argv_contains(env, action, "--parallel")
 
     expected_inputs = _expand_paths(env.ctx, [
-        "{{source_dir}}/path A.kt",
-        "{{source_dir}}/path B.kt",
-        "{{source_dir}}/path C.kt",
-        "{{source_dir}}/config A.yml",
-        "{{source_dir}}/config B.yml",
-        "{{source_dir}}/config C.yml",
-        "{{source_dir}}/baseline.xml",
-        "_middlemen/detekt_Swrapper_Sbin-runfiles",
-        "detekt/wrapper/bin.jar",
+        "tests/analysis/path A.kt",
+        "tests/analysis/path B.kt",
+        "tests/analysis/path C.kt",
+        "tests/analysis/config A.yml",
+        "tests/analysis/config B.yml",
+        "tests/analysis/config C.yml",
+        "tests/analysis/baseline.xml",
         "detekt/wrapper/bin",
+        "detekt/wrapper/bin.jar",
+        "_middlemen/detekt_Swrapper_Sbin-runfiles",
     ])
 
     expected_outputs = _expand_paths(env.ctx, [
@@ -133,6 +133,7 @@ def _action_blank_contents_test_impl(ctx):
     assert_argv_contains(env, action, "--report")
     assert_argv_contains_prefix_suffix(env, action, "txt:", _expand_path(ctx, "{{source_dir}}/test_target_blank_detekt_report.txt"))
 
+    print()
     expected_inputs = _expand_paths(env.ctx, [
         "{{source_dir}}/path A.kt",
         "{{source_dir}}/path B.kt",
@@ -140,6 +141,7 @@ def _action_blank_contents_test_impl(ctx):
         "_middlemen/detekt_Swrapper_Sbin-runfiles",
         "detekt/wrapper/bin.jar",
         "detekt/wrapper/bin",
+        "_middlemen/detekt_Swrapper_Sbin-runfiles",
     ])
 
     expected_outputs = _expand_paths(env.ctx, [
