@@ -14,13 +14,13 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: buildifier
         run: bazel run --enable_bzlmod //.github/workflows:buildifier.check
   shellcheck:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout the sources"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: "Lint Shell files"
         run: for file in $(ind . -type f -name "*.sh" -not -path "./.github/*"); do shellcheck $file; done;
