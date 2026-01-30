@@ -77,7 +77,7 @@ def _action_full_contents_test_impl(ctx):
         "tests/analysis/baseline.xml",
         "detekt/wrapper/bin",
         "detekt/wrapper/bin.jar",
-        "_middlemen/detekt_Swrapper_Sbin-runfiles",
+        "detekt/wrapper/bin.runfiles",
     ])
 
     expected_outputs = _expand_paths(env.ctx, [
@@ -139,7 +139,7 @@ def _action_blank_contents_test_impl(ctx):
         "tests/analysis/path C.kt",
         "detekt/wrapper/bin",
         "detekt/wrapper/bin.jar",
-        "_middlemen/detekt_Swrapper_Sbin-runfiles",
+        "detekt/wrapper/bin.runfiles",
     ])
 
     expected_outputs = _expand_paths(env.ctx, [

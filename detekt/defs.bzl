@@ -2,6 +2,8 @@
 Rule declarations.
 """
 
+load("@rules_java//java:defs.bzl", "JavaInfo")
+
 _ATTRS = {
     "_detekt_wrapper": attr.label(
         default = "//detekt/wrapper:bin",

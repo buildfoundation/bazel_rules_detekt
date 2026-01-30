@@ -4,9 +4,9 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -19,8 +19,12 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ ubuntu-latest ]
-        bzlmod: [ true, false ]
+        os: [ubuntu-latest]
+        include:
+          - mode: bzlmod
+            flags: ""
+          - mode: workspace
+            flags: "--noenable_bzlmod --enable_workspace"
     runs-on: ${{ matrix.os }}
     steps:
       - name: "Checkout the sources"
@@ -35,19 +39,23 @@ jobs:
         with:
           path: |
             ~/.cache/bazel
-          key: bazel-cache-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'WORKSPACE.bazel', 'WORKSPACE.bzlmod') }}
-          restore-keys: bazel-cache-
+          key: bazel-cache-${{ matrix.mode }}-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'WORKSPACE.bazel', 'WORKSPACE.bzlmod') }}
+          restore-keys: bazel-cache-${{ matrix.mode }}-
       - name: "Setup Bazelisk"
         uses: bazelbuild/setup-bazelisk@v3
       - name: "Configure Bazel"
         run: cp .github/workflows/ci.bazelrc .
-      - name: "Build"
-        run: bazel build //detekt/wrapper:bin --enable_bzlmod=${{ matrix.bzlmod }}
+      - name: "Build (${{ matrix.mode }})"
+        run: bazel build //detekt/wrapper:bin ${{ matrix.flags }}
   test:
     strategy:
       matrix:
-        os: [ ubuntu-latest ]
-        bzlmod: [ true ]
+        os: [ubuntu-latest]
+        include:
+          - mode: bzlmod
+            flags: ""
+          - mode: workspace
+            flags: "--noenable_bzlmod --enable_workspace"
     runs-on: ${{ matrix.os }}
     steps:
       - name: "Checkout the sources"
@@ -62,18 +70,23 @@ jobs:
         with:
           path: |
             ~/.cache/bazel
-          key: bazel-cache-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'WORKSPACE.bazel', 'WORKSPACE.bzlmod') }}
-          restore-keys: bazel-cache-
+          key: bazel-cache-${{ matrix.mode }}-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'WORKSPACE.bazel', 'WORKSPACE.bzlmod') }}
+          restore-keys: bazel-cache-${{ matrix.mode }}-
       - name: "Setup Bazelisk"
         uses: bazelbuild/setup-bazelisk@v3
       - name: "Configure Bazel"
         run: cp .github/workflows/ci.bazelrc .
-      - name: "Unit tests"
-        run: bazel test //... --enable_bzlmod=${{ matrix.bzlmod }}
+      - name: "Unit tests (${{ matrix.mode }})"
+        run: bazel test //... ${{ matrix.flags }}
   integration-test:
     strategy:
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ubuntu-latest]
+        include:
+          - mode: bzlmod
+            flags: ""
+          - mode: workspace
+            flags: "--noenable_bzlmod --enable_workspace"
     runs-on: ${{ matrix.os }}
     steps:
       - name: "Checkout the sources"
@@ -88,11 +101,11 @@ jobs:
         with:
           path: |
             ~/.cache/bazel
-          key: bazel-cache-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'WORKSPACE.bazel', 'WORKSPACE.bzlmod') }}
-          restore-keys: bazel-cache-
+          key: bazel-cache-${{ matrix.mode }}-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'WORKSPACE.bazel', 'WORKSPACE.bzlmod') }}
+          restore-keys: bazel-cache-${{ matrix.mode }}-
       - name: "Setup Bazelisk"
         uses: bazelbuild/setup-bazelisk@v3
       - name: "Configure Bazel"
         run: cp .github/workflows/ci.bazelrc .
-      - name: "Integration tests"
-        run: bash tests/integration/suite.sh
+      - name: "Integration tests (${{ matrix.mode }})"
+        run: bash tests/integration/suite.sh "${{ matrix.flags }}"

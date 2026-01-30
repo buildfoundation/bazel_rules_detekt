@@ -10,9 +10,9 @@ register_toolchains("//detekt:default_toolchain")
 detekt = use_extension("//detekt:extensions.bzl", "detekt")
 use_repo(detekt, "detekt_cli_all")
 
-bazel_dep(name = "rules_java", version = "5.5.0")
-bazel_dep(name = "rules_proto", version = "5.3.0-21.7")
-bazel_dep(name = "rules_jvm_external", version = "5.3")
+bazel_dep(name = "rules_java", version = "8.6.3")
+bazel_dep(name = "rules_proto", version = "7.1.0")
+bazel_dep(name = "rules_jvm_external", version = "6.7")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
@@ -29,6 +29,6 @@ maven.install(
 )
 use_repo(maven, "rules_detekt_dependencies", "unpinned_rules_detekt_dependencies")
 
-bazel_dep(name = "bazel_skylib", version = "1.4.1", dev_dependency = True)
-bazel_dep(name = "stardoc", version = "0.5.3", dev_dependency = True, repo_name = "io_bazel_stardoc")
-bazel_dep(name = "buildifier_prebuilt", version = "6.3.3", dev_dependency = True)
+bazel_dep(name = "bazel_skylib", version = "1.7.1", dev_dependency = True)
+bazel_dep(name = "stardoc", version = "0.7.2", dev_dependency = True, repo_name = "io_bazel_stardoc")
+bazel_dep(name = "buildifier_prebuilt", version = "7.3.1", dev_dependency = True)
