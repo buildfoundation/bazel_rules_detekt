@@ -1,4 +1,6 @@
-common --enable_bzlmod
 common --test_tag_filters=-manual
+
+# Bazel 9+ has bzlmod enabled by default.
+# For WORKSPACE support, use: --noenable_bzlmod --enable_workspace
 
 try-import %workspace%/ci.bazelrc

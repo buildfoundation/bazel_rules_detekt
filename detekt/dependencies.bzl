@@ -40,8 +40,8 @@ def rules_detekt_dependencies(detekt = _DEFAULT_DETEKT_VERSION):
 
     # Java
 
-    rules_java_version = "5.5.0"
-    rules_java_sha = "bcfabfb407cb0c8820141310faa102f7fb92cc806b0f0e26a625196101b0b57e"
+    rules_java_version = "8.15.2"
+    rules_java_sha = "47632cc506c858011853073449801d648e10483d4b50e080ec2549a4b2398960"
 
     maybe(
         repo_rule = http_archive,
