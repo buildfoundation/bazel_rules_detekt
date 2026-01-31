@@ -12,7 +12,7 @@ use_repo(detekt, "detekt_cli_all")
 
 bazel_dep(name = "rules_java", version = "8.15.2")
 bazel_dep(name = "rules_proto", version = "7.1.0")
-bazel_dep(name = "rules_jvm_external", version = "6.7")
+bazel_dep(name = "rules_jvm_external", version = "6.9")
 bazel_dep(name = "bazel_worker_api", version = "0.0.10")
 bazel_dep(name = "bazel_worker_java", version = "0.0.10")
 
