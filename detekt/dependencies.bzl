@@ -67,16 +67,3 @@ def rules_detekt_dependencies(detekt = _DEFAULT_DETEKT_VERSION):
         url = "https://github.com/bazelbuild/rules_java/releases/download/{v}/rules_java-{v}.tar.gz".format(v = rules_java_version),
         sha256 = rules_java_sha,
     )
-
-    # JVM External
-
-    rules_jvm_external_version = "6.9"
-    rules_jvm_external_sha = "3c41eae4226a7dfdce7b213bc541557b8475c92da71e2233ec7c306630243a65"
-
-    maybe(
-        repo_rule = http_archive,
-        name = "rules_jvm_external",
-        url = "https://github.com/bazel-contrib/rules_jvm_external/releases/download/{v}/rules_jvm_external-{v}.tar.gz".format(v = rules_jvm_external_version),
-        strip_prefix = "rules_jvm_external-{v}".format(v = rules_jvm_external_version),
-        sha256 = rules_jvm_external_sha,
-    )

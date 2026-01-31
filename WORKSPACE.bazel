@@ -18,6 +18,38 @@ rules_detekt_toolchains()
 
 # Testing
 
+## JVM External
+
+rules_jvm_external_version = "6.9"
+
+rules_jvm_external_sha = "3c41eae4226a7dfdce7b213bc541557b8475c92da71e2233ec7c306630243a65"
+
+http_archive(
+    name = "rules_jvm_external",
+    sha256 = rules_jvm_external_sha,
+    strip_prefix = "rules_jvm_external-{v}".format(v = rules_jvm_external_version),
+    url = "https://github.com/bazel-contrib/rules_jvm_external/releases/download/{v}/rules_jvm_external-{v}.tar.gz".format(v = rules_jvm_external_version),
+)
+
+load("@rules_jvm_external//:defs.bzl", "maven_install")
+
+maven_install(
+    name = "rules_detekt_dependencies",
+    artifacts = [
+        "junit:junit:4.13.2",
+        "io.gitlab.arturbosch.detekt:detekt-formatting:1.23.1",
+    ],
+    fail_if_repin_required = True,
+    maven_install_json = "//:maven_install.json",
+    repositories = [
+        "https://repo1.maven.org/maven2/",
+    ],
+)
+
+load("@rules_detekt_dependencies//:defs.bzl", "pinned_maven_install")
+
+pinned_maven_install()
+
 ## Skylib
 
 skylib_version = "1.4.1"
