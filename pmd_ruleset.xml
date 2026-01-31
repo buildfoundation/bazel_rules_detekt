@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<ruleset name="rules_detekt-pmd-ruleset"
+  xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+
+  <description>PMD ruleset for rules_detekt Java code</description>
+
+  <!-- Best Practices -->
+  <rule ref="category/java/bestpractices.xml/AvoidUsingHardCodedIP" />
+  <rule ref="category/java/bestpractices.xml/UnusedLocalVariable" />
+  <rule ref="category/java/bestpractices.xml/UnusedPrivateField" />
+  <rule ref="category/java/bestpractices.xml/UnusedPrivateMethod" />
+
+  <!-- Code Style -->
+  <rule ref="category/java/codestyle.xml/UnnecessaryImport" />
+  <rule ref="category/java/codestyle.xml/EmptyControlStatement" />
+
+  <!-- Design -->
+  <rule ref="category/java/design.xml/CollapsibleIfStatements" />
+  <rule ref="category/java/design.xml/SimplifiedTernary" />
+
+  <!-- Error Prone -->
+  <rule ref="category/java/errorprone.xml/AvoidBranchingStatementAsLastInLoop" />
+  <rule ref="category/java/errorprone.xml/AvoidDecimalLiteralsInBigDecimalConstructor" />
+  <rule ref="category/java/errorprone.xml/AvoidMultipleUnaryOperators" />
+  <rule ref="category/java/errorprone.xml/BrokenNullCheck" />
+  <rule ref="category/java/errorprone.xml/ClassCastExceptionWithToArray" />
+  <rule ref="category/java/errorprone.xml/DontUseFloatTypeForLoopIndices" />
+  <rule ref="category/java/errorprone.xml/EmptyCatchBlock" />
+  <rule ref="category/java/errorprone.xml/JumbledIncrementer" />
+  <rule ref="category/java/errorprone.xml/MisplacedNullCheck" />
+  <rule ref="category/java/errorprone.xml/OverrideBothEqualsAndHashcode" />
+  <rule ref="category/java/errorprone.xml/ReturnFromFinallyBlock" />
+  <rule ref="category/java/errorprone.xml/UnconditionalIfStatement" />
+
+  <!-- Performance -->
+  <rule ref="category/java/performance.xml/BigIntegerInstantiation" />
+  <rule ref="category/java/performance.xml/StringInstantiation" />
+
+  <!-- Security -->
+  <rule ref="category/java/security.xml/HardCodedCryptoKey" />
+  <rule ref="category/java/security.xml/InsecureCryptoIv" />
+
+</ruleset>

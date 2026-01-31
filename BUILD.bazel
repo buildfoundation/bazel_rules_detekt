@@ -1,1 +1,4 @@
-exports_files(["maven_install.json"])
+exports_files([
+    "maven_install.json",
+    "pmd_ruleset.xml",
+])
