@@ -25,6 +25,24 @@ def rules_detekt_dependencies(detekt = _DEFAULT_DETEKT_VERSION):
         urls = [url.format(version = detekt.version) for url in detekt.url_templates],
     )
 
+    # Bazel Worker API (proto definitions)
+    maybe(
+        http_archive,
+        name = "bazel_worker_api",
+        sha256 = "2c8fb93a29f2ff68a1ac3e6e89e5d21a7cc99c0f2afe6b9bfe4c4fe78f63a3c8",
+        urls = ["https://github.com/nicholasphair/bazel-worker-api/releases/download/v0.0.10/bazel-worker-api-v0.0.10.tar.gz"],
+        strip_prefix = "bazel-worker-api-0.0.10/proto",
+    )
+
+    # Bazel Worker Java (WorkRequestHandler, etc.)
+    maybe(
+        http_archive,
+        name = "bazel_worker_java",
+        sha256 = "2c8fb93a29f2ff68a1ac3e6e89e5d21a7cc99c0f2afe6b9bfe4c4fe78f63a3c8",
+        urls = ["https://github.com/nicholasphair/bazel-worker-api/releases/download/v0.0.10/bazel-worker-api-v0.0.10.tar.gz"],
+        strip_prefix = "bazel-worker-api-0.0.10/java",
+    )
+
     # Protocol Buffers
 
     rules_proto_version = "5.3.0-21.7"

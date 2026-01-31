@@ -4,10 +4,8 @@ java_library(
     name = "wrapper",
     srcs = glob(["src/main/java/**/*.java"]),
     deps = [
+        "@bazel_worker_java//src/main/java/com/google/devtools/build/lib/worker:work_request_handlers",
         "@detekt_cli_all//jar",
-        "@rules_detekt_dependencies//:com_squareup_moshi_moshi",
-        "@rules_detekt_dependencies//:com_squareup_okio_okio_jvm",
-        "@rules_detekt_dependencies//:io_reactivex_rxjava3_rxjava",
     ],
 )
 
@@ -27,8 +25,6 @@ java_test(
     test_class = "io.buildfoundation.bazel.detekt.TestsSuite",
     deps = [
         ":wrapper",
-        "@rules_detekt_dependencies//:com_squareup_okio_okio_jvm",
-        "@rules_detekt_dependencies//:io_reactivex_rxjava3_rxjava",
         "@rules_detekt_dependencies//:junit_junit",
     ],
 )
