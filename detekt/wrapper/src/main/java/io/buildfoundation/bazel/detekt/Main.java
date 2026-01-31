@@ -6,7 +6,9 @@ import io.buildfoundation.bazel.detekt.execute.Detekt;
 import io.buildfoundation.bazel.detekt.execute.Executable;
 import io.buildfoundation.bazel.detekt.execute.ExecutableResult;
 
+import java.io.IOException;
 import java.io.PrintStream;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,49 +18,52 @@ public final class Main {
         Executable executable = new Executable.DetektImpl(new Detekt.Impl());
 
         if (Arrays.asList(args).contains("--persistent_worker")) {
-            runPersistentWorker(executable);
+            System.exit(runPersistentWorker(executable));
         } else {
-            runOneShot(executable, args);
+            System.exit(runOneShot(executable, args));
         }
     }
 
-    private static void runOneShot(Executable executable, String[] args) {
+    private static int runOneShot(Executable executable, String[] args) {
         ExecutableResult result = executable.execute(args);
 
         if (result instanceof ExecutableResult.Failure) {
             System.err.println(result.output());
         }
 
-        System.exit(result.statusCode());
+        return result.statusCode();
     }
 
-    private static void runPersistentWorker(Executable executable) {
-        // Capture the original streams before they're wrapped by WorkRequestHandler
+    private static int runPersistentWorker(Executable executable) {
         PrintStream stderr = System.err;
 
-        WorkRequestHandler handler = new WorkRequestHandler.WorkRequestHandlerBuilder(
-            new WorkRequestHandler.WorkRequestCallback((request, pw) -> {
-                List<String> arguments = request.getArgumentsList();
-                String[] args = arguments.toArray(new String[0]);
+        try (WorkRequestHandler handler = new WorkRequestHandler.WorkRequestHandlerBuilder(
+                new WorkRequestHandler.WorkRequestCallback((request, pw) -> {
+                    List<String> arguments = request.getArgumentsList();
+                    String[] args = arguments.toArray(new String[0]);
 
-                ExecutableResult result = executable.execute(args);
+                    ExecutableResult result = executable.execute(args);
 
-                if (result instanceof ExecutableResult.Failure) {
-                    pw.println(result.output());
-                }
+                    String output = result.output();
+                    if (!output.isEmpty()) {
+                        pw.print(output);
+                    }
 
-                return result.statusCode();
-            }),
-            stderr,
-            new ProtoWorkerMessageProcessor(System.in, System.out)
-        ).build();
+                    return result.statusCode();
+                }),
+                stderr,
+                new ProtoWorkerMessageProcessor(System.in, System.out))
+            .setCpuUsageBeforeGc(Duration.ofSeconds(10))
+            .setIdleTimeBeforeGc(Duration.ofSeconds(30))
+            .setCancelCallback((requestId, thread) -> thread.interrupt())
+            .build()) {
 
-        try {
             handler.processRequests();
-        } catch (Exception e) {
+        } catch (IOException e) {
             stderr.println("Worker error: " + e.getMessage());
             e.printStackTrace(stderr);
-            System.exit(1);
+            return 1;
         }
+        return 0;
     }
 }
