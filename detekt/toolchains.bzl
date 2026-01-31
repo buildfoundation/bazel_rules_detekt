@@ -21,9 +21,6 @@ def rules_detekt_toolchains(toolchain = "@rules_detekt//detekt:default_toolchain
     maven_install(
         name = "rules_detekt_dependencies",
         artifacts = [
-            maven.artifact("com.squareup.moshi", "moshi", "1.14.0"),
-            maven.artifact("com.squareup.okio", "okio-jvm", "3.2.0"),
-            maven.artifact("io.reactivex.rxjava3", "rxjava", "3.0.12"),
             maven.artifact("junit", "junit", "4.13.2", testonly = True),
             maven.artifact("io.gitlab.arturbosch.detekt", "detekt-cli", "1.23.1", testonly = True),
         ],
