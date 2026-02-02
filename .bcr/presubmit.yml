@@ -1,5 +1,5 @@
 matrix:
-  platform: ["macos", "ubuntu2004"]]
+  platform: ["macos", "ubuntu2004"]
   bazel: ["8.x", "9.x", "rolling"]
 
 tasks:
