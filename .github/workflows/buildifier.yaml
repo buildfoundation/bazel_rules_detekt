@@ -20,7 +20,7 @@ jobs:
   shellcheck:
     runs-on: ubuntu-latest
     steps:
-      - name: "Checkout the sources"
+      - name: Checkout the sources
         uses: actions/checkout@v6
-      - name: "Lint Shell files"
-        run: for file in $(ind . -type f -name "*.sh" -not -path "./.github/*"); do shellcheck $file; done;
+      - name: Lint shell files
+        run: for file in $(find . -type f -name "*.sh" -not -path "./.github/*"); do shellcheck "$file"; done

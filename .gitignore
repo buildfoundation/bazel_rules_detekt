@@ -1,10 +1,6 @@
-### IntelliJ
+bazel-*
+.bazelrc.user
 .idea/
-out/
 .ijwb/
-
-### macOS
+out/
 .DS_Store
-
-### Bazel
-/bazel-*

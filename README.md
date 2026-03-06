@@ -35,7 +35,7 @@ http_archive(
     name = "rules_detekt",
     sha256 = rules_detekt_sha,
     strip_prefix = "bazel_rules_detekt-{v}".format(v = rules_detekt_version),
-    url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/v{v}.tar.gz".format(v = rules_detekt_version),
+    url = "https://github.com/buildfoundation/bazel_rules_detekt/releases/download/v{v}/bazel_rules_detekt-v{v}.tar.gz".format(v = rules_detekt_version),
 )
 
 load("@rules_detekt//detekt:dependencies.bzl", "rules_detekt_dependencies")
@@ -382,3 +382,12 @@ detekt_test(
 ```
 
 Any combination of reports may be enabled.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local development workflows.
+
+## Releases
+
+Releases are cut by pushing a `v*.*.*` tag, which triggers `.github/workflows/release.yaml`.
+The release workflow also invokes `.github/workflows/publish.yaml` for Bazel Central Registry publication.
