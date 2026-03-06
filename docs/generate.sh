@@ -3,8 +3,7 @@ set -eou pipefail
 
 bazel build //docs:docs
 
-mv bazel-bin/docs/rule.md docs/rule.md
+mv bazel-bin/docs/attrs.md docs/attrs.md
 
-chmod -x docs/rule.md
-chmod u+w docs/rule.md
-
+chmod -x docs/attrs.md
+chmod u+w docs/attrs.md

@@ -14,17 +14,76 @@ _ATTRS = {
         mandatory = True,
         allow_files = [".kt", ".kts"],
         allow_empty = False,
-        doc = "Kotlin source code files.",
+        doc = "Kotlin source code files to analyze.",
+    ),
+    "plugins": attr.label_list(
+        default = [],
+        providers = [JavaInfo],
+        doc = "Extra paths to plugin jars.",
     ),
     "cfgs": attr.label_list(
-        allow_files = [".yml"],
         default = [],
-        doc = "[Detekt configuration files](https://detekt.github.io/detekt/configurations.html). Otherwise [the default configuration](https://github.com/detekt/detekt/blob/master/detekt-core/src/main/resources/default-detekt-config.yml) is used.",
+        allow_files = [".yml"],
+        doc = "Path to the config file (path/to/config.yml). Multiple configuration files can be specified.",
+    ),
+    "config_resource": attr.string(
+        default = "",
+        doc = "Path to the config resource on detekt's classpath (path/to/config.yml).",
     ),
     "baseline": attr.label(
         default = None,
         allow_single_file = [".xml"],
-        doc = "[Detekt baseline file](https://detekt.github.io/detekt/baseline.html).",
+        doc = "If a baseline xml file is passed in, only new code smells not in the baseline are printed in the console.",
+    ),
+    "all_rules": attr.bool(
+        default = False,
+        doc = "Activates all available (even unstable) rules.",
+    ),
+    "auto_correct": attr.bool(
+        default = False,
+        doc = "Allow rules to auto correct code if they support it. The default rule sets do NOT support auto correcting and won't change any line in the users code base. However custom rules can be written to support auto correcting. The additional 'formatting' rule set, added with '--plugins', does support it and needs this flag.",
+    ),
+    "base_path": attr.string(
+        default = "",
+        doc = "Specifies a directory as the base path. Currently it impacts all file paths in the formatted reports. File paths in console output and txt report are not affected and remain as absolute paths.",
+    ),
+    "build_upon_default_config": attr.bool(
+        default = False,
+        doc = "Preconfigures detekt with a bunch of rules and some opinionated defaults for you. Allows additional provided configurations to override the defaults.",
+    ),
+    "disable_default_rulesets": attr.bool(
+        default = False,
+        doc = "Disables default rule sets.",
+    ),
+    "excludes": attr.string_list(
+        default = [],
+        doc = "Globbing patterns describing paths to exclude from the analysis.",
+    ),
+    "includes": attr.string_list(
+        default = [],
+        doc = "Globbing patterns describing paths to include in the analysis. Useful in combination with 'excludes' patterns.",
+    ),
+    "jvm_target": attr.string(
+        default = "1.8",
+        values = ["1.8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"],
+        doc = "EXPERIMENTAL: Target version of the generated JVM bytecode that was generated during compilation and is now being used for type resolution (1.8, 9, 10, ..., 20)",
+    ),
+    "language_version": attr.string(
+        default = "",
+        values = ["", "1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "2.0", "2.1", "2.2"],
+        doc = "EXPERIMENTAL: Compatibility mode for Kotlin language version X.Y, reports errors for all language features that came out later",
+    ),
+    "max_issues": attr.int(
+        default = -1,
+        doc = "Passes only when found issues count does not exceed specified issues count.",
+    ),
+    "parallel": attr.bool(
+        default = False,
+        doc = "Enables parallel compilation and analysis of source files. Do some benchmarks first before enabling this flag. Heuristics show performance benefits starting from 2000 lines of Kotlin code.",
+    ),
+    "txt_report": attr.bool(
+        default = False,
+        doc = "Enables / disables the text report generation. The report file name is `{target_name}_detekt_report.txt`.",
     ),
     "html_report": attr.bool(
         default = False,
@@ -34,38 +93,13 @@ _ATTRS = {
         default = False,
         doc = "Enables / disables the XML report generation. The report file name is `{target_name}_detekt_report.xml`. FYI Detekt uses the Checkstyle XML reporting format which makes it compatible with tools like SonarQube.",
     ),
-    "build_upon_default_config": attr.bool(
+    "md_report": attr.bool(
         default = False,
-        doc = "See [Detekt `--build-upon-default-config` option](https://detekt.github.io/detekt/cli.html).",
+        doc = "Enables / disables the Markdown report generation. The report file name is `{target_name}_detekt_report.md`.",
     ),
-    "disable_default_rulesets": attr.bool(
+    "sarif_report": attr.bool(
         default = False,
-        doc = "See [Detekt `--disable-default-rulesets` option](https://detekt.github.io/detekt/cli.html).",
-    ),
-    "fail_fast": attr.bool(
-        default = False,
-        doc = "See [Detekt `--fail-fast` option](https://detetk.github.io/detekt/cli.html).",
-    ),
-    "all_rules": attr.bool(
-        default = False,
-        doc = "See [Detekt `--all-rules` option](https://detekt.dev/docs/gettingstarted/cli/).",
-    ),
-    "disable_default_rule_sets": attr.bool(
-        default = False,
-        doc = "See [Detekt `--disable-default-rulesets` option](https://detekt.dev/docs/gettingstarted/cli/).",
-    ),
-    "auto_correct": attr.bool(
-        default = False,
-        doc = "See [Detekt `--auto-correct` option](https://detekt.dev/docs/gettingstarted/cli/).",
-    ),
-    "parallel": attr.bool(
-        default = False,
-        doc = "See [Detekt `--parallel` option](https://detekt.github.io/detekt/cli.html).",
-    ),
-    "plugins": attr.label_list(
-        default = [],
-        doc = "[Detekt plugins](https://detekt.github.io/detekt/extensions.html). For example, [the formatting rule set](https://detekt.github.io/detekt/formatting.html). Labels should be JVM artifacts (generated via [`rules_jvm_external`](https://github.com/bazelbuild/rules_jvm_external) work).",
-        providers = [JavaInfo],
+        doc = "Enables / disables the SARIF report generation. The report file name is `{target_name}_detekt_report.sarif`.",
     ),
 }
 
@@ -100,6 +134,9 @@ def _impl(
     action_inputs.extend(ctx.files.cfgs)
     detekt_arguments.add_joined("--config", ctx.files.cfgs, join_with = ",")
 
+    if ctx.attr.config_resource:
+        detekt_arguments.add("--config-resource", ctx.attr.config_resource)
+
     internal_baseline = None
     baseline_script = ""
     run_files = []
@@ -124,22 +161,14 @@ def _impl(
         action_inputs.append(ctx.file.baseline)
         detekt_arguments.add("--baseline", ctx.file.baseline)
 
-    if ctx.attr.html_report:
-        html_report = ctx.actions.declare_file("{}_detekt_report.html".format(ctx.label.name))
+    if ctx.attr.all_rules:
+        detekt_arguments.add("--all-rules")
 
-        action_outputs.append(html_report)
-        detekt_arguments.add("--report", "html:{}".format(html_report.path))
+    if ctx.attr.auto_correct:
+        detekt_arguments.add("--auto-correct")
 
-    txt_report = ctx.actions.declare_file("{}_detekt_report.txt".format(ctx.label.name))
-
-    action_outputs.append(txt_report)
-    detekt_arguments.add("--report", "txt:{}".format(txt_report.path))
-
-    if ctx.attr.xml_report:
-        xml_report = ctx.actions.declare_file("{}_detekt_report.xml".format(ctx.label.name))
-
-        action_outputs.append(xml_report)
-        detekt_arguments.add("--report", "xml:{}".format(xml_report.path))
+    if ctx.attr.base_path:
+        detekt_arguments.add("--base-path", ctx.attr.base_path)
 
     if ctx.attr.build_upon_default_config:
         detekt_arguments.add("--build-upon-default-config")
@@ -147,17 +176,19 @@ def _impl(
     if ctx.attr.disable_default_rulesets:
         detekt_arguments.add("--disable-default-rulesets")
 
-    if ctx.attr.fail_fast:
-        detekt_arguments.add("--fail-fast")
+    if ctx.attr.excludes:
+        detekt_arguments.add_joined("--excludes", ctx.attr.excludes, join_with = ",")
 
-    if ctx.attr.all_rules:
-        detekt_arguments.add("--all-rules")
+    if ctx.attr.includes:
+        detekt_arguments.add_joined("--includes", ctx.attr.includes, join_with = ",")
 
-    if ctx.attr.disable_default_rule_sets:
-        detekt_arguments.add("--disable-default-rulesets")
+    detekt_arguments.add("--jvm-target", ctx.attr.jvm_target)
 
-    if ctx.attr.auto_correct:
-        detekt_arguments.add("--auto-correct")
+    if ctx.attr.language_version:
+        detekt_arguments.add("--language-version", ctx.attr.language_version)
+
+    if ctx.attr.max_issues >= 0:
+        detekt_arguments.add("--max-issues", ctx.attr.max_issues)
 
     if ctx.attr.parallel:
         detekt_arguments.add("--parallel")
@@ -168,6 +199,30 @@ def _impl(
     action_inputs.extend(ctx.files.plugins)
     detekt_arguments.add_joined("--plugins", ctx.files.plugins, join_with = ",")
 
+    txt_report = ctx.actions.declare_file("{}_detekt_report.txt".format(ctx.label.name))
+    action_outputs.append(txt_report)
+    detekt_arguments.add("--report", "txt:{}".format(txt_report.path))
+
+    if ctx.attr.html_report:
+        html_report = ctx.actions.declare_file("{}_detekt_report.html".format(ctx.label.name))
+        action_outputs.append(html_report)
+        detekt_arguments.add("--report", "html:{}".format(html_report.path))
+
+    if ctx.attr.xml_report:
+        xml_report = ctx.actions.declare_file("{}_detekt_report.xml".format(ctx.label.name))
+        action_outputs.append(xml_report)
+        detekt_arguments.add("--report", "xml:{}".format(xml_report.path))
+
+    if ctx.attr.md_report:
+        md_report = ctx.actions.declare_file("{}_detekt_report.md".format(ctx.label.name))
+        action_outputs.append(md_report)
+        detekt_arguments.add("--report", "md:{}".format(md_report.path))
+
+    if ctx.attr.sarif_report:
+        sarif_report = ctx.actions.declare_file("{}_detekt_report.sarif".format(ctx.label.name))
+        action_outputs.append(sarif_report)
+        detekt_arguments.add("--report", "sarif:{}".format(sarif_report.path))
+
     execution_result = ctx.actions.declare_file("{}_exit_code.txt".format(ctx.label.name))
     run_files.append(execution_result)
     action_outputs.append(execution_result)
@@ -175,6 +230,7 @@ def _impl(
 
     ctx.actions.run(
         mnemonic = "Detekt",
+        progress_message = "Running Detekt for {}".format(str(ctx.label)),
         inputs = action_inputs,
         outputs = action_outputs,
         executable = ctx.executable._detekt_wrapper,
@@ -208,7 +264,9 @@ exit "$exit_code"
 
     return [
         DefaultInfo(
-            files = depset(action_outputs),
+            # The text report is always generated as it's the source for console output via the shell script. However,
+            # only add it the report outputs if it's explicitly set.
+            files = depset([f for f in action_outputs if f != txt_report or ctx.attr.txt_report]),
             executable = final_result,
             runfiles = ctx.runfiles(files = run_files),
         ),
@@ -227,14 +285,14 @@ detekt = rule(
     implementation = _detekt_impl,
     attrs = _ATTRS,
     provides = [DefaultInfo],
-    toolchains = ["//detekt:toolchain_type"],
+    toolchains = [TOOLCHAIN_TYPE],
 )
 
 detekt_create_baseline = rule(
     implementation = _detekt_create_baseline_impl,
     attrs = _ATTRS,
     provides = [DefaultInfo],
-    toolchains = ["//detekt:toolchain_type"],
+    toolchains = [TOOLCHAIN_TYPE],
     executable = True,
 )
 
@@ -242,6 +300,6 @@ detekt_test = rule(
     implementation = _detekt_test_impl,
     attrs = _ATTRS,
     provides = [DefaultInfo],
-    toolchains = ["//detekt:toolchain_type"],
+    toolchains = [TOOLCHAIN_TYPE],
     test = True,
 )

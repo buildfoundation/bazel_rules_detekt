@@ -64,7 +64,6 @@ def _action_full_contents_test_impl(ctx):
     assert_argv_contains(env, action, _expand_path(ctx, "{{output_dir}}/{{source_dir}}/test_target_full_exit_code.txt"))
     assert_argv_contains(env, action, "--build-upon-default-config")
     assert_argv_contains(env, action, "--disable-default-rulesets")
-    assert_argv_contains(env, action, "--fail-fast")
     assert_argv_contains(env, action, "--parallel")
 
     expected_inputs = _expand_paths(env.ctx, [
@@ -81,8 +80,8 @@ def _action_full_contents_test_impl(ctx):
     ])
 
     expected_outputs = _expand_paths(env.ctx, [
-        "{{source_dir}}/test_target_full_detekt_report.html",
         "{{source_dir}}/test_target_full_detekt_report.txt",
+        "{{source_dir}}/test_target_full_detekt_report.html",
         "{{source_dir}}/test_target_full_detekt_report.xml",
         "{{source_dir}}/test_target_full_exit_code.txt",
     ])
@@ -104,7 +103,6 @@ def _test_action_full_contents():
         xml_report = True,
         build_upon_default_config = True,
         disable_default_rulesets = True,
-        fail_fast = True,
         parallel = True,
         # The "plugins" option is skipped here since the path includes a declared Detekt version
         # and we do not want to change the test every time the Detekt artifact is updated.
