@@ -212,6 +212,26 @@
   },
   "selectedYankedVersions": {},
   "moduleExtensions": {
+    "@@rules_detekt+//detekt:extensions.bzl%detekt": {
+      "general": {
+        "bzlTransitiveDigest": "EL6lBxd6taInZZzTQBM7fXBnDmfX+4904uSX23jN0+M=",
+        "usagesDigest": "/9cTy6Yi4W3Ga5L7XusG+6hLIB/Zm8c3YfjTY545pIw=",
+        "recordedInputs": [
+          "REPO_MAPPING:rules_detekt+,bazel_tools bazel_tools"
+        ],
+        "generatedRepoSpecs": {
+          "detekt_cli_all": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_jar",
+            "attributes": {
+              "sha256": "2ce2ff952e150baf28a29cda70a363b0340b3e81a55f43e51ec5edffc3d066c1",
+              "urls": [
+                "https://github.com/detekt/detekt/releases/download/v1.23.8/detekt-cli-1.23.8-all.jar"
+              ]
+            }
+          }
+        }
+      }
+    },
     "@@rules_kotlin+//src/main/starlark/core/repositories:bzlmod_setup.bzl%rules_kotlin_extensions": {
       "general": {
         "bzlTransitiveDigest": "ABI1D/sbS1ovwaW/kHDoj8nnXjQ0oKU9fzmzEG4iT8o=",
