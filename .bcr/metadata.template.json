@@ -12,9 +12,7 @@
       "name": "Artem Zinnatullin"
     }
   ],
-  "repository": [
-    "github:buildfoundation/bazel_rules_detekt"
-  ],
+  "repository": ["github:buildfoundation/bazel_rules_detekt"],
   "versions": [],
   "yanked_versions": {}
 }
