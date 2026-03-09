@@ -1,0 +1,35 @@
+# Override http_archive for local testing
+local_repository(
+    name = "rules_detekt",
+    path = "../..",
+)
+
+#---SNIP--- Below here is re-used in the workspace snippet published on releases
+
+######################
+# rules_detekt setup #
+######################
+# Fetch bazel_skylib for smoke tests.
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "6e78f0e57de26801f6f564fa7c4a48dc8b36873e416257a92bbb0937eeac8446",
+    urls = [
+        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.8.2/bazel-skylib-1.8.2.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.8.2/bazel-skylib-1.8.2.tar.gz",
+    ],
+)
+
+# Fetches the rules_detekt dependencies.
+# If you want to have a different version of some dependency,
+# you should fetch it *before* calling this.
+# Alternatively, you can skip calling this function, so long as you've
+# already fetched all the dependencies.
+load("@rules_detekt//detekt:dependencies.bzl", "rules_detekt_dependencies")
+
+rules_detekt_dependencies()
+
+load("@rules_detekt//detekt:toolchains.bzl", "rules_detekt_toolchains")
+
+rules_detekt_toolchains()

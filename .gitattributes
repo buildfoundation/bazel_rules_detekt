@@ -1,0 +1,6 @@
+#################################
+# Configuration for 'git archive'
+# See https://git-scm.com/docs/git-archive#ATTRIBUTES
+
+# Don't include tests in the distribution artifact, to reduce size.
+tests export-ignore

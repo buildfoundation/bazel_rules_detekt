@@ -1,5 +1,4 @@
 name: Buildifier
-
 # Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
@@ -9,7 +8,6 @@ on:
     branches: [master]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -20,7 +18,7 @@ jobs:
   shellcheck:
     runs-on: ubuntu-latest
     steps:
-      - name: "Checkout the sources"
+      - name: Checkout the sources
         uses: actions/checkout@v6
-      - name: "Lint Shell files"
-        run: for file in $(ind . -type f -name "*.sh" -not -path "./.github/*"); do shellcheck $file; done;
+      - name: Lint shell files
+        run: for file in $(find . -type f -name "*.sh" -not -path "./.github/*"); do shellcheck "$file"; done

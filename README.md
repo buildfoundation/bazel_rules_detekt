@@ -15,7 +15,7 @@ for the [Bazel build system](https://bazel.build).
 
 ## Usage
 
-Refer to [GitHub releases](https://github.com/buildfoundation/bazel_rules_detekt/releases) for the version and the SHA-256 hashsum.
+Refer to [GitHub releases](https://github.com/buildfoundation/bazel_rules_detekt/releases) for the version and SHA-256 checksum.
 
 ### `MODULE.bazel` Configuration
 
@@ -35,7 +35,7 @@ http_archive(
     name = "rules_detekt",
     sha256 = rules_detekt_sha,
     strip_prefix = "bazel_rules_detekt-{v}".format(v = rules_detekt_version),
-    url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/v{v}.tar.gz".format(v = rules_detekt_version),
+    url = "https://github.com/buildfoundation/bazel_rules_detekt/releases/download/v{v}/bazel_rules_detekt-v{v}.tar.gz".format(v = rules_detekt_version),
 )
 
 load("@rules_detekt//detekt:dependencies.bzl", "rules_detekt_dependencies")
@@ -144,7 +144,7 @@ detekt_test(
 
 ### Configuration Options
 
-All three rules share the same configuration options. In addition to `srcs`, `cfgs`, `baseline`, `plugins`, 
+All three rules share the same configuration options. In addition to `srcs`, `cfgs`, `baseline`, `plugins`,
 and report options, most attributes correspond directly to
 [Detekt CLI flags](https://detekt.dev/docs/1.23.8/gettingstarted/cli/#use-the-cli) and pass them
 through when explicitly set.
@@ -154,7 +154,7 @@ More information can be found in the [attributes](docs/attrs.md).
 ### Reports
 
 A plain-text report (`{name}_detekt_report.txt`) is **always** generated. Other report formats are
-available for opt-in via configuration options..
+available for opt-in via configuration options.
 
 ## Advanced Configuration
 
@@ -382,3 +382,12 @@ detekt_test(
 ```
 
 Any combination of reports may be enabled.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local development workflows.
+
+## Releases
+
+Releases are cut by pushing a `v*.*.*` tag, which triggers `.github/workflows/release.yaml`.
+The release workflow also invokes `.github/workflows/publish.yaml` for Bazel Central Registry publication.
