@@ -13,6 +13,39 @@ for the [Bazel build system](https://bazel.build).
 - baseline generation via `detekt_create_baseline`;
 - configuration options via [attributes](docs/attrs.md).
 
+## Compatibility
+
+| `bazel_rules_detekt`                | Default Detekt  | Kotlin compiler | Max `language_version` | Min JDK | Max tested JDK | Bazel     |
+| ----------------------------------- | --------------- | --------------- | ---------------------- | ------- | -------------- | --------- |
+| **v0.8.1.9 – v0.8.1.13** _(latest)_ | 1.23.8          | 2.0.21          | `2.0`                  | 8       | 21             | 9.x       |
+| v0.8.1.3 – v0.8.1.8                 | 1.23.5          | 1.9.22          | `1.9`                  | 8       | 17             | 7.x – 9.x |
+| v0.8.1 – v0.8.1.2                   | 1.23.1          | 1.9.0           | `1.9`                  | 8       | 17             | 6.x       |
+| v0.7.0                              | 1.22.0          | —               | —                      | 8       | —              | 5.x       |
+| v0.6.0 – v0.6.1                     | 1.19.0 – 1.21.0 | —               | —                      | 8       | —              | 5.x       |
+| v0.4.0 – v0.5.0                     | 1.15.0          | —               | —                      | —       | —              | 4.x       |
+| v0.3.0                              | 1.7.4           | —               | —                      | —       | —              | 3.x       |
+| v0.1.0 – v0.2.0                     | 1.2.0           | —               | —                      | —       | —              | 1.x       |
+
+For detailed per-Detekt-version Kotlin and JDK compatibility, see the [Detekt compatibility table](https://detekt.dev/docs/introduction/compatibility/).
+
+> **Note:** The Kotlin compiler bundled with Detekt determines which `language_version` values are valid — setting it higher than what the bundled compiler supports will cause Detekt to fail. The default Detekt version can always be overridden — see [Detekt Version](#detekt-version).
+
+> **Note:** Detekt 2.x is currently in alpha (targeting Kotlin 2.2+) and is not yet recommended for production use.
+
+> **Note:** JDK 25 and above are **not** supported with Detekt 1.23.x. The bundled Kotlin compiler performs a hard version check that fails on JDK 25+. This is resolved in the Detekt 2.x series.
+
+### Bazel
+
+| Bazel version | `MODULE.bazel` (Bzlmod) | `WORKSPACE`                                              |
+| ------------- | ----------------------- | -------------------------------------------------------- |
+| 9.x           | ✅                      | ✅ requires `--enable_workspace`                         |
+| 8.x           | ✅                      | ⚠️ disabled by default; opt-in with `--enable_workspace` |
+| 7.x           | ✅                      | ✅ (deprecated; bzlmod recommended)                      |
+| 6.x           | ✅                      | ✅                                                       |
+| < 6           | ❌                      | ✅                                                       |
+
+The project is developed and tested against **Bazel 9**. Older versions may work but are not actively tested.
+
 ## Usage
 
 Refer to [GitHub releases](https://github.com/buildfoundation/bazel_rules_detekt/releases) for the version and the SHA-256 hashsum.
@@ -144,7 +177,7 @@ detekt_test(
 
 ### Configuration Options
 
-All three rules share the same configuration options. In addition to `srcs`, `cfgs`, `baseline`, `plugins`, 
+All three rules share the same configuration options. In addition to `srcs`, `cfgs`, `baseline`, `plugins`,
 and report options, most attributes correspond directly to
 [Detekt CLI flags](https://detekt.dev/docs/1.23.8/gettingstarted/cli/#use-the-cli) and pass them
 through when explicitly set.
