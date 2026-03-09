@@ -15,7 +15,7 @@ for the [Bazel build system](https://bazel.build).
 
 ## Usage
 
-Refer to [GitHub releases](https://github.com/buildfoundation/bazel_rules_detekt/releases) for the version and the SHA-256 hashsum.
+Refer to [GitHub releases](https://github.com/buildfoundation/bazel_rules_detekt/releases) for the version and SHA-256 checksum.
 
 ### `MODULE.bazel` Configuration
 
@@ -144,7 +144,7 @@ detekt_test(
 
 ### Configuration Options
 
-All three rules share the same configuration options. In addition to `srcs`, `cfgs`, `baseline`, `plugins`, 
+All three rules share the same configuration options. In addition to `srcs`, `cfgs`, `baseline`, `plugins`,
 and report options, most attributes correspond directly to
 [Detekt CLI flags](https://detekt.dev/docs/1.23.8/gettingstarted/cli/#use-the-cli) and pass them
 through when explicitly set.
@@ -154,7 +154,7 @@ More information can be found in the [attributes](docs/attrs.md).
 ### Reports
 
 A plain-text report (`{name}_detekt_report.txt`) is **always** generated. Other report formats are
-available for opt-in via configuration options..
+available for opt-in via configuration options.
 
 ## Advanced Configuration
 
