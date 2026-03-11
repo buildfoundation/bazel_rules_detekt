@@ -8,3 +8,7 @@ out/
 
 ### Bazel
 /bazel-*
+
+## AI
+.claude/
+.mcp.json
