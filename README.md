@@ -9,7 +9,7 @@ for the [Bazel build system](https://bazel.build).
 - HTML, text, XML, Markdown, and SARIF reports;
 - [plugins](https://detekt.dev/docs/extensions/extensions/);
 - customizable Detekt version and JVM flags;
-- [persistent workers](https://blog.bazel.build/2015/12/10/java-workers.html) support;
+- [type resolution](https://detekt.dev/docs/gettingstarted/type-resolution/) with JVM and Android classpath support;
 - baseline generation via `detekt_create_baseline`;
 - configuration options via [attributes](docs/attrs.md).
 
@@ -127,15 +127,15 @@ and it supports standard Bazel test flags such as `--test_output=all`.
 
 ### `detekt` vs `detekt_test`
 
-|                     | `detekt`                  | `detekt_test`                          |
-| ------------------- | ------------------------- | -------------------------------------- |
-| Bazel rule type     | build rule                | test rule                              |
-| Run with            | `bazel build`             | `bazel test`                           |
-| Included in         | `bazel build //...`       | `bazel test //...`                     |
-| Violation behaviour | build action fails        | test fails; build action always passes |
-| Text report         | printed when action fails | printed to test output when test fails |
-| Result caching      | yes                       | yes                                    |
-| Bazel test flags    | n/a                       | yes (`--test_output`, etc.)            |
+|                     | `detekt`                  | `detekt_test`                                                         |
+| ------------------- | ------------------------- |-----------------------------------------------------------------------|
+| Bazel rule type     | build rule                | test rule                                                             |
+| Run with            | `bazel build`             | `bazel test`                                                          |
+| Included in         | `bazel build //...`       | `bazel test //...`                                                    |
+| Violation behavior  | build action fails        | test fails; build action always passes even if violations are present |
+| Text report         | printed when action fails | printed to test output when test fails                                |
+| Result caching      | yes                       | yes                                                                   |
+| Bazel test flags    | n/a                       | yes (`--test_output`, etc.)                                           |
 
 Use `detekt` when you want violations to block builds the same way a compiler error does. Use
 `detekt_test` when you want Detekt to run alongside your test suite and report results through
@@ -177,8 +177,9 @@ detekt_test(
 
 ### Configuration Options
 
-All three rules share the same configuration options. In addition to `srcs`, `cfgs`, `baseline`, `plugins`,
-and report options, most attributes correspond directly to
+All three rules share the same configuration options. In addition to `srcs`, `deps`, `cfgs`,
+`baseline`, `plugins`, `enable_type_resolution`, `is_android`, and report options, most attributes
+correspond directly to
 [Detekt CLI flags](https://detekt.dev/docs/1.23.8/gettingstarted/cli/#use-the-cli) and pass them
 through when explicitly set.
 
@@ -187,7 +188,7 @@ More information can be found in the [attributes](docs/attrs.md).
 ### Reports
 
 A plain-text report (`{name}_detekt_report.txt`) is **always** generated. Other report formats are
-available for opt-in via configuration options..
+available for opt-in via attributes.
 
 ## Advanced Configuration
 
@@ -207,7 +208,7 @@ detekt.detekt_version(
 use_repo(detekt, "detekt_cli_all")
 ```
 
-To download Detekt from a custom location (e.g. an internal mirror), use the `url_templates` parameter:
+To download Detekt from a custom location (e.g., an internal mirror), use the `url_templates` parameter:
 
 ```python
 detekt = use_extension("@rules_detekt//detekt:extensions.bzl", "detekt")
@@ -252,10 +253,18 @@ rules_detekt_dependencies(
 
 Each template may contain `{version}` which will be replaced with the version string.
 
-### JVM Flags
+### Toolchain
 
-The default toolchain uses `-Xms16m -Xmx128m`. To customize JVM flags, define your own toolchain
-in a `BUILD` file:
+The detekt toolchain controls JVM flags, the JVM bytecode target version, and the Kotlin language
+version compatibility. The defaults are:
+
+| Setting            | Default  |
+| ------------------ | -------- |
+| `jvm_flags`        | `-Xms16m -Xmx128m` |
+| `jvm_target`       | `1.8`    |
+| `language_version` | `2.0`    |
+
+To override any of these, define a custom toolchain in a `BUILD` file:
 
 ```python
 load("@rules_detekt//detekt:toolchain.bzl", "detekt_toolchain")
@@ -263,6 +272,8 @@ load("@rules_detekt//detekt:toolchain.bzl", "detekt_toolchain")
 detekt_toolchain(
     name = "my_detekt_toolchain_impl",
     jvm_flags = ["-Xms16m", "-Xmx512m"],
+    jvm_target = "11",
+    language_version = "1.9",
 )
 
 toolchain(
@@ -354,48 +365,44 @@ detekt_test(
 )
 ```
 
-### JVM Target
-
-Use `jvm_target` to set the JVM bytecode target version that matches what was used during compilation.
-This defaults to `1.8` if not explicitly set:
-
-```python
-detekt_test(
-    name = "my_detekt",
-    srcs = glob(["src/main/kotlin/**/*.kt"]),
-    jvm_target = "11",
-)
-```
-
-### Language Version
-
-Detekt will report errors for any language features introduced after the specified version if
-`language_version` is specified. When unset, no compatibility restriction is applied:
-
-```python
-detekt_test(
-    name = "my_detekt",
-    srcs = glob(["src/main/kotlin/**/*.kt"]),
-    language_version = "2.0",
-)
-```
-
 ### Type Resolution
 
-Type resolution enables more advanced static analysis by giving Detekt access to the full compilation classpath,
-including return types, nullability, and symbol information — capabilities that match those of the Kotlin compiler
-itself. Rules requiring it are annotated with `@RequiresFullAnalysis` in Detekt's source.
+Type resolution enables more advanced static analysis by giving Detekt access to the full
+compilation classpath — including return types, nullability, and symbol information. Rules
+requiring it are annotated with `@RequiresFullAnalysis` in Detekt's source.
 
-Use `jvm_target` and `language_version` to match the compilation settings of your project:
+Type resolution is **disabled by default** (`enable_type_resolution = False`), meaning only
+syntax-based rules are applied and no classpath is passed to Detekt.
+
+To enable type resolution, set `enable_type_resolution = True`. When enabled, the appropriate
+bootclasspath (JDK or Android SDK) is always included. To also include your project's library
+dependencies on the classpath, pass them via `deps`:
+
+```python
+load("@rules_detekt//detekt:defs.bzl", "detekt_test")
+
+detekt_test(
+    name = "my_detekt",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    enable_type_resolution = True,
+    deps = [":my_library"],  # provides the classpath for type resolution
+)
+```
+
+For **Android targets**, set `is_android = True` to include the Android SDK jar in the classpath:
 
 ```python
 detekt_test(
     name = "my_detekt",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
-    jvm_target = "11",
-    language_version = "2.0",
+    enable_type_resolution = True,
+    deps = [":my_android_library"],
+    is_android = True,
 )
 ```
+
+`jvm_target` and `language_version` are toolchain-level settings — see
+[Toolchain](#toolchain) for how to configure them.
 
 ### Reports
 

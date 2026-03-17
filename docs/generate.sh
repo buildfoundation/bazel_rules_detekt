@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eou pipefail
 
-bazel build //docs:docs
+bazel build //docs:docs --check_visibility=false
 
 mv bazel-bin/docs/attrs.md docs/attrs.md
 
