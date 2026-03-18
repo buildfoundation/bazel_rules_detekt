@@ -24,6 +24,6 @@ def detekt_version(version, sha256, url_templates = None):
     )
 
 DEFAULT_DETEKT_RELEASE = detekt_version(
-    version = "1.23.8",
-    sha256 = "2ce2ff952e150baf28a29cda70a363b0340b3e81a55f43e51ec5edffc3d066c1",
+    version = "2.0.0-alpha.2",
+    sha256 = "b719d03dcc2dc471bb143b5b3d52f219e1a94e66b8cb9b4edcef2f86ebf70e81",
 )

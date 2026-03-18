@@ -1,6 +1,6 @@
 package io.buildfoundation.bazel.detekt.execute;
 
-import io.gitlab.arturbosch.detekt.cli.CliRunner;
+import dev.detekt.cli.CliRunner;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -19,12 +19,23 @@ public interface Detekt {
 
         @Override
         public void execute(String[] args, PrintStream output, PrintStream error) {
+            List<String> argsList = Arrays.asList(args);
+            if (argsList.contains("--create-baseline")) {
+                String baseline = argsList.get(argsList.indexOf("--baseline") + 1);
+                File baselineFile = new File(baseline);
+                // Bazel pre-creates declared output files as empty 0-byte files.
+                // Detekt tries to parse the existing baseline before creating a new one,
+                // which fails on an empty file. Delete it so Detekt starts fresh.
+                if (baselineFile.exists() && baselineFile.length() == 0) {
+                    baselineFile.delete();
+                }
+            }
+
             RuntimeException resultError = runner.run(args, output, error).getError();
 
             if (resultError != null) {
                 throw resultError;
             } else {
-                List<String> argsList = Arrays.asList(args);
                 if (argsList.contains("--create-baseline")) {
                     String baseline = argsList.get(argsList.indexOf("--baseline") + 1);
                     File baselineFile = new File(baseline);

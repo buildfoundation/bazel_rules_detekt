@@ -57,7 +57,7 @@ def _action_full_contents_test_impl(ctx):
     assert_argv_contains(env, action, "--report")
     assert_argv_contains(env, action, _expand_path(ctx, "html:{{output_dir}}/{{source_dir}}/test_target_full_detekt_report.html"))
     assert_argv_contains(env, action, "--report")
-    assert_argv_contains(env, action, _expand_path(ctx, "txt:{{output_dir}}/{{source_dir}}/test_target_full_detekt_report.txt"))
+    assert_argv_contains(env, action, _expand_path(ctx, "md:{{output_dir}}/{{source_dir}}/test_target_full_detekt_report.md"))
     assert_argv_contains(env, action, "--report")
     assert_argv_contains(env, action, _expand_path(ctx, "xml:{{output_dir}}/{{source_dir}}/test_target_full_detekt_report.xml"))
     assert_argv_contains(env, action, "--execution-result")
@@ -80,7 +80,7 @@ def _action_full_contents_test_impl(ctx):
     ])
 
     expected_outputs = _expand_paths(env.ctx, [
-        "{{source_dir}}/test_target_full_detekt_report.txt",
+        "{{source_dir}}/test_target_full_detekt_report.md",
         "{{source_dir}}/test_target_full_detekt_report.html",
         "{{source_dir}}/test_target_full_detekt_report.xml",
         "{{source_dir}}/test_target_full_exit_code.txt",
@@ -129,7 +129,7 @@ def _action_blank_contents_test_impl(ctx):
     assert_argv_contains(env, action, "--input")
     assert_argv_contains(env, action, _expand_path(ctx, "{{source_dir}}/path A.kt,{{source_dir}}/path B.kt,{{source_dir}}/path C.kt"))
     assert_argv_contains(env, action, "--report")
-    assert_argv_contains_prefix_suffix(env, action, "txt:", _expand_path(ctx, "{{source_dir}}/test_target_blank_detekt_report.txt"))
+    assert_argv_contains_prefix_suffix(env, action, "md:", _expand_path(ctx, "{{source_dir}}/test_target_blank_detekt_report.md"))
 
     expected_inputs = _expand_paths(env.ctx, [
         "tests/analysis/path A.kt",
@@ -141,7 +141,7 @@ def _action_blank_contents_test_impl(ctx):
     ])
 
     expected_outputs = _expand_paths(env.ctx, [
-        "{{source_dir}}/test_target_blank_detekt_report.txt",
+        "{{source_dir}}/test_target_blank_detekt_report.md",
         "{{source_dir}}/test_target_blank_exit_code.txt",
     ])
 

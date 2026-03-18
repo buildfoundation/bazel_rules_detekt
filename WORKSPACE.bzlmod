@@ -1,0 +1,3 @@
+# This file intentionally left empty.
+# It tells Bazel not to process WORKSPACE.bazel when this repo is loaded
+# as an http_archive in a project using Bzlmod (MODULE.bazel).

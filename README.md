@@ -6,33 +6,34 @@ for the [Bazel build system](https://bazel.build).
 ## Features
 
 - configuration and baseline files;
-- HTML, text, XML, Markdown, and SARIF reports;
+- HTML, XML, Markdown, and SARIF reports;
 - [plugins](https://detekt.dev/docs/extensions/extensions/);
 - customizable Detekt version and JVM flags;
-- [persistent workers](https://blog.bazel.build/2015/12/10/java-workers.html) support;
+- [type resolution](https://detekt.dev/docs/gettingstarted/type-resolution/) with JVM and Android classpath support;
 - baseline generation via `detekt_create_baseline`;
 - configuration options via [attributes](docs/attrs.md).
 
 ## Compatibility
 
-| `bazel_rules_detekt`                | Default Detekt  | Kotlin compiler | Max `language_version` | Min JDK | Max tested JDK | Bazel     |
-| ----------------------------------- | --------------- | --------------- | ---------------------- | ------- | -------------- | --------- |
-| **v0.8.1.9 – v0.8.1.13** _(latest)_ | 1.23.8          | 2.0.21          | `2.0`                  | 8       | 21             | 9.x       |
-| v0.8.1.3 – v0.8.1.8                 | 1.23.5          | 1.9.22          | `1.9`                  | 8       | 17             | 7.x – 9.x |
-| v0.8.1 – v0.8.1.2                   | 1.23.1          | 1.9.0           | `1.9`                  | 8       | 17             | 6.x       |
-| v0.7.0                              | 1.22.0          | —               | —                      | 8       | —              | 5.x       |
-| v0.6.0 – v0.6.1                     | 1.19.0 – 1.21.0 | —               | —                      | 8       | —              | 5.x       |
-| v0.4.0 – v0.5.0                     | 1.15.0          | —               | —                      | —       | —              | 4.x       |
-| v0.3.0                              | 1.7.4           | —               | —                      | —       | —              | 3.x       |
-| v0.1.0 – v0.2.0                     | 1.2.0           | —               | —                      | —       | —              | 1.x       |
+> **Breaking change:** `bazel_rules_detekt` v2.0+ requires **Detekt 2.0 or later**. It is not compatible with Detekt 1.x. If you need Detekt 1.x support, use `bazel_rules_detekt` v0.8.x.
+
+| `bazel_rules_detekt`        | Default Detekt  | Kotlin compiler | `language_version` | JDK        | Bazel     |
+|-----------------------------| --------------- | --------------- | ------------------- | ---------- | --------- |
+| **v1.0-alpha.2** _(latest)_ | 2.0.0-alpha.2   | 2.2.x           | `1.0` – `2.3`       | 8 – 21     | 9.x       |
+| v0.8.1.9 – v0.8.1.13        | 1.23.8          | 2.0.21          | `1.0` – `2.0`       | 8 – 21     | 9.x       |
+| v0.8.1.3 – v0.8.1.8         | 1.23.5          | 1.9.22          | `1.0` – `1.9`       | 8 – 17     | 7.x – 9.x |
+| v0.8.1 – v0.8.1.2           | 1.23.1          | 1.9.0           | `1.0` – `1.9`       | 8 – 17     | 6.x       |
+| v0.7.0                      | 1.22.0          | —               | —                   | 8+         | 5.x       |
+| v0.6.0 – v0.6.1             | 1.19.0 – 1.21.0 | —               | —                   | 8+         | 5.x       |
+| v0.4.0 – v0.5.0             | 1.15.0          | —               | —                   | —          | 4.x       |
+| v0.3.0                      | 1.7.4           | —               | —                   | —          | 3.x       |
+| v0.1.0 – v0.2.0             | 1.2.0           | —               | —                   | —          | 1.x       |
 
 For detailed per-Detekt-version Kotlin and JDK compatibility, see the [Detekt compatibility table](https://detekt.dev/docs/introduction/compatibility/).
 
 > **Note:** The Kotlin compiler bundled with Detekt determines which `language_version` values are valid — setting it higher than what the bundled compiler supports will cause Detekt to fail. The default Detekt version can always be overridden — see [Detekt Version](#detekt-version).
 
-> **Note:** Detekt 2.x is currently in alpha (targeting Kotlin 2.2+) and is not yet recommended for production use.
-
-> **Note:** JDK 25 and above are **not** supported with Detekt 1.23.x. The bundled Kotlin compiler performs a hard version check that fails on JDK 25+. This is resolved in the Detekt 2.x series.
+> **Important:** Detekt 2.x is currently in alpha (targeting Kotlin 2.2+) and is not yet recommended for production use.
 
 ### Bazel
 
@@ -86,9 +87,9 @@ Once declared in the `WORKSPACE` or `MODULE.bazel` file, the rules can be loaded
 
 ### `detekt`
 
-`detekt` is a regular Bazel build rule. When Detekt finds violations, the **build action itself
+`detekt` is a regular Bazel build rule. When Detekt reports findings, the **build action itself
 fails**, stopping `bazel build` immediately with an error. This makes it behave like a compiler
-error — violations block the build.
+error — findings block the build.
 
 ```python
 load("@rules_detekt//detekt:defs.bzl", "detekt")
@@ -105,9 +106,9 @@ $ bazel build //mypackage:my_detekt
 
 ### `detekt_test`
 
-`detekt_test` is a Bazel test rule. The build action always succeeds (even when violations are
-found), and Bazel then runs a test script that reads the real Detekt exit code and prints findings
-to the test output. Violations cause the **test** to fail rather than the build action.
+`detekt_test` is a Bazel test rule. The build action always succeeds (even when findings are
+reported), and Bazel then runs a test script that reads the real Detekt exit code and prints findings
+to the test output. Findings cause the **test** to fail rather than the build action.
 
 ```python
 load("@rules_detekt//detekt:defs.bzl", "detekt_test")
@@ -127,17 +128,17 @@ and it supports standard Bazel test flags such as `--test_output=all`.
 
 ### `detekt` vs `detekt_test`
 
-|                     | `detekt`                  | `detekt_test`                          |
-| ------------------- | ------------------------- | -------------------------------------- |
-| Bazel rule type     | build rule                | test rule                              |
-| Run with            | `bazel build`             | `bazel test`                           |
-| Included in         | `bazel build //...`       | `bazel test //...`                     |
-| Violation behaviour | build action fails        | test fails; build action always passes |
-| Text report         | printed when action fails | printed to test output when test fails |
-| Result caching      | yes                       | yes                                    |
-| Bazel test flags    | n/a                       | yes (`--test_output`, etc.)            |
+|                     | `detekt`                  | `detekt_test`                                                         |
+| ------------------- | ------------------------- |-----------------------------------------------------------------------|
+| Bazel rule type     | build rule                | test rule                                                             |
+| Run with            | `bazel build`             | `bazel test`                                                          |
+| Included in         | `bazel build //...`       | `bazel test //...`                                                    |
+| Finding behavior    | build action fails        | test fails; build action always passes even if findings are reported  |
+| Console output      | printed when action fails | printed to test output when test fails                                |
+| Result caching      | yes                       | yes                                                                   |
+| Bazel test flags    | n/a                       | yes (`--test_output`, etc.)                                           |
 
-Use `detekt` when you want violations to block builds the same way a compiler error does. Use
+Use `detekt` when you want findings to block builds the same way a compiler error does. Use
 `detekt_test` when you want Detekt to run alongside your test suite and report results through
 the test framework.
 
@@ -145,7 +146,7 @@ the test framework.
 
 `detekt_create_baseline` is an executable rule that generates or updates a
 [Detekt baseline](https://detekt.dev/docs/introduction/baseline/) file. The baseline suppresses
-existing findings so that only new violations fail the build going forward.
+existing findings so that only new findings fail the build going forward.
 
 ```python
 load("@rules_detekt//detekt:defs.bzl", "detekt_create_baseline")
@@ -177,23 +178,72 @@ detekt_test(
 
 ### Configuration Options
 
-All three rules share the same configuration options. In addition to `srcs`, `cfgs`, `baseline`, `plugins`,
-and report options, most attributes correspond directly to
-[Detekt CLI flags](https://detekt.dev/docs/1.23.8/gettingstarted/cli/#use-the-cli) and pass them
+All three rules share the same configuration options. In addition to `srcs`, `deps`, `cfgs`,
+`baseline`, `plugins`, `analysis_mode`, `is_android`, and report options, most attributes
+correspond directly to
+[Detekt CLI flags](https://detekt.dev/docs/gettingstarted/cli/#use-the-cli) and pass them
 through when explicitly set.
 
 More information can be found in the [attributes](docs/attrs.md).
 
 ### Reports
 
-A plain-text report (`{name}_detekt_report.txt`) is **always** generated. Other report formats are
-available for opt-in via configuration options..
+Findings are printed directly to the console. Report files can be enabled for export as build outputs via attributes.
+
+## Type Resolution
+
+Type resolution enables more advanced static analysis by giving Detekt access to the full
+compilation classpath — including return types, nullability, and symbol information. Rules
+requiring it extend the `RequiresAnalysisApi` interface.
+
+Type resolution is controlled by the `analysis_mode` attribute:
+
+- `"light"` *(default)* — syntax-based analysis only; no classpath is passed to Detekt:
+
+```python
+load("@rules_detekt//detekt:defs.bzl", "detekt_test")
+
+detekt_test(
+    name = "my_detekt",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    analysis_mode = "light",
+)
+```
+
+- `"full"` — passes the compilation classpath to Detekt and enables type-aware rules. The
+  appropriate bootclasspath (JDK or Android SDK) is always included. To also include your
+  project's library dependencies, pass them via `deps`:
+
+```python
+detekt_test(
+    name = "my_detekt",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    analysis_mode = "full",
+    deps = [":my_library"],  # used to construct the classpath for type resolution
+)
+```
+
+For **Android targets**, set `is_android = True` to include the Android SDK jar in the classpath
+(requires `analysis_mode = "full"`):
+
+```python
+detekt_test(
+    name = "my_detekt",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    analysis_mode = "full",
+    deps = [":my_android_library"],
+    is_android = True,
+)
+```
+
+`jvm_target` and `language_version` are toolchain-level settings — see
+[Toolchain](#toolchain) for how to configure them.
 
 ## Advanced Configuration
 
 ### Detekt Version
 
-The default bundled version is **1.23.8**. To override it:
+The default bundled version is **2.0.0-alpha.2**. To override it:
 
 #### `MODULE.bazel` Configuration
 
@@ -207,7 +257,7 @@ detekt.detekt_version(
 use_repo(detekt, "detekt_cli_all")
 ```
 
-To download Detekt from a custom location (e.g. an internal mirror), use the `url_templates` parameter:
+To download Detekt from a custom location (e.g., an internal mirror), use the `url_templates` parameter:
 
 ```python
 detekt = use_extension("@rules_detekt//detekt:extensions.bzl", "detekt")
@@ -252,10 +302,18 @@ rules_detekt_dependencies(
 
 Each template may contain `{version}` which will be replaced with the version string.
 
-### JVM Flags
+### Toolchain
 
-The default toolchain uses `-Xms16m -Xmx128m`. To customize JVM flags, define your own toolchain
-in a `BUILD` file:
+The detekt toolchain controls JVM flags, the JVM bytecode target version, and the Kotlin language
+version compatibility. The defaults are:
+
+| Setting            | Default            |
+| ------------------ |--------------------|
+| `jvm_flags`        | `-Xms16m -Xmx128m` |
+| `jvm_target`       | `1.8`              |
+| `language_version` | `2.3`              |
+
+To override any of these, define a custom toolchain in a `BUILD` file:
 
 ```python
 load("@rules_detekt//detekt:toolchain.bzl", "detekt_toolchain")
@@ -263,6 +321,8 @@ load("@rules_detekt//detekt:toolchain.bzl", "detekt_toolchain")
 detekt_toolchain(
     name = "my_detekt_toolchain_impl",
     jvm_flags = ["-Xms16m", "-Xmx512m"],
+    jvm_target = "11",
+    language_version = "2.1",
 )
 
 toolchain(
@@ -291,13 +351,13 @@ register_toolchains("//mypackage:my_detekt_toolchain")
 The `plugins` attribute accepts any Bazel label that provides `JavaInfo`. This covers both
 published Maven artifacts and locally built JARs.
 
-**Maven artifact** (e.g., the [formatting rule set](https://detekt.dev/docs/rules/formatting/)):
+**Maven artifact** (e.g., the [ktlint wrapper plugin](https://detekt.dev/docs/rules/formatting/)):
 
 ```python
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
     artifacts = [
-        "io.gitlab.arturbosch.detekt:detekt-formatting:1.23.8",
+        "dev.detekt:detekt-rules-ktlint-wrapper:2.0.0-alpha.2",
     ],
 )
 use_repo(maven, "maven")
@@ -309,7 +369,7 @@ load("@rules_detekt//detekt:defs.bzl", "detekt_test")
 detekt_test(
     name = "my_detekt",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
-    plugins = ["@maven//:io_gitlab_arturbosch_detekt_detekt_formatting"],
+    plugins = ["@maven//:dev_detekt_detekt_rules_ktlint_wrapper"],
 )
 ```
 
@@ -344,7 +404,7 @@ detekt_test(
 )
 ```
 
-To extend Detekt's built-in defaults rather than replace them, also set `build_upon_default_config = True`:
+To extend Detekt's built-in configuration defaults rather than replace them, also set `build_upon_default_config = True`:
 
 ```python
 detekt_test(
@@ -354,59 +414,15 @@ detekt_test(
 )
 ```
 
-### JVM Target
-
-Use `jvm_target` to set the JVM bytecode target version that matches what was used during compilation.
-This defaults to `1.8` if not explicitly set:
-
-```python
-detekt_test(
-    name = "my_detekt",
-    srcs = glob(["src/main/kotlin/**/*.kt"]),
-    jvm_target = "11",
-)
-```
-
-### Language Version
-
-Detekt will report errors for any language features introduced after the specified version if
-`language_version` is specified. When unset, no compatibility restriction is applied:
-
-```python
-detekt_test(
-    name = "my_detekt",
-    srcs = glob(["src/main/kotlin/**/*.kt"]),
-    language_version = "2.0",
-)
-```
-
-### Type Resolution
-
-Type resolution enables more advanced static analysis by giving Detekt access to the full compilation classpath,
-including return types, nullability, and symbol information — capabilities that match those of the Kotlin compiler
-itself. Rules requiring it are annotated with `@RequiresFullAnalysis` in Detekt's source.
-
-Use `jvm_target` and `language_version` to match the compilation settings of your project:
-
-```python
-detekt_test(
-    name = "my_detekt",
-    srcs = glob(["src/main/kotlin/**/*.kt"]),
-    jvm_target = "11",
-    language_version = "2.0",
-)
-```
-
 ### Reports
 
-By default, Detekt generates a text report internally (used for console output). To export reports as build outputs,
-enable them explicitly:
+Findings are always printed to the console via Detekt's built-in console reporter. To also export
+reports as build outputs, enable them explicitly:
 
 ```python
 detekt_test(
     name = "my_detekt",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
-    txt_report = True,   # {target_name}_detekt_report.txt
     html_report = True,  # {target_name}_detekt_report.html
     xml_report = True,   # {target_name}_detekt_report.xml  (Checkstyle format, compatible with SonarQube)
     md_report = True,    # {target_name}_detekt_report.md
