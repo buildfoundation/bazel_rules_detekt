@@ -68,6 +68,13 @@ public interface Executable {
 
             ExecutionUtils.writeExecutionResultToFile(result.statusCode(), executionResultOutputPath);
 
+            String stderrOutputPathStr =
+                    ExecutionUtils.getValueForArgumentName(detektWrapperArguments, "--stderr-output");
+            if (stderrOutputPathStr != null) {
+                Path stderrOutputPath = Paths.get(stderrOutputPathStr);
+                ExecutionUtils.writeStderrToFile(result.output(), stderrOutputPath);
+            }
+
             if (ExecutionUtils.shouldRunAsTestTarget(detektWrapperArguments)) {
                 result = new ExecutableResult.Success();
             }

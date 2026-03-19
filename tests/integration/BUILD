@@ -1,8 +1,15 @@
-load("//detekt:defs.bzl", "detekt")
+load("//detekt:defs.bzl", "detekt", "detekt_create_baseline")
 
 filegroup(
     name = "detekt_config_lenient",
     srcs = ["detekt_config_lenient.yml"],
+    tags = ["manual"],
+)
+
+detekt_create_baseline(
+    name = "create_integration_test_detekt_baseline",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    baseline = "detekt_baseline.xml",
     tags = ["manual"],
 )
 

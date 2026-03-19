@@ -84,6 +84,7 @@ def _action_full_contents_test_impl(ctx):
         "{{source_dir}}/test_target_full_detekt_report.html",
         "{{source_dir}}/test_target_full_detekt_report.xml",
         "{{source_dir}}/test_target_full_exit_code.txt",
+        "{{source_dir}}/test_target_full_stderr.txt",
     ])
 
     asserts.equals(env, expected_inputs, [file.short_path for file in action.inputs.to_list()])
@@ -143,6 +144,7 @@ def _action_blank_contents_test_impl(ctx):
     expected_outputs = _expand_paths(env.ctx, [
         "{{source_dir}}/test_target_blank_detekt_report.txt",
         "{{source_dir}}/test_target_blank_exit_code.txt",
+        "{{source_dir}}/test_target_blank_stderr.txt",
     ])
 
     asserts.equals(env, expected_inputs, [file.short_path for file in action.inputs.to_list()])

@@ -40,6 +40,15 @@ public class ExecutionUtils {
         }
     }
 
+  /** Writes the stderr output to a file */
+  public static void writeStderrToFile(String stderrContent, Path stderrOutputPath) {
+    try {
+      Files.write(stderrOutputPath, stderrContent.getBytes(), StandardOpenOption.CREATE);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
     public static boolean isParamsFile(String argument) {
         return argument.startsWith("@");
     }
@@ -55,14 +64,14 @@ public class ExecutionUtils {
         }
     }
 
-    /**
-     * Retrieves the value associated with the given argument name from the input arguments list.
-     *
-     * @param inputArgs List of input arguments.
-     * @param argName The name of the argument whose value needs to be fetched.
-     * @return The value associated with the given argument name or null if the argument is not found.
-     */
-    public static String getValueForArgumentName(List<String> inputArgs, String argName) {
+  /**
+   * Retrieves the value associated with the given argument name from the input arguments list.
+   *
+   * @param inputArgs List of input arguments.
+   * @param argName The name of the argument whose value needs to be fetched.
+   * @return The value associated with the given argument name or null if the argument is not found.
+   */
+  public static String getValueForArgumentName(List<String> inputArgs, String argName) {
         try {
             // Get the index of the argument and return the value at the next index.
             int indexOfArgument = inputArgs.indexOf(argName);
@@ -80,7 +89,9 @@ public class ExecutionUtils {
      * Sanitizes the Detekt arguments by excluding arguments used solely by the detekt-wrapper
      */
     public static List<String> sanitizeDetektArguments(List<String> inputArgs) {
-        Set<String> excludedArgs = new HashSet<>(Arrays.asList("--execution-result", "--run-as-test-target"));
+    Set<String> excludedArgs =
+        new HashSet<>(
+            Arrays.asList("--execution-result", "--run-as-test-target", "--stderr-output"));
         return filterOutArgValuePairs(inputArgs, excludedArgs);
     }
 
