@@ -2,7 +2,9 @@
 Rule declarations.
 """
 
+load("@rules_android//rules:utils.bzl", "get_android_sdk")
 load("@rules_java//java:defs.bzl", "JavaInfo")
+load("@rules_java//java/common:java_common.bzl", "java_common")
 
 _ATTRS = {
     "_detekt_wrapper": attr.label(
@@ -10,11 +12,19 @@ _ATTRS = {
         executable = True,
         cfg = "exec",
     ),
+    "_java_toolchain": attr.label(
+        default = Label("@bazel_tools//tools/jdk:current_java_toolchain"),
+    ),
     "srcs": attr.label_list(
         mandatory = True,
-        allow_files = [".kt", ".kts"],
+        allow_files = [".kt", ".kts", ".java"],
         allow_empty = False,
-        doc = "Kotlin source code files to analyze.",
+        doc = "Kotlin and Java source code files to analyze. Java files are included to support type resolution in mixed-language projects.",
+    ),
+    "deps": attr.label_list(
+        default = [],
+        doc = "Dependencies to provide to Detekt for classpath type resolution.",
+        providers = [JavaInfo],
     ),
     "plugins": attr.label_list(
         default = [],
@@ -24,11 +34,11 @@ _ATTRS = {
     "cfgs": attr.label_list(
         default = [],
         allow_files = [".yml"],
-        doc = "Path to the config file (path/to/config.yml). Multiple configuration files can be specified.",
+        doc = "Path to the config file (`path/to/config.yml`). Multiple configuration files can be specified.",
     ),
     "config_resource": attr.string(
         default = "",
-        doc = "Path to the config resource on detekt's classpath (path/to/config.yml).",
+        doc = "Path to the config resource on detekt's classpath (`path/to/config.yml`).",
     ),
     "baseline": attr.label(
         default = None,
@@ -41,19 +51,24 @@ _ATTRS = {
     ),
     "auto_correct": attr.bool(
         default = False,
-        doc = "Allow rules to auto correct code if they support it. The default rule sets do NOT support auto correcting and won't change any line in the users code base. However custom rules can be written to support auto correcting. The additional 'formatting' rule set, added with '--plugins', does support it and needs this flag.",
+        doc = "Allow rules to auto correct code if they support it. The default rule sets do NOT support auto correcting and won't change any line in the users code base. However custom rules can be written to support auto correcting. The additional 'formatting' rule set, added with `--plugins`, does support it and needs this flag.",
     ),
     "base_path": attr.string(
         default = "",
-        doc = "Specifies a directory as the base path. Currently it impacts all file paths in the formatted reports. File paths in console output and txt report are not affected and remain as absolute paths.",
+        doc = "Specifies a directory as the base path. Affects all file paths in formatted reports. File paths in console output and txt report are not affected and remain as absolute paths.",
     ),
     "build_upon_default_config": attr.bool(
         default = False,
-        doc = "Preconfigures detekt with a bunch of rules and some opinionated defaults for you. Allows additional provided configurations to override the defaults.",
+        doc = "Preconfigures detekt with a set of rules and opinionated defaults. Allows additional provided configurations to override the defaults.",
     ),
     "disable_default_rulesets": attr.bool(
         default = False,
         doc = "Disables default rule sets.",
+    ),
+    # Consider moving this attribute to the toolchain.
+    "enable_type_resolution": attr.bool(
+        default = False,
+        doc = "Enables type resolution for more advanced static analysis. When enabled, the classpath is constructed from `deps` and the appropriate bootclasspath (Android SDK or JDK) is included. When disabled, no classpath is passed to Detekt and only syntax-based rules are applied.",
     ),
     "excludes": attr.string_list(
         default = [],
@@ -61,25 +76,15 @@ _ATTRS = {
     ),
     "includes": attr.string_list(
         default = [],
-        doc = "Globbing patterns describing paths to include in the analysis. Useful in combination with 'excludes' patterns.",
-    ),
-    "jvm_target": attr.string(
-        default = "1.8",
-        values = ["1.8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"],
-        doc = "EXPERIMENTAL: Target version of the generated JVM bytecode that was generated during compilation and is now being used for type resolution (1.8, 9, 10, ..., 20)",
-    ),
-    "language_version": attr.string(
-        default = "",
-        values = ["", "1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "2.0", "2.1", "2.2"],
-        doc = "EXPERIMENTAL: Compatibility mode for Kotlin language version X.Y, reports errors for all language features that came out later",
+        doc = "Globbing patterns describing paths to include in the analysis. Useful in combination with `excludes` patterns.",
     ),
     "max_issues": attr.int(
         default = -1,
-        doc = "Passes only when found issues count does not exceed specified issues count.",
+        doc = "Passes only when found issues count does not exceed specified issues count. A negative value disables the limit.",
     ),
     "parallel": attr.bool(
         default = False,
-        doc = "Enables parallel compilation and analysis of source files. Do some benchmarks first before enabling this flag. Heuristics show performance benefits starting from 2000 lines of Kotlin code.",
+        doc = "Enables parallel compilation and analysis of source files. Do some benchmarks first before enabling this flag. Heuristics show performance benefits starting from 2,000 lines of Kotlin code.",
     ),
     "txt_report": attr.bool(
         default = False,
@@ -91,7 +96,7 @@ _ATTRS = {
     ),
     "xml_report": attr.bool(
         default = False,
-        doc = "Enables / disables the XML report generation. The report file name is `{target_name}_detekt_report.xml`. FYI Detekt uses the Checkstyle XML reporting format which makes it compatible with tools like SonarQube.",
+        doc = "Enables / disables the XML report generation. The report file name is `{target_name}_detekt_report.xml`. Detekt uses the Checkstyle XML reporting format which makes it compatible with tools like SonarQube.",
     ),
     "md_report": attr.bool(
         default = False,
@@ -104,6 +109,14 @@ _ATTRS = {
 }
 
 TOOLCHAIN_TYPE = Label("//detekt:toolchain_type")
+
+_ANDROID_SDK_TOOLCHAIN_TYPE = "@rules_android//toolchains/android_sdk:toolchain_type"
+
+_TOOLCHAINS = [
+    TOOLCHAIN_TYPE,
+    config_common.toolchain_type(_ANDROID_SDK_TOOLCHAIN_TYPE, mandatory = False),
+    "@bazel_tools//tools/jdk:toolchain_type",
+]
 
 def _impl(
         ctx,
@@ -182,10 +195,10 @@ def _impl(
     if ctx.attr.includes:
         detekt_arguments.add_joined("--includes", ctx.attr.includes, join_with = ",")
 
-    detekt_arguments.add("--jvm-target", ctx.attr.jvm_target)
+    detekt_arguments.add("--jvm-target", ctx.toolchains[TOOLCHAIN_TYPE].jvm_target)
 
-    if ctx.attr.language_version:
-        detekt_arguments.add("--language-version", ctx.attr.language_version)
+    if ctx.toolchains[TOOLCHAIN_TYPE].language_version:
+        detekt_arguments.add("--language-version", ctx.toolchains[TOOLCHAIN_TYPE].language_version)
 
     if ctx.attr.max_issues >= 0:
         detekt_arguments.add("--max-issues", ctx.attr.max_issues)
@@ -196,8 +209,43 @@ def _impl(
     if run_as_test_target:
         detekt_arguments.add("--run-as-test-target")
 
-    action_inputs.extend(ctx.files.plugins)
-    detekt_arguments.add_joined("--plugins", ctx.files.plugins, join_with = ",")
+    # Supports android_binary() as plugins attr, which is not a jar.
+    plugins = depset([], transitive = [dep[JavaInfo].transitive_runtime_jars for dep in ctx.attr.plugins])
+    action_inputs.extend(plugins.to_list())
+    detekt_arguments.add_joined("--plugins", plugins, join_with = ",")
+
+    # TODO: We might be able to replace this with a provider check so that we aren't having to manage
+    # these bits at the target creation level.
+    if ctx.attr.enable_type_resolution:
+        # TODO: This tends to be super slow in larger codebases because it results in huge classpaths.
+        # We can look into solving this differently if we need to, or copy what rules_kotlin does
+        # with classpath reduction.
+        filtered_classpath = []
+
+        if ctx.attr.is_android:
+            # Android SDK is needed for resolving Android-specific types
+            if not ctx.toolchains[_ANDROID_SDK_TOOLCHAIN_TYPE]:
+                fail("'is_android = True' requires a registered Android SDK toolchain. " +
+                     "See https://github.com/bazelbuild/rules_android for setup instructions.")
+            android_jar = get_android_sdk(ctx).android_jar
+            action_inputs.append(android_jar)
+            filtered_classpath.append(android_jar.path)
+        else:
+            # JDK platform jar is needed for resolving core types
+            bootclasspath_files = ctx.attr._java_toolchain[java_common.JavaToolchainInfo].bootclasspath.to_list()
+            action_inputs.extend(bootclasspath_files)
+            filtered_classpath.extend([f.path for f in bootclasspath_files])
+
+        # compile_jars should contain mostly ijar/header jars that are faster to load onto the classpath
+        classpath = depset([], transitive = [dep[JavaInfo].transitive_compile_time_jars for dep in ctx.attr.deps]).to_list()
+        action_inputs.extend(classpath)
+        for file in classpath:
+            # Dependencies on AP may incorrectly bring guava JRE to classpath, make sure it's filtered out
+            if "com/google/guava/guava/" in file.path:
+                continue
+            filtered_classpath.append(file.path)
+
+        detekt_arguments.add("--classpath", ":".join(filtered_classpath))
 
     txt_report = ctx.actions.declare_file("{}_detekt_report.txt".format(ctx.label.name))
     action_outputs.append(txt_report)
@@ -282,24 +330,27 @@ def _detekt_test_impl(ctx):
     return _impl(ctx = ctx, run_as_test_target = True)
 
 detekt = rule(
+    doc = "Runs Detekt static analysis on the given Kotlin and Java sources, failing the build if issues are found.",
     implementation = _detekt_impl,
     attrs = _ATTRS,
     provides = [DefaultInfo],
-    toolchains = [TOOLCHAIN_TYPE],
-)
-
-detekt_create_baseline = rule(
-    implementation = _detekt_create_baseline_impl,
-    attrs = _ATTRS,
-    provides = [DefaultInfo],
-    toolchains = [TOOLCHAIN_TYPE],
-    executable = True,
+    toolchains = _TOOLCHAINS,
 )
 
 detekt_test = rule(
+    doc = "Runs Detekt static analysis as a test target. Unlike `detekt`, violations fail the test but not the build, so `bazel build` succeeds even when issues are present.",
     implementation = _detekt_test_impl,
     attrs = _ATTRS,
     provides = [DefaultInfo],
-    toolchains = [TOOLCHAIN_TYPE],
+    toolchains = _TOOLCHAINS,
     test = True,
+)
+
+detekt_create_baseline = rule(
+    doc = "Creates or updates a Detekt baseline file. Run this target to record existing issues so that only new issues fail the build going forward.",
+    implementation = _detekt_create_baseline_impl,
+    attrs = _ATTRS,
+    provides = [DefaultInfo],
+    toolchains = _TOOLCHAINS,
+    executable = True,
 )

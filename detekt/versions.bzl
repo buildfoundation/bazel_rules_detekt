@@ -6,16 +6,17 @@ _DEFAULT_URL_TEMPLATES = [
 ]
 
 def detekt_version(version, sha256, url_templates = None):
-    """Create a detekt version.
+    """Specify a custom Detekt version to use instead of the default.
 
     Args:
-        version (str): The version of detekt.
-        sha256 (str): The sha256 of the detekt jar.
-        url_templates (list, optional): URL templates for downloading detekt. Each template
+        version: The version of detekt.
+        sha256: The sha256 of the detekt jar.
+        url_templates: URL templates for downloading detekt. Each template
             may contain `{version}` which will be replaced with the version string.
             Defaults to the standard GitHub release URL.
 
-    Returns: A struct containing the version information.
+    Returns:
+        A struct containing the version information.
     """
     return struct(
         version = version,

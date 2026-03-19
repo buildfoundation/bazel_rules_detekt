@@ -5,12 +5,13 @@ See https://docs.bazel.build/versions/master/skylark/deploying.html#registering-
 
 # buildifier: disable=unnamed-macro
 def rules_detekt_toolchains(toolchain = "@rules_detekt//detekt:default_toolchain"):
-    """Invokes `rules_detekt` toolchains.
+    """Registers `rules_detekt` toolchains.
 
-    Declares toolchains that are dependencies of the `rules_detekt` workspace.
-    Users should call this macro in their `WORKSPACE` file.
+    For WORKSPACE-based setups, call this macro in your `WORKSPACE` file.
+    With Bzlmod (`MODULE.bazel`), toolchains are registered automatically and
+    this macro is not needed.
 
     Args:
-        toolchain: `detekt_toolchain` used by rules.
+        toolchain: `detekt_toolchain` target to register.
     """
     native.register_toolchains(toolchain)
