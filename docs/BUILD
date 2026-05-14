@@ -8,7 +8,6 @@ stardoc(
     rule_template = "//docs:rule_template.vm",
     symbol_names = ["detekt"],
     deps = [
-        "@rules_android//rules:utils_bzl",
         "@rules_java//java:rules",
         "@rules_java//java/private:proto_support",
     ],
