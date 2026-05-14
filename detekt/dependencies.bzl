@@ -67,3 +67,16 @@ def rules_detekt_dependencies(detekt = _DEFAULT_DETEKT_VERSION):
         url = "https://github.com/bazelbuild/rules_java/releases/download/{v}/rules_java-{v}.tar.gz".format(v = rules_java_version),
         sha256 = rules_java_sha,
     )
+
+    # Android (required by detekt for Android SDK classpath in type resolution)
+
+    rules_android_version = "0.7.2"
+    rules_android_sha = "0da7198c7c8bac7e11e08dca3c434617b8593075858716595672e9aeefbef2a7"
+
+    maybe(
+        repo_rule = http_archive,
+        name = "rules_android",
+        url = "https://github.com/bazelbuild/rules_android/releases/download/v{v}/rules_android-v{v}.tar.gz".format(v = rules_android_version),
+        strip_prefix = "rules_android-{v}".format(v = rules_android_version),
+        sha256 = rules_android_sha,
+    )
