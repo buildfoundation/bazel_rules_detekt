@@ -1,4 +1,5 @@
 exports_files([
     "maven_install.json",
     "pmd_ruleset.xml",
+    "MODULE.bazel",
 ])

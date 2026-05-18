@@ -33,3 +33,40 @@ use_repo(maven, "rules_detekt_dependencies", "unpinned_rules_detekt_dependencies
 bazel_dep(name = "bazel_skylib", version = "1.8.2", dev_dependency = True)
 bazel_dep(name = "stardoc", version = "0.7.2", dev_dependency = True, repo_name = "io_bazel_stardoc")
 bazel_dep(name = "buildifier_prebuilt", version = "8.2.1.2", dev_dependency = True)
+bazel_dep(name = "rules_shell", version = "0.6.1", dev_dependency = True)
+bazel_dep(name = "rules_bazel_integration_test", version = "0.37.1", dev_dependency = True)
+
+bazel_binaries = use_extension(
+    "@rules_bazel_integration_test//:extensions.bzl",
+    "bazel_binaries",
+    dev_dependency = True,
+)
+bazel_binaries.download(version_file = "//:.bazelversion")
+use_repo(
+    bazel_binaries,
+    "bazel_binaries",
+    "bazel_binaries_bazelisk",
+    "build_bazel_bazel_.bazelversion",
+)
+
+# The bashunit framework used by our integration tests is sourced from the
+# Bazel project's own test infrastructure. Pinned to the 9.1.0 tag so the
+# files are content-addressable.
+http_file = use_repo_rule(
+    "@bazel_tools//tools/build_defs/repo:http.bzl",
+    "http_file",
+)
+
+http_file(
+    name = "bazel_unittest_bash",
+    sha256 = "3175e1f9acd35ad8abe6c678bc6bc78601d6388a0a2e45a7e8bc595b0fd9aa80",
+    urls = ["https://raw.githubusercontent.com/bazelbuild/bazel/9.1.0/src/test/shell/unittest.bash"],
+    downloaded_file_path = "unittest.bash",
+)
+
+http_file(
+    name = "bazel_unittest_utils_sh",
+    sha256 = "cf1d33c1a7b6a7382af79436aab0bd411f9f16bc3aa6eb3527b5ac7b1688170a",
+    urls = ["https://raw.githubusercontent.com/bazelbuild/bazel/9.1.0/src/test/shell/unittest_utils.sh"],
+    downloaded_file_path = "unittest_utils.sh",
+)
