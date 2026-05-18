@@ -101,9 +101,20 @@ _ATTRS = {
         default = False,
         doc = "Enables / disables the SARIF report generation. The report file name is `{target_name}_detekt_report.sarif`.",
     ),
+    "deps": attr.label_list(
+        default = [],
+        doc = "Dependencies to provide to Detekt for classpath type resolution.",
+        providers = [JavaInfo],
+    ),
+    "is_android": attr.bool(
+        doc = "Whether detekt target corresponds to android kotlin library or regular jvm library",
+        default = False,
+    ),
 }
 
 TOOLCHAIN_TYPE = Label("//detekt:toolchain_type")
+ANDROID_SDK_TOOLCHAIN_TYPE = Label("@rules_android//toolchains/android_sdk:toolchain_type")
+JDK_TOOLCHAIN_TYPE = Label("@bazel_tools//tools/jdk:toolchain_type")
 
 def _impl(
         ctx,
@@ -196,6 +207,16 @@ def _impl(
     if run_as_test_target:
         detekt_arguments.add("--run-as-test-target")
 
+    classpath = depset([], transitive = [dep[JavaInfo].compile_jars for dep in ctx.attr.deps]).to_list()
+    if classpath:
+        if ctx.attr.is_android:
+            platform_jar_files = [ctx.toolchains[ANDROID_SDK_TOOLCHAIN_TYPE].android_sdk_info.android_jar]
+        else:
+            platform_jar_files = ctx.toolchains[JDK_TOOLCHAIN_TYPE].java.bootclasspath.to_list()
+
+        action_inputs.extend(platform_jar_files + classpath)
+        detekt_arguments.add("--classpath", ":".join([f.path for f in platform_jar_files] + [f.path for f in classpath]))
+
     action_inputs.extend(ctx.files.plugins)
     detekt_arguments.add_joined("--plugins", ctx.files.plugins, join_with = ",")
 
@@ -285,14 +306,14 @@ detekt = rule(
     implementation = _detekt_impl,
     attrs = _ATTRS,
     provides = [DefaultInfo],
-    toolchains = [TOOLCHAIN_TYPE],
+    toolchains = [TOOLCHAIN_TYPE, ANDROID_SDK_TOOLCHAIN_TYPE, JDK_TOOLCHAIN_TYPE],
 )
 
 detekt_create_baseline = rule(
     implementation = _detekt_create_baseline_impl,
     attrs = _ATTRS,
     provides = [DefaultInfo],
-    toolchains = [TOOLCHAIN_TYPE],
+    toolchains = [TOOLCHAIN_TYPE, ANDROID_SDK_TOOLCHAIN_TYPE, JDK_TOOLCHAIN_TYPE],
     executable = True,
 )
 
@@ -300,6 +321,6 @@ detekt_test = rule(
     implementation = _detekt_test_impl,
     attrs = _ATTRS,
     provides = [DefaultInfo],
-    toolchains = [TOOLCHAIN_TYPE],
+    toolchains = [TOOLCHAIN_TYPE, ANDROID_SDK_TOOLCHAIN_TYPE, JDK_TOOLCHAIN_TYPE],
     test = True,
 )
