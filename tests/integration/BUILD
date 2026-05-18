@@ -1,56 +1,40 @@
-load("//detekt:defs.bzl", "detekt")
+load("@bazel_binaries//:defs.bzl", "bazel_binaries")
+load("@rules_bazel_integration_test//bazel_integration_test:defs.bzl", "script_test")
+load("@rules_shell//shell:sh_library.bzl", "sh_library")
 
-filegroup(
-    name = "detekt_config_lenient",
-    srcs = ["detekt_config_lenient.yml"],
-    tags = ["manual"],
+sh_library(
+    name = "integration_helper",
+    testonly = True,
+    srcs = ["integration_helper.sh"],
+    data = ["//:MODULE.bazel"],
+    visibility = ["//visibility:private"],
+    deps = [
+        "//tests/bashunit",
+        "@rules_shell//shell/runfiles",
+    ],
 )
 
-detekt(
-    name = "detekt_without_config",
-    srcs = glob(["src/main/kotlin/**/*.kt"]),
-    tags = ["manual"],
+script_test(
+    name = "integration_test",
+    srcs = ["integration_test.sh"],
+    # The inner Bazel needs ANDROID_HOME so the rules_android SDK toolchain
+    # resolves to a target that provides ToolchainInfo (the detekt rule
+    # declares the Android SDK toolchain unconditionally).
+    additional_env_inherit = [
+        "ANDROID_HOME",
+        "ANDROID_SDK_ROOT",
+    ],
+    bazel_binaries = bazel_binaries,
+    bazel_version = bazel_binaries.versions.current,
+    tags = [],
+    deps = [
+        ":integration_helper",
+        "//tests/bashunit",
+        "@rules_shell//shell/runfiles",
+    ],
 )
 
-detekt(
-    name = "detekt_without_config_with_report_html",
-    srcs = glob(["src/main/kotlin/**/*.kt"]),
-    html_report = True,
-    tags = ["manual"],
-)
-
-detekt(
-    name = "detekt_without_config_with_report_xml",
-    srcs = glob(["src/main/kotlin/**/*.kt"]),
-    tags = ["manual"],
-    xml_report = True,
-)
-
-detekt(
-    name = "detekt_without_config_with_baseline",
-    srcs = glob(["src/main/kotlin/**/*.kt"]),
-    baseline = "detekt_baseline.xml",
-    tags = ["manual"],
-)
-
-detekt(
-    name = "detekt_without_config_with_baseline_with_plugin",
-    srcs = glob(["src/main/kotlin/**/*.kt"]),
-    baseline = "detekt_baseline.xml",
-    plugins = ["@rules_detekt_dependencies//:io_gitlab_arturbosch_detekt_detekt_formatting"],
-    tags = ["manual"],
-)
-
-detekt(
-    name = "detekt_with_config_file_lenient",
-    srcs = glob(["src/main/kotlin/**/*.kt"]),
-    cfgs = ["detekt_config_lenient.yml"],
-    tags = ["manual"],
-)
-
-detekt(
-    name = "detekt_with_config_filegroup_lenient",
-    srcs = glob(["src/main/kotlin/**/*.kt"]),
-    cfgs = ["//tests/integration:detekt_config_lenient"],
-    tags = ["manual"],
+test_suite(
+    name = "integration_tests",
+    tests = [":integration_test"],
 )

@@ -108,4 +108,4 @@ jobs:
       - name: "Configure Bazel"
         run: cp .github/workflows/ci.bazelrc .
       - name: "Integration tests (${{ matrix.mode }})"
-        run: bash tests/integration/suite.sh "${{ matrix.flags }}"
+        run: bazel test //tests/integration:integration_tests ${{ matrix.flags }}
