@@ -1,10 +1,9 @@
 common --test_tag_filters=-manual
 
-# abseil-cpp and protobuf (pulled in by stardoc) use std::visit/std::get with std::variant,
-# which requires macOS 10.13+. Set the minimum OS for both target and host/exec tool builds.
-# Uncomment the below if running into Stardoc issues on Mac.
-# build --macos_minimum_os=10.13
-# build --host_macos_minimum_os=10.13
+# abseil-cpp and protobuf use std::visit/std::get with std::variant which requires macOS 10.13+.
+# Set the minimum OS for both target and host/exec tool builds.
+build --macos_minimum_os=10.13
+build --host_macos_minimum_os=10.13
 
 # Bazel 9+ has bzlmod enabled by default.
 # For WORKSPACE support, use: --noenable_bzlmod --enable_workspace
