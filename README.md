@@ -207,21 +207,6 @@ detekt.detekt_version(
 use_repo(detekt, "detekt_cli_all")
 ```
 
-To download Detekt from a custom location (e.g. an internal mirror), use the `url_templates` parameter:
-
-```python
-detekt = use_extension("@rules_detekt//detekt:extensions.bzl", "detekt")
-detekt.detekt_version(
-    version = "...",
-    sha256 = "...",
-    url_templates = [
-        "https://my-mirror.example.com/detekt/detekt-cli-{version}-all.jar",
-    ],
-)
-
-use_repo(detekt, "detekt_cli_all")
-```
-
 #### `WORKSPACE` Configuration
 
 ```python
@@ -235,22 +220,6 @@ rules_detekt_dependencies(
     )
 )
 ```
-
-To download Detekt from a custom location (e.g., an internal mirror), use the `url_templates` parameter:
-
-```python
-rules_detekt_dependencies(
-    detekt_version = detekt_version(
-        version = "...",
-        sha256 = "...",
-        url_templates = [
-            "https://my-mirror.example.com/detekt/detekt-cli-{version}-all.jar",
-        ],
-    )
-)
-```
-
-Each template may contain `{version}` which will be replaced with the version string.
 
 ### JVM Flags
 
