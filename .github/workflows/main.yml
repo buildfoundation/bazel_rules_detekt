@@ -41,29 +41,6 @@ jobs:
         run: bazel build //detekt/wrapper:bin
   test:
     runs-on: ubuntu-latest
-    steps:
-      - name: "Checkout the sources"
-        uses: actions/checkout@v7
-      - name: "Install JDK 11"
-        uses: actions/setup-java@v4
-        with:
-          distribution: "zulu"
-          java-version: "11"
-      - name: Mount bazel caches
-        uses: actions/cache@v6
-        with:
-          path: |
-            ~/.cache/bazel-disk-cache
-          key: bazel-cache-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'MODULE.bazel', 'MODULE.bazel.lock') }}
-          restore-keys: bazel-cache-
-      - name: "Setup Bazelisk"
-        uses: bazelbuild/setup-bazelisk@v3
-      - name: "Configure Bazel"
-        run: cp .github/workflows/ci.bazelrc .
-      - name: "Unit tests"
-        run: bazel test -- //... -//tests/integration/...
-  integration-test:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         detekt-strategy: [local, worker]
@@ -86,5 +63,5 @@ jobs:
         uses: bazelbuild/setup-bazelisk@v3
       - name: "Configure Bazel"
         run: cp .github/workflows/ci.bazelrc .
-      - name: "Integration tests (${{ matrix.detekt-strategy }})"
-        run: bazel test --strategy=Detekt=${{ matrix.detekt-strategy }} --disk_cache= --cache_test_results=no //tests/integration/...
+      - name: "Unit tests"
+        run: bazel test //... --strategy=Detekt=${{ matrix.detekt-strategy }}
