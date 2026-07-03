@@ -6,7 +6,4 @@ common --test_tag_filters=-manual
 # build --macos_minimum_os=10.13
 # build --host_macos_minimum_os=10.13
 
-# Bazel 9+ has bzlmod enabled by default.
-# For WORKSPACE support, use: --noenable_bzlmod --enable_workspace
-
 try-import %workspace%/ci.bazelrc

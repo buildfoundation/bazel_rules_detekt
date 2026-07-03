@@ -34,17 +34,7 @@ For detailed per-Detekt-version Kotlin and JDK compatibility, see the [Detekt co
 
 > **Note:** JDK 25 and above are **not** supported with Detekt 1.23.x. The bundled Kotlin compiler performs a hard version check that fails on JDK 25+. This is resolved in the Detekt 2.x series.
 
-### Bazel
-
-| Bazel version | `MODULE.bazel` (Bzlmod) | `WORKSPACE`                                              |
-| ------------- | ----------------------- | -------------------------------------------------------- |
-| 9.x           | ✅                      | ✅ requires `--enable_workspace`                         |
-| 8.x           | ✅                      | ⚠️ disabled by default; opt-in with `--enable_workspace` |
-| 7.x           | ✅                      | ✅ (deprecated; bzlmod recommended)                      |
-| 6.x           | ✅                      | ✅                                                       |
-| < 6           | ❌                      | ✅                                                       |
-
-The project is developed and tested against **Bazel 9**. Older versions may work but are not actively tested.
+The project is developed and tested against **Bazel 9** with Bzlmod.
 
 ## Usage
 
@@ -56,31 +46,9 @@ Refer to [GitHub releases](https://github.com/buildfoundation/bazel_rules_detekt
 bazel_dep(name = "rules_detekt", version = "...")
 ```
 
-### `WORKSPACE` Configuration
-
-```python
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-rules_detekt_version = "see-github-releases-page"
-rules_detekt_sha = "see-github-releases-page"
-
-http_archive(
-    name = "rules_detekt",
-    sha256 = rules_detekt_sha,
-    strip_prefix = "bazel_rules_detekt-{v}".format(v = rules_detekt_version),
-    url = "https://github.com/buildfoundation/bazel_rules_detekt/archive/v{v}.tar.gz".format(v = rules_detekt_version),
-)
-
-load("@rules_detekt//detekt:dependencies.bzl", "rules_detekt_dependencies")
-rules_detekt_dependencies()
-
-load("@rules_detekt//detekt:toolchains.bzl", "rules_detekt_toolchains")
-rules_detekt_toolchains()
-```
-
 ### `BUILD` Configuration
 
-Once declared in the `WORKSPACE` or `MODULE.bazel` file, the rules can be loaded in the `BUILD` file.
+Once declared in the `MODULE.bazel` file, the rules can be loaded in the `BUILD` file.
 
 ## Rules
 
@@ -222,32 +190,19 @@ detekt.detekt_version(
 use_repo(detekt, "detekt_cli_all")
 ```
 
-#### `WORKSPACE` Configuration
-
-```python
-load("@rules_detekt//detekt:versions.bzl", "detekt_version")
-load("@rules_detekt//detekt:dependencies.bzl", "rules_detekt_dependencies")
-
-rules_detekt_dependencies(
-    detekt_version = detekt_version(
-        version = "...",
-        sha256 = "...",
-    )
-)
-```
-
 To download Detekt from a custom location (e.g., an internal mirror), use the `url_templates` parameter:
 
 ```python
-rules_detekt_dependencies(
-    detekt_version = detekt_version(
-        version = "...",
-        sha256 = "...",
-        url_templates = [
-            "https://my-mirror.example.com/detekt/detekt-cli-{version}-all.jar",
-        ],
-    )
+detekt = use_extension("@rules_detekt//detekt:extensions.bzl", "detekt")
+detekt.detekt_version(
+    version = "...",
+    sha256 = "...",
+    url_templates = [
+        "https://my-mirror.example.com/detekt/detekt-cli-{version}-all.jar",
+    ],
 )
+
+use_repo(detekt, "detekt_cli_all")
 ```
 
 Each template may contain `{version}` which will be replaced with the version string.
@@ -272,15 +227,7 @@ toolchain(
 )
 ```
 
-Then register it in `WORKSPACE`:
-
-```python
-load("@rules_detekt//detekt:toolchains.bzl", "rules_detekt_toolchains")
-
-rules_detekt_toolchains(toolchain = "//mypackage:my_detekt_toolchain")
-```
-
-Or `MODULE.bazel`:
+Then register it in `MODULE.bazel`:
 
 ```python
 register_toolchains("//mypackage:my_detekt_toolchain")
