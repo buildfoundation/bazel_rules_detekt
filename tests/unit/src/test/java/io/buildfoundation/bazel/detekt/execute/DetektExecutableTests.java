@@ -28,7 +28,7 @@ public class DetektExecutableTests {
     }
 
     @Test
-    public void failureResultOnDetektExecutionFailureAsTestTarget() throws IOException {
+    public void successResultOnDetektExecutionFailureAsTestTarget() throws IOException {
         check(TestDetekt.ExecuteResult.Failure, ExecutableResult.Success.class, true, 1);
     }
 
