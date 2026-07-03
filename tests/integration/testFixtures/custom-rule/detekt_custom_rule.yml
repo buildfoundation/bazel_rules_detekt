@@ -1,0 +1,4 @@
+custom:
+  active: true
+  ForbiddenFunctionName:
+    active: true
