@@ -16,8 +16,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  pre_commit:
+    name: pre-commit
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - uses: pre-commit/action@v3.0.1
+
+  build:
+    name: Build (Bazel ${{ matrix.bazel }})
+    runs-on: ubuntu-latest
+    env:
+      USE_BAZEL_VERSION: ${{ matrix.bazel }}
+    strategy:
+      fail-fast: false
+      matrix:
+        bazel: ["8.x", "9.x", "rolling"]
     steps:
       - name: "Checkout the sources"
         uses: actions/checkout@v7
@@ -26,23 +45,60 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "11"
-      - name: Mount bazel caches
-        uses: actions/cache@v6
+      - name: "Setup Bazel"
+        uses: bazel-contrib/setup-bazel@0.19.0
         with:
-          path: |
-            ~/.cache/bazel-disk-cache
-          key: bazel-cache-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'MODULE.bazel', 'MODULE.bazel.lock') }}
-          restore-keys: bazel-cache-
-      - name: "Setup Bazelisk"
-        uses: bazelbuild/setup-bazelisk@v3
-      - name: "Configure Bazel"
-        run: cp .github/workflows/ci.bazelrc .
+          bazelisk-cache: true
+          disk-cache: true
+          repository-cache: true
       - name: "Build"
-        run: bazel build //detekt/wrapper:bin
+        run: bazel build --curses=no --verbose_failures --worker_verbose --announce_rc //detekt/wrapper:bin
+
   test:
+    name: Test (Bazel ${{ matrix.bazel }})
     runs-on: ubuntu-latest
+    env:
+      USE_BAZEL_VERSION: ${{ matrix.bazel }}
     strategy:
+      fail-fast: false
       matrix:
+        bazel: ["8.x", "9.x", "rolling"]
+    steps:
+      - name: "Checkout the sources"
+        uses: actions/checkout@v7
+      - name: "Install JDK 11"
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "11"
+      - name: "Setup Bazel"
+        uses: bazel-contrib/setup-bazel@0.19.0
+        with:
+          bazelisk-cache: true
+          disk-cache: true
+          repository-cache: true
+      - name: "Unit tests"
+        run: bazel test --curses=no --verbose_failures --worker_verbose --announce_rc --test_output=errors --test_env=XDG_CACHE_HOME -- //... -//tests/integration/...
+      - name: Verify MODULE.bazel.lock is unchanged
+        if: ${{ always() && matrix.bazel == '9.x' }}
+        shell: bash
+        run: |
+          if [[ -n "$(git status --porcelain -- MODULE.bazel.lock)" ]]; then
+            git diff -- MODULE.bazel.lock
+            git diff --cached -- MODULE.bazel.lock
+            echo "::error file=MODULE.bazel.lock::MODULE.bazel.lock changed during CI. Run Bazel locally and commit the updated lockfile."
+            exit 1
+          fi
+
+  integration-test:
+    name: Integration test (Bazel ${{ matrix.bazel }}, Detekt ${{ matrix.detekt-strategy }})
+    runs-on: ubuntu-latest
+    env:
+      USE_BAZEL_VERSION: ${{ matrix.bazel }}
+    strategy:
+      fail-fast: false
+      matrix:
+        bazel: ["8.x", "9.x", "rolling"]
         detekt-strategy: [local, worker]
     steps:
       - name: "Checkout the sources"
@@ -52,16 +108,11 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "11"
-      - name: Mount bazel caches
-        uses: actions/cache@v6
+      - name: "Setup Bazel"
+        uses: bazel-contrib/setup-bazel@0.19.0
         with:
-          path: |
-            ~/.cache/bazel-disk-cache
-          key: bazel-cache-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'MODULE.bazel', 'MODULE.bazel.lock') }}
-          restore-keys: bazel-cache-
-      - name: "Setup Bazelisk"
-        uses: bazelbuild/setup-bazelisk@v3
-      - name: "Configure Bazel"
-        run: cp .github/workflows/ci.bazelrc .
-      - name: "Unit tests"
-        run: bazel test //... --strategy=Detekt=${{ matrix.detekt-strategy }}
+          bazelisk-cache: true
+          disk-cache: true
+          repository-cache: true
+      - name: "Integration tests (${{ matrix.detekt-strategy }})"
+        run: bazel test --curses=no --verbose_failures --worker_verbose --announce_rc --test_output=errors --test_env=XDG_CACHE_HOME --strategy=Detekt=${{ matrix.detekt-strategy }} --disk_cache= --cache_test_results=no //tests/integration/...
