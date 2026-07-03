@@ -15,4 +15,7 @@ toolchain(
     toolchain_type = "//detekt:toolchain_type",
 )
 
-exports_files(["defs.bzl"])
+exports_files([
+    "defs.bzl",
+    "final_result.sh.tpl",
+])

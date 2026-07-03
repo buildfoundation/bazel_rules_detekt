@@ -10,6 +10,10 @@ _ATTRS = {
         executable = True,
         cfg = "exec",
     ),
+    "_final_result_template": attr.label(
+        default = Label("//detekt:final_result.sh.tpl"),
+        allow_single_file = True,
+    ),
     "srcs": attr.label_list(
         mandatory = True,
         allow_files = [".kt", ".kts"],
@@ -217,8 +221,9 @@ def _impl(
         action_inputs.extend(platform_jar_files + classpath)
         detekt_arguments.add("--classpath", ":".join([f.path for f in platform_jar_files] + [f.path for f in classpath]))
 
-    action_inputs.extend(ctx.files.plugins)
-    detekt_arguments.add_joined("--plugins", ctx.files.plugins, join_with = ",")
+    plugin_jars = [plugin for plugin in ctx.files.plugins if plugin.extension == "jar"]
+    action_inputs.extend(plugin_jars)
+    detekt_arguments.add_joined("--plugins", plugin_jars, join_with = ",")
 
     txt_report = ctx.actions.declare_file("{}_detekt_report.txt".format(ctx.label.name))
     action_outputs.append(txt_report)
@@ -246,14 +251,13 @@ def _impl(
 
     execution_result = ctx.actions.declare_file("{}_exit_code.txt".format(ctx.label.name))
     run_files.append(execution_result)
-    action_outputs.append(execution_result)
     detekt_arguments.add("--execution-result", "{}".format(execution_result.path))
 
     ctx.actions.run(
         mnemonic = "Detekt",
         progress_message = "Running Detekt for {}".format(str(ctx.label)),
         inputs = action_inputs,
-        outputs = action_outputs,
+        outputs = action_outputs + [execution_result],
         executable = ctx.executable._detekt_wrapper,
         execution_requirements = {
             "requires-worker-protocol": "proto",
@@ -267,19 +271,14 @@ def _impl(
     # Note: this is not compatible with Windows, feel free to submit PR!
     # text report-contents are always printed to shell
     final_result = ctx.actions.declare_file(ctx.attr.name + ".sh")
-    ctx.actions.write(
+    ctx.actions.expand_template(
         output = final_result,
-        content = """
-#!/bin/bash
-set -euo pipefail
-exit_code=$(cat {execution_result})
-report=$(cat {text_report})
-if [ ! -z "$report" ]; then
-    echo "$report"
-fi
-{baseline_script}
-exit "$exit_code"
-""".format(execution_result = execution_result.short_path, text_report = txt_report.short_path, baseline_script = baseline_script),
+        template = ctx.file._final_result_template,
+        substitutions = {
+            "{baseline_script}": baseline_script,
+            "{execution_result}": execution_result.short_path,
+            "{text_report}": txt_report.short_path,
+        },
         is_executable = True,
     )
 
