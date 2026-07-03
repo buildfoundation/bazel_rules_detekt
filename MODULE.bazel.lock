@@ -243,6 +243,26 @@
   },
   "selectedYankedVersions": {},
   "moduleExtensions": {
+    "//detekt:extensions.bzl%detekt": {
+      "general": {
+        "bzlTransitiveDigest": "0wUfSTkYEUurty3xMdxZ5I3ysxQbq2g/OfsPaSk50F0=",
+        "usagesDigest": "UG2mEIEsdvU/+QeBWiCHDHs5hMI++iFUzBav0bmCZKM=",
+        "recordedInputs": [
+          "REPO_MAPPING:,bazel_tools bazel_tools"
+        ],
+        "generatedRepoSpecs": {
+          "detekt_cli_all": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_jar",
+            "attributes": {
+              "sha256": "2ce2ff952e150baf28a29cda70a363b0340b3e81a55f43e51ec5edffc3d066c1",
+              "urls": [
+                "https://github.com/detekt/detekt/releases/download/v1.23.8/detekt-cli-1.23.8-all.jar"
+              ]
+            }
+          }
+        }
+      }
+    },
     "@@rules_android+//rules/android_sdk_repository:rule.bzl%android_sdk_repository_extension": {
       "general": {
         "bzlTransitiveDigest": "qHbR00gVzVzkxX+PRtv4UGcUFMtBz7TK9CNYUWH8nIE=",
@@ -308,6 +328,28 @@
               "urls": [
                 "https://github.com/bazelbuild/rules_android/archive/v0.1.1.zip"
               ]
+            }
+          }
+        }
+      }
+    },
+    "@@rules_pmd+//pmd:extensions.bzl%pmd": {
+      "general": {
+        "bzlTransitiveDigest": "QR9QanaFsW8nTfhfteRNlH/BsLrNlWMxbNLhna3jtGo=",
+        "usagesDigest": "D/ifXkc9TXqizjh+7qDgY1iuQU0EBFbbpTY6LO6S5Tk=",
+        "recordedInputs": [
+          "REPO_MAPPING:rules_pmd+,bazel_tools bazel_tools"
+        ],
+        "generatedRepoSpecs": {
+          "net_sourceforge_pmd": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "urls": [
+                "https://github.com/pmd/pmd/releases/download/pmd_releases/6.55.0/pmd-bin-6.55.0.zip"
+              ],
+              "strip_prefix": "pmd-bin-6.55.0/lib",
+              "sha256": "21acf96d43cb40d591cacccc1c20a66fc796eaddf69ea61812594447bac7a11d",
+              "build_file": "@@rules_pmd+//pmd:BUILD.pmd.bazel"
             }
           }
         }
