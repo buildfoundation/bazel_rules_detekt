@@ -10,8 +10,8 @@ _ATTRS = {
         executable = True,
         cfg = "exec",
     ),
-    "_final_result_template": attr.label(
-        default = Label("//detekt:final_result.sh.tpl"),
+    "_result_script_template": attr.label(
+        default = Label("//detekt:result_script.sh.tpl"),
         allow_single_file = True,
     ),
     "srcs": attr.label_list(
@@ -270,10 +270,10 @@ def _impl(
 
     # Note: this is not compatible with Windows, feel free to submit PR!
     # text report-contents are always printed to shell
-    final_result = ctx.actions.declare_file(ctx.attr.name + ".sh")
+    result_script = ctx.actions.declare_file(ctx.attr.name + ".sh")
     ctx.actions.expand_template(
-        output = final_result,
-        template = ctx.file._final_result_template,
+        output = result_script,
+        template = ctx.file._result_script_template,
         substitutions = {
             "{baseline_script}": baseline_script,
             "{execution_result}": execution_result.short_path,
@@ -287,7 +287,7 @@ def _impl(
             # The text report is always generated as it's the source for console output via the shell script. However,
             # only add it the report outputs if it's explicitly set.
             files = depset([f for f in action_outputs if f != txt_report or ctx.attr.txt_report]),
-            executable = final_result,
+            executable = result_script,
             runfiles = ctx.runfiles(files = run_files),
         ),
     ]
