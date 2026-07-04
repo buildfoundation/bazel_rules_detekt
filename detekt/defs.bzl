@@ -5,11 +5,6 @@ Rule declarations.
 load("@rules_java//java:defs.bzl", "JavaInfo")
 
 _ATTRS = {
-    "_detekt_wrapper": attr.label(
-        default = "//detekt/wrapper:bin",
-        executable = True,
-        cfg = "exec",
-    ),
     "_result_script_template": attr.label(
         default = Label("//detekt:result_script.sh.tpl"),
         allow_single_file = True,
@@ -68,7 +63,7 @@ _ATTRS = {
         doc = "Globbing patterns describing paths to include in the analysis. Useful in combination with 'excludes' patterns.",
     ),
     "jvm_target": attr.string(
-        default = "1.8",
+        default = "",
         doc = "EXPERIMENTAL: Target version of the generated JVM bytecode that was generated during compilation and is now being used for type resolution (1.8, 9, 10, ..., 26). The selected Detekt version validates this value.",
     ),
     "language_version": attr.string(
@@ -77,7 +72,7 @@ _ATTRS = {
     ),
     "max_issues": attr.int(
         default = -1,
-        doc = "Passes only when found issues count does not exceed specified issues count.",
+        doc = "Passes only when found issues count does not exceed specified issues count. Negative values inherit from the detekt toolchain.",
     ),
     "fail_on_severity": attr.string(
         default = "",
@@ -85,7 +80,7 @@ _ATTRS = {
     ),
     "parallel": attr.bool(
         default = False,
-        doc = "Enables parallel compilation and analysis of source files. Do some benchmarks first before enabling this flag. Heuristics show performance benefits starting from 2000 lines of Kotlin code.",
+        doc = "Enables parallel compilation and analysis of source files. Defaults to the detekt toolchain value.",
     ),
     "txt_report": attr.bool(
         default = False,
@@ -128,10 +123,11 @@ def _impl(
         create_baseline = False):
     action_inputs = []
     action_outputs = []
+    detekt_toolchain = ctx.toolchains[TOOLCHAIN_TYPE]
 
     java_arguments = ctx.actions.args()
 
-    for jvm_flag in ctx.toolchains[TOOLCHAIN_TYPE].jvm_flags:
+    for jvm_flag in detekt_toolchain.jvm_flags:
         # The Bazel-generated execution script requires "=" between argument names and values.
         java_arguments.add("--jvm_flag={}".format(jvm_flag))
 
@@ -148,8 +144,9 @@ def _impl(
     action_inputs.extend(ctx.files.srcs)
     detekt_arguments.add_joined("--input", ctx.files.srcs, join_with = ",")
 
-    action_inputs.extend(ctx.files.cfgs)
-    detekt_arguments.add_joined("--config", ctx.files.cfgs, join_with = ",")
+    cfgs = ctx.files.cfgs or detekt_toolchain.cfgs
+    action_inputs.extend(cfgs)
+    detekt_arguments.add_joined("--config", cfgs, join_with = ",")
 
     if ctx.attr.config_resource:
         detekt_arguments.add("--config-resource", ctx.attr.config_resource)
@@ -187,10 +184,12 @@ def _impl(
     if ctx.attr.base_path:
         detekt_arguments.add("--base-path", ctx.attr.base_path)
 
-    if ctx.attr.build_upon_default_config:
+    build_upon_default_config = ctx.attr.build_upon_default_config or detekt_toolchain.build_upon_default_config
+    if build_upon_default_config:
         detekt_arguments.add("--build-upon-default-config")
 
-    if ctx.attr.disable_default_rulesets:
+    disable_default_rulesets = ctx.attr.disable_default_rulesets or detekt_toolchain.disable_default_rulesets
+    if disable_default_rulesets:
         detekt_arguments.add("--disable-default-rulesets")
 
     if ctx.attr.excludes:
@@ -199,20 +198,24 @@ def _impl(
     if ctx.attr.includes:
         detekt_arguments.add_joined("--includes", ctx.attr.includes, join_with = ",")
 
-    detekt_arguments.add("--jvm-target", ctx.attr.jvm_target)
+    jvm_target = ctx.attr.jvm_target or detekt_toolchain.jvm_target
+    detekt_arguments.add("--jvm-target", jvm_target)
 
-    if ctx.attr.language_version:
-        detekt_arguments.add("--language-version", ctx.attr.language_version)
+    language_version = ctx.attr.language_version or detekt_toolchain.language_version
+    if language_version:
+        detekt_arguments.add("--language-version", language_version)
 
-    if ctx.attr.max_issues >= 0:
+    max_issues = ctx.attr.max_issues if ctx.attr.max_issues >= 0 else detekt_toolchain.max_issues
+    if max_issues >= 0:
         if ctx.attr.fail_on_severity:
             fail("max_issues and fail_on_severity cannot be used together")
-        detekt_arguments.add("--max-issues", ctx.attr.max_issues)
+        detekt_arguments.add("--max-issues", max_issues)
 
     if ctx.attr.fail_on_severity:
         detekt_arguments.add("--fail-on-severity", ctx.attr.fail_on_severity)
 
-    if ctx.attr.parallel:
+    parallel = ctx.attr.parallel or detekt_toolchain.parallel
+    if parallel:
         detekt_arguments.add("--parallel")
 
     if run_as_test_target:
@@ -228,7 +231,8 @@ def _impl(
         action_inputs.extend(platform_jar_files + classpath)
         detekt_arguments.add("--classpath", ctx.configuration.host_path_separator.join([f.path for f in platform_jar_files] + [f.path for f in classpath]))
 
-    plugin_jars = [plugin for plugin in ctx.files.plugins if plugin.extension == "jar"]
+    plugins = ctx.files.plugins or detekt_toolchain.plugins
+    plugin_jars = [plugin for plugin in plugins if plugin.extension == "jar"]
     action_inputs.extend(plugin_jars)
     detekt_arguments.add_joined("--plugins", plugin_jars, join_with = ",")
 
@@ -265,7 +269,7 @@ def _impl(
         progress_message = "Running Detekt for {}".format(str(ctx.label)),
         inputs = action_inputs,
         outputs = action_outputs + [execution_result],
-        executable = ctx.executable._detekt_wrapper,
+        executable = detekt_toolchain.detekt_wrapper.files_to_run,
         execution_requirements = {
             "requires-worker-protocol": "proto",
             "supports-workers": "1",
