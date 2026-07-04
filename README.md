@@ -17,7 +17,7 @@ for the [Bazel build system](https://bazel.build).
 
 | `bazel_rules_detekt`                | Default Detekt  | Kotlin compiler | Max `language_version` | Min JDK | Max tested JDK | Bazel     |
 | ----------------------------------- | --------------- | --------------- | ---------------------- | ------- | -------------- | --------- |
-| **v0.8.1.9 – v0.8.1.13** _(latest)_ | 1.23.8          | 2.0.21          | `2.0`                  | 8       | 21             | 9.x       |
+| **v0.8.1.9 – v0.8.1.13** _(latest)_ | 1.23.8          | 2.0.21          | `2.0`                  | 8       | 21             | 8.x – 9.x |
 | v0.8.1.3 – v0.8.1.8                 | 1.23.5          | 1.9.22          | `1.9`                  | 8       | 17             | 7.x – 9.x |
 | v0.8.1 – v0.8.1.2                   | 1.23.1          | 1.9.0           | `1.9`                  | 8       | 17             | 6.x       |
 | v0.7.0                              | 1.22.0          | —               | —                      | 8       | —              | 5.x       |
@@ -34,7 +34,7 @@ For detailed per-Detekt-version Kotlin and JDK compatibility, see the [Detekt co
 
 > **Note:** JDK 25 and above are **not** supported with Detekt 1.23.x. The bundled Kotlin compiler performs a hard version check that fails on JDK 25+. This is resolved in the Detekt 2.x series.
 
-The project is developed and tested against **Bazel 9** with Bzlmod.
+The project is developed and tested against **Bazel 8 and 9** with Bzlmod.
 
 ## Usage
 

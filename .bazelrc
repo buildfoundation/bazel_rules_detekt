@@ -5,5 +5,3 @@ common --test_tag_filters=-manual
 # Uncomment the below if running into Stardoc issues on Mac.
 # build --macos_minimum_os=10.13
 # build --host_macos_minimum_os=10.13
-
-try-import %workspace%/ci.bazelrc

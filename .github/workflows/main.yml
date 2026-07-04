@@ -16,52 +16,44 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  pre_commit:
+    name: pre-commit
     runs-on: ubuntu-latest
     steps:
-      - name: "Checkout the sources"
-        uses: actions/checkout@v7
-      - name: "Install JDK 11"
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
         with:
-          distribution: "zulu"
-          java-version: "11"
-      - name: Mount bazel caches
-        uses: actions/cache@v6
-        with:
-          path: |
-            ~/.cache/bazel-disk-cache
-          key: bazel-cache-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'MODULE.bazel', 'MODULE.bazel.lock') }}
-          restore-keys: bazel-cache-
-      - name: "Setup Bazelisk"
-        uses: bazelbuild/setup-bazelisk@v3
-      - name: "Configure Bazel"
-        run: cp .github/workflows/ci.bazelrc .
-      - name: "Build"
-        run: bazel build //detekt/wrapper:bin
+          python-version: "3.x"
+      - uses: pre-commit/action@v3.0.1
+
   test:
+    name: Test (Bazel ${{ matrix.bazel }}, Detekt ${{ matrix.detekt-strategy }})
     runs-on: ubuntu-latest
+    env:
+      USE_BAZEL_VERSION: ${{ matrix.bazel }}
     strategy:
+      fail-fast: false
       matrix:
+        bazel: ["8.x", "9.x", "rolling"]
         detekt-strategy: [local, worker]
     steps:
       - name: "Checkout the sources"
         uses: actions/checkout@v7
-      - name: "Install JDK 11"
-        uses: actions/setup-java@v4
+      - name: "Setup Bazel"
+        uses: bazel-contrib/setup-bazel@0.19.0
         with:
-          distribution: "zulu"
-          java-version: "11"
-      - name: Mount bazel caches
-        uses: actions/cache@v6
-        with:
-          path: |
-            ~/.cache/bazel-disk-cache
-          key: bazel-cache-${{ hashFiles('**/BUILD.bazel', '**/*.bzl', 'MODULE.bazel', 'MODULE.bazel.lock') }}
-          restore-keys: bazel-cache-
-      - name: "Setup Bazelisk"
-        uses: bazelbuild/setup-bazelisk@v3
-      - name: "Configure Bazel"
-        run: cp .github/workflows/ci.bazelrc .
+          bazelisk-cache: true
+          disk-cache: true
+          repository-cache: true
       - name: "Unit tests"
-        run: bazel test //... --strategy=Detekt=${{ matrix.detekt-strategy }}
+        run: bazel test --strategy=Detekt=${{ matrix.detekt-strategy }} //...
+      - name: Verify MODULE.bazel.lock is unchanged
+        if: ${{ always() && matrix.bazel == '9.x' && matrix.detekt-strategy == 'local' }}
+        shell: bash
+        run: |
+          if [[ -n "$(git status --porcelain -- MODULE.bazel.lock)" ]]; then
+            git diff -- MODULE.bazel.lock
+            git diff --cached -- MODULE.bazel.lock
+            echo "::error file=MODULE.bazel.lock::MODULE.bazel.lock changed during CI. Run Bazel locally and commit the updated lockfile."
+            exit 1
+          fi

@@ -16,6 +16,22 @@ def _expand_paths(ctx, values):
         for value in values
     ]
 
+def _input_short_path(file):
+    path = file.short_path
+    prefix = "_middlemen/"
+    suffix = "-runfiles"
+    if path.startswith(prefix) and path.endswith(suffix):
+        # Bazel 8: _middlemen/detekt_Swrapper_Sbin-runfiles
+        # Bazel 9: detekt/wrapper/bin.runfiles
+        return path[len(prefix):len(path) - len(suffix)].replace("_S", "/") + ".runfiles"
+    return path
+
+def _input_short_paths(files):
+    return [
+        _input_short_path(file)
+        for file in files.to_list()
+    ]
+
 def assert_argv_contains_prefix_suffix(env, action, prefix, suffix):
     for arg in action.argv:
         if arg.startswith(prefix) and arg.endswith(suffix):
@@ -86,7 +102,7 @@ def _action_full_contents_test_impl(ctx):
         "{{source_dir}}/test_target_full_exit_code.txt",
     ])
 
-    asserts.equals(env, expected_inputs, [file.short_path for file in action.inputs.to_list()])
+    asserts.equals(env, expected_inputs, _input_short_paths(action.inputs))
     asserts.equals(env, expected_outputs, [file.short_path for file in action.outputs.to_list()])
 
     return analysistest.end(env)
@@ -145,7 +161,7 @@ def _action_blank_contents_test_impl(ctx):
         "{{source_dir}}/test_target_blank_exit_code.txt",
     ])
 
-    asserts.equals(env, expected_inputs, [file.short_path for file in action.inputs.to_list()])
+    asserts.equals(env, expected_inputs, _input_short_paths(action.inputs))
     asserts.equals(env, expected_outputs, [file.short_path for file in action.outputs.to_list()])
 
     return analysistest.end(env)
