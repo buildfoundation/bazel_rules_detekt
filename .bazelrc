@@ -1,5 +1,8 @@
 common --test_tag_filters=-manual
 
+common --@protobuf//bazel/toolchains:prefer_prebuilt_protoc
+common --incompatible_enable_proto_toolchain_resolution
+
 # abseil-cpp and protobuf (pulled in by stardoc) use std::visit/std::get with std::variant,
 # which requires macOS 10.13+. Set the minimum OS for both target and host/exec tool builds.
 # Uncomment the below if running into Stardoc issues on Mac.
