@@ -52,6 +52,21 @@ def assert_argv_contains(env, action, flag):
         "Expected {args} to contain {flag}".format(args = action.argv, flag = flag),
     )
 
+def assert_argv_lacks(env, action, flag):
+    asserts.false(
+        env,
+        flag in action.argv,
+        "Expected {args} to not contain {flag}".format(args = action.argv, flag = flag),
+    )
+
+def assert_argv_lacks_prefix(env, action, prefix):
+    for arg in action.argv:
+        asserts.false(
+            env,
+            arg.startswith(prefix),
+            "Expected {args} to contain no arg starting with {prefix}".format(args = action.argv, prefix = prefix),
+        )
+
 # Action full contents test
 
 def _action_full_contents_test_impl(ctx):
@@ -62,10 +77,11 @@ def _action_full_contents_test_impl(ctx):
 
     action = actions[0]
     assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/detekt/wrapper/bin")
-    assert_argv_contains(env, action, "--jvm_flag=-Xms16m")
-    assert_argv_contains(env, action, "--jvm_flag=-Xmx128m")
+    assert_argv_lacks_prefix(env, action, "--jvm_flag=")
     assert_argv_contains(env, action, "--input")
     assert_argv_contains(env, action, _expand_path(ctx, "{{source_dir}}/path A.kt,{{source_dir}}/path B.kt,{{source_dir}}/path C.kt"))
+
+    # These values are supplied by custom_defaults_toolchain, not the target.
     assert_argv_contains(env, action, "--config")
     assert_argv_contains(env, action, _expand_path(ctx, "{{source_dir}}/config A.yml,{{source_dir}}/config B.yml,{{source_dir}}/config C.yml"))
     assert_argv_contains(env, action, "--baseline")
@@ -80,6 +96,12 @@ def _action_full_contents_test_impl(ctx):
     assert_argv_contains(env, action, _expand_path(ctx, "{{output_dir}}/{{source_dir}}/test_target_full_exit_code.txt"))
     assert_argv_contains(env, action, "--build-upon-default-config")
     assert_argv_contains(env, action, "--disable-default-rulesets")
+    assert_argv_contains(env, action, "--jvm-target")
+    assert_argv_contains(env, action, "11")
+    assert_argv_contains(env, action, "--language-version")
+    assert_argv_contains(env, action, "2.0")
+    assert_argv_contains(env, action, "--max-issues")
+    assert_argv_contains(env, action, "7")
     assert_argv_contains(env, action, "--parallel")
 
     expected_inputs = _expand_paths(env.ctx, [
@@ -119,6 +141,9 @@ def _test_action_full_contents():
         xml_report = True,
         build_upon_default_config = True,
         disable_default_rulesets = True,
+        jvm_target = "11",
+        language_version = "2.0",
+        max_issues = 7,
         parallel = True,
         # The "plugins" option is skipped here since the path includes a declared Detekt version
         # and we do not want to change the test every time the Detekt artifact is updated.
@@ -140,10 +165,14 @@ def _action_blank_contents_test_impl(ctx):
 
     action = actions[0]
     assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/detekt/wrapper/bin")
-    assert_argv_contains(env, action, "--jvm_flag=-Xms16m")
-    assert_argv_contains(env, action, "--jvm_flag=-Xmx128m")
+    assert_argv_lacks_prefix(env, action, "--jvm_flag=")
     assert_argv_contains(env, action, "--input")
     assert_argv_contains(env, action, _expand_path(ctx, "{{source_dir}}/path A.kt,{{source_dir}}/path B.kt,{{source_dir}}/path C.kt"))
+    assert_argv_contains(env, action, "--jvm-target")
+    assert_argv_contains(env, action, "1.8")
+    assert_argv_lacks(env, action, "--language-version")
+    assert_argv_lacks(env, action, "--max-issues")
+    assert_argv_lacks(env, action, "--parallel")
     assert_argv_contains(env, action, "--report")
     assert_argv_contains_prefix_suffix(env, action, "txt:", _expand_path(ctx, "{{source_dir}}/test_target_blank_detekt_report.txt"))
 
@@ -180,16 +209,75 @@ def _test_action_blank_contents():
         target_under_test = ":test_target_blank",
     )
 
+# Action toolchain defaults test
+
+def _action_toolchain_defaults_test_impl(ctx):
+    env = analysistest.begin(ctx)
+
+    actions = analysistest.target_actions(env)
+    asserts.equals(env, 6, len(actions))
+
+    action = actions[0]
+    assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/detekt/wrapper/bin")
+    assert_argv_lacks_prefix(env, action, "--jvm_flag=")
+    assert_argv_contains(env, action, "--input")
+    assert_argv_contains(env, action, _expand_path(ctx, "{{source_dir}}/path A.kt,{{source_dir}}/path B.kt,{{source_dir}}/path C.kt"))
+    assert_argv_contains(env, action, "--config")
+    assert_argv_contains(env, action, _expand_path(ctx, "{{source_dir}}/config A.yml"))
+    assert_argv_contains(env, action, "--build-upon-default-config")
+    assert_argv_contains(env, action, "--disable-default-rulesets")
+    assert_argv_contains(env, action, "--jvm-target")
+    assert_argv_contains(env, action, "17")
+    assert_argv_contains(env, action, "--language-version")
+    assert_argv_contains(env, action, "1.9")
+    assert_argv_contains(env, action, "--max-issues")
+    assert_argv_contains(env, action, "3")
+    assert_argv_contains(env, action, "--parallel")
+    assert_argv_contains(env, action, "--plugins")
+    assert_argv_contains_prefix_suffix(env, action, "", "/downloaded.jar")
+    assert_argv_contains(env, action, "--report")
+    assert_argv_contains_prefix_suffix(env, action, "txt:", _expand_path(ctx, "{{source_dir}}/test_target_toolchain_defaults_detekt_report.txt"))
+
+    expected_outputs = _expand_paths(env.ctx, [
+        "{{source_dir}}/test_target_toolchain_defaults_detekt_report.txt",
+        "{{source_dir}}/test_target_toolchain_defaults_exit_code.txt",
+    ])
+
+    asserts.equals(env, expected_outputs, [file.short_path for file in action.outputs.to_list()])
+
+    return analysistest.end(env)
+
+action_toolchain_defaults_test = analysistest.make(
+    _action_toolchain_defaults_test_impl,
+    config_settings = {
+        "//command_line_option:extra_toolchains": ["//tests/analysis:custom_defaults_toolchain"],
+    },
+)
+
+def _test_action_toolchain_defaults():
+    detekt(
+        name = "test_target_toolchain_defaults",
+        srcs = ["path A.kt", "path B.kt", "path C.kt"],
+        tags = ["manual"],
+    )
+
+    action_toolchain_defaults_test(
+        name = "action_toolchain_defaults_test",
+        target_under_test = ":test_target_toolchain_defaults",
+    )
+
 # Suite
 
 def test_suite(name):
     _test_action_full_contents()
     _test_action_blank_contents()
+    _test_action_toolchain_defaults()
 
     native.test_suite(
         name = name,
         tests = [
             ":action_full_contents_test",
             ":action_blank_contents_test",
+            ":action_toolchain_defaults_test",
         ],
     )

@@ -8,7 +8,7 @@ for the [Bazel build system](https://bazel.build).
 - configuration and baseline files;
 - HTML, text, XML, Markdown, and SARIF reports;
 - [plugins](https://detekt.dev/docs/extensions/extensions/);
-- customizable Detekt version and JVM flags;
+- customizable Detekt version;
 - [persistent workers](https://blog.bazel.build/2015/12/10/java-workers.html) support;
 - baseline generation via `detekt_create_baseline`;
 - configuration options via [attributes](docs/attrs.md).
@@ -207,31 +207,41 @@ use_repo(detekt, "detekt_cli_all")
 
 Each template may contain `{version}` which will be replaced with the version string.
 
-### JVM Flags
+### Toolchain Defaults
 
-The default toolchain uses `-Xms16m -Xmx128m`. To customize JVM flags, define your own toolchain
-in a `BUILD` file:
+`cfgs`, `plugins`, `build_upon_default_config`, `disable_default_rulesets`, `jvm_target`,
+`language_version`, `max_issues`, and `parallel` can be set once on a custom
+`detekt_toolchain`. Target attributes use those values when left at their rule defaults:
 
 ```python
 load("@rules_detekt//detekt:toolchain.bzl", "detekt_toolchain")
 
 detekt_toolchain(
-    name = "my_detekt_toolchain_impl",
-    jvm_flags = ["-Xms16m", "-Xmx512m"],
+    name = "detekt_toolchain_impl",
+    cfgs = ["//:detekt.yml"],
+    plugins = ["@maven//:io_gitlab_arturbosch_detekt_detekt_formatting"],
+    build_upon_default_config = True,
+    disable_default_rulesets = True,
+    jvm_target = "11",
+    language_version = "2.0",
+    max_issues = 0,
+    parallel = True,
 )
 
 toolchain(
-    name = "my_detekt_toolchain",
-    toolchain = ":my_detekt_toolchain_impl",
+    name = "detekt_toolchain",
+    toolchain = ":detekt_toolchain_impl",
     toolchain_type = "@rules_detekt//detekt:toolchain_type",
 )
 ```
 
-Then register it in `MODULE.bazel`:
-
 ```python
-register_toolchains("//mypackage:my_detekt_toolchain")
+register_toolchains("//tools:detekt_toolchain")
 ```
+
+At the target level, set `cfgs`, `plugins`, `build_upon_default_config`,
+`disable_default_rulesets`, `jvm_target`, `language_version`, `max_issues`, or
+`parallel = True` to use a target-specific value.
 
 ### Plugins
 
@@ -304,7 +314,7 @@ detekt_test(
 ### JVM Target
 
 Use `jvm_target` to set the JVM bytecode target version that matches what was used during compilation.
-This defaults to `1.8` if not explicitly set:
+If not explicitly set, it inherits from the detekt toolchain:
 
 ```python
 detekt_test(
@@ -317,7 +327,7 @@ detekt_test(
 ### Language Version
 
 Detekt will report errors for any language features introduced after the specified version if
-`language_version` is specified. When unset, no compatibility restriction is applied:
+`language_version` is specified. If not explicitly set, it inherits from the detekt toolchain:
 
 ```python
 detekt_test(
