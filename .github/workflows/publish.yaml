@@ -1,0 +1,28 @@
+name: Publish to BCR
+
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: The release tag to publish to the BCR, e.g. v0.8.2
+        required: true
+        type: string
+
+jobs:
+  publish:
+    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.4.2
+    permissions:
+      contents: write # Upload release files / read the release
+      id-token: write # Attest provenance
+      attestations: write # Attest provenance
+    with:
+      tag_name: ${{ github.event.release.tag_name || inputs.tag_name }}
+      registry_fork: bazel-contrib/bazel-central-registry
+      # release.yml uses bazel-contrib/.github@v7, which does not produce
+      # attestations, so skip attestation upload.
+      attest: false
+      draft: false
+    secrets:
+      publish_token: ${{ secrets.BCR_PUBLISH_TOKEN }}
