@@ -1,5 +1,5 @@
 {
-  "lockFileVersion": 26,
+  "lockFileVersion": 28,
   "registryFileHashes": {
     "https://bcr.bazel.build/bazel_registry.json": "8a28e4aff06ee60aed2a8c281907fb8bcbf3b753c91fb5a5c57da3215d5b3497",
     "https://bcr.bazel.build/modules/abseil-cpp/20210324.2/MODULE.bazel": "7cd0312e064fde87c8d1cd79ba06c876bd23630c83466e9500321be55c96ace2",
@@ -255,7 +255,7 @@
   "moduleExtensions": {
     "//detekt:extensions.bzl%detekt": {
       "general": {
-        "bzlTransitiveDigest": "0wUfSTkYEUurty3xMdxZ5I3ysxQbq2g/OfsPaSk50F0=",
+        "bzlTransitiveDigest": "Dt9nHuU27hG6xJskcQMQ3lQtEgFMsCUbz3UCsgskz4U=",
         "usagesDigest": "UG2mEIEsdvU/+QeBWiCHDHs5hMI++iFUzBav0bmCZKM=",
         "recordedInputs": [
           "REPO_MAPPING:,bazel_tools bazel_tools"
@@ -273,52 +273,9 @@
         }
       }
     },
-    "@@pybind11_bazel+//:internal_configure.bzl%internal_configure_extension": {
-      "general": {
-        "bzlTransitiveDigest": "b+RP7Sgl8KN0VHamrgTqzGLuYPcQ/Mo4ptNkkHUIIlA=",
-        "usagesDigest": "D1r3lfzMuUBFxgG8V6o0bQTLMk3GkaGOaPzw53wrwyw=",
-        "recordedInputs": [
-          "REPO_MAPPING:pybind11_bazel+,bazel_tools bazel_tools",
-          "FILE:@@pybind11_bazel+//MODULE.bazel e6f4c20442eaa7c90d7190d8dc539d0ab422f95c65a57cc59562170c58ae3d34"
-        ],
-        "generatedRepoSpecs": {
-          "pybind11": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
-            "attributes": {
-              "build_file": "@@pybind11_bazel+//:pybind11-BUILD.bazel",
-              "strip_prefix": "pybind11-2.12.0",
-              "urls": [
-                "https://github.com/pybind/pybind11/archive/v2.12.0.zip"
-              ]
-            }
-          }
-        }
-      }
-    },
-    "@@rules_android+//bzlmod_extensions:apksig.bzl%apksig_extension": {
-      "general": {
-        "bzlTransitiveDigest": "O/gCjP4/VVnaP+zTRGN3DFrkkxLE5GMbE4M1HG3noGQ=",
-        "usagesDigest": "wLrLUdBOQnztFcFQraEsWu+M4xtuF82/ZGmnhyxO5/Q=",
-        "recordedInputs": [
-          "REPO_MAPPING:rules_android+,bazel_tools bazel_tools"
-        ],
-        "generatedRepoSpecs": {
-          "apksig": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
-            "attributes": {
-              "urls": [
-                "https://mirror.bazel.build/android.googlesource.com/platform/tools/apksig/+archive/24e3075e68ebe17c0b529bb24bfda819db5e2f3b.tar.gz"
-              ],
-              "sha256": "12e44fdbd219c5e1cc62099c2a01d775957603d2d4f693f8285f9d95d9a04e77",
-              "build_file": "@@rules_android+//bzlmod_extensions:apksig.BUILD"
-            }
-          }
-        }
-      }
-    },
     "@@rules_android+//bzlmod_extensions:com_android_dex.bzl%com_android_dex_extension": {
       "general": {
-        "bzlTransitiveDigest": "fVTI/3B6KjJ93jRf+pOa6ExSALb1hgRndpTPBrJKoZQ=",
+        "bzlTransitiveDigest": "HYWmRJkl/Bm5qA5Q7vRI52ZfSoxubYxiwbnAS+8ozAU=",
         "usagesDigest": "QffKrRLRrfyxMU5u/o3mDLJNoWRk/D5i2SIumoSgm3M=",
         "recordedInputs": [
           "REPO_MAPPING:rules_android+,bazel_tools bazel_tools"
@@ -352,7 +309,7 @@
     },
     "@@rules_pmd+//pmd:extensions.bzl%pmd": {
       "general": {
-        "bzlTransitiveDigest": "QR9QanaFsW8nTfhfteRNlH/BsLrNlWMxbNLhna3jtGo=",
+        "bzlTransitiveDigest": "3E51gWti/yUaiCWI8bUkzJluncCIcNu6QMcFVD3+Lr4=",
         "usagesDigest": "D/ifXkc9TXqizjh+7qDgY1iuQU0EBFbbpTY6LO6S5Tk=",
         "recordedInputs": [
           "REPO_MAPPING:rules_pmd+,bazel_tools bazel_tools"
@@ -374,7 +331,7 @@
     },
     "@@rules_python+//python/extensions:config.bzl%config": {
       "general": {
-        "bzlTransitiveDigest": "iibnRYgg8LpcfmH7EAnVwYePC3jsVaJ6Id8XxUjSZps=",
+        "bzlTransitiveDigest": "dzD8Q2YmrP3fz8saWLHPmlwPLO91ImtTmP/c9JKTStM=",
         "usagesDigest": "ZVSXMAGpD+xzVNPuvF1IoLBkty7TROO0+akMapt1pAg=",
         "recordedInputs": [
           "REPO_MAPPING:rules_python+,bazel_tools bazel_tools",
@@ -898,5 +855,6 @@
         ]
       }
     }
-  }
+  },
+  "factsVersions": {}
 }
