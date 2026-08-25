@@ -22,3 +22,9 @@ pmd_test(
     ]),
     rulesets = ["//:pmd_ruleset.xml"],
 )
+
+pmd_test(
+    name = "wrapper_pmd_test",
+    srcs = ["//detekt/wrapper:sources"],
+    rulesets = ["//:pmd_ruleset.xml"],
+)
