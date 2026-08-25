@@ -12,7 +12,7 @@ detekt_test(
     srcs = ["//tests/integration/testFixtures/basic-jvm:jvm_classpath_srcs"],
     base_path = ".",
     cfgs = ["detekt_type_resolution.yml"],
-    max_issues = 2,
+    fail_on_severity = "Never",
     xml_report = True,
     deps = ["//tests/integration/testFixtures/basic-jvm:jvm_api"],
 )
@@ -27,8 +27,8 @@ detekt_test(
     srcs = ["//tests/integration/testFixtures/basic-android:android_classpath_srcs"],
     base_path = ".",
     cfgs = ["detekt_type_resolution.yml"],
+    fail_on_severity = "Never",
     is_android = True,
-    max_issues = 2,
     xml_report = True,
     deps = ["//tests/integration/testFixtures/basic-android:android_api"],
 )
@@ -38,7 +38,7 @@ detekt_test(
     srcs = ["//tests/integration/testFixtures/custom-rule:custom_rule_violation_srcs"],
     base_path = ".",
     cfgs = ["//tests/integration/testFixtures/custom-rule:custom_rule_config"],
-    max_issues = 1,
+    fail_on_severity = "Never",
     plugins = ["//tests/integration/testFixtures/custom-rule:custom_rules"],
     xml_report = True,
 )
@@ -46,7 +46,7 @@ detekt_test(
 JVM_CLASSPATH_REPORT_XML = """<?xml version="1.0" encoding="UTF-8"?>
 <checkstyle version="4.3">
 <file name="tests/integration/testFixtures/basic-jvm/src/jvm/tests/integration/jvm/JvmClasspath.kt">
-	<error line="4" column="24" severity="warning" message="JvmApi.name()?.length contains an unnecessary safe call operator" source="detekt.UnnecessarySafeCall" />
+	<error line="4" column="24" severity="error" message="JvmApi.name()?.length contains an unnecessary safe call operator" source="detekt.UnnecessarySafeCall" />
 </file>
 </checkstyle>"""
 
@@ -66,7 +66,7 @@ diff_test(
 ANDROID_CLASSPATH_REPORT_XML = """<?xml version="1.0" encoding="UTF-8"?>
 <checkstyle version="4.3">
 <file name="tests/integration/testFixtures/basic-android/src/android/tests/integration/android/AndroidClasspath.kt">
-	<error line="6" column="24" severity="warning" message="AndroidApi.packageName(context)?.length contains an unnecessary safe call operator" source="detekt.UnnecessarySafeCall" />
+	<error line="6" column="24" severity="error" message="AndroidApi.packageName(context)?.length contains an unnecessary safe call operator" source="detekt.UnnecessarySafeCall" />
 </file>
 </checkstyle>"""
 

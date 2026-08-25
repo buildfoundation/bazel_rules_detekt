@@ -57,3 +57,25 @@ jobs:
             echo "::error file=MODULE.bazel.lock::MODULE.bazel.lock changed during CI. Run Bazel locally and commit the updated lockfile."
             exit 1
           fi
+
+  compatibility_v1:
+    name: Detekt 1.23.8 compatibility (${{ matrix.detekt-strategy }})
+    runs-on: ubuntu-latest
+    env:
+      USE_BAZEL_VERSION: "9.x"
+    strategy:
+      fail-fast: false
+      matrix:
+        detekt-strategy: [local, worker]
+    steps:
+      - name: "Checkout the sources"
+        uses: actions/checkout@v7
+      - name: "Setup Bazel"
+        uses: bazel-contrib/setup-bazel@0.19.0
+        with:
+          bazelisk-cache: true
+          disk-cache: true
+          repository-cache: true
+      - name: "Detekt 1.23.8 compatibility tests"
+        working-directory: e2e/compat-v1
+        run: bazel test --strategy=Detekt=${{ matrix.detekt-strategy }} //...

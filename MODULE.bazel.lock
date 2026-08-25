@@ -260,7 +260,7 @@
   "moduleExtensions": {
     "//detekt:extensions.bzl%detekt": {
       "general": {
-        "bzlTransitiveDigest": "Dt9nHuU27hG6xJskcQMQ3lQtEgFMsCUbz3UCsgskz4U=",
+        "bzlTransitiveDigest": "kpofeiLQ0m9PZN9ZrFlRmlSBruohmr9YV6aSgFJtXz4=",
         "usagesDigest": "UG2mEIEsdvU/+QeBWiCHDHs5hMI++iFUzBav0bmCZKM=",
         "recordedInputs": [
           "REPO_MAPPING:,bazel_tools bazel_tools"
@@ -269,9 +269,9 @@
           "detekt_cli_all": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_jar",
             "attributes": {
-              "sha256": "2ce2ff952e150baf28a29cda70a363b0340b3e81a55f43e51ec5edffc3d066c1",
+              "sha256": "d46ca62ea4d62769b5d5c3ba94d49fa9b80ba11c7dba74ddb6df7fcc2c19c5fd",
               "urls": [
-                "https://github.com/detekt/detekt/releases/download/v1.23.8/detekt-cli-1.23.8-all.jar"
+                "https://github.com/detekt/detekt/releases/download/v2.0.0-alpha.6/detekt-cli-2.0.0-alpha.6-all.jar"
               ]
             }
           }

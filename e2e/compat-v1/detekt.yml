@@ -1,5 +1,4 @@
 custom:
   active: true
-  severity: warning
   ForbiddenFunctionName:
     active: true
