@@ -13,6 +13,7 @@ use_repo(detekt, "detekt_cli_all")
 bazel_dep(name = "rules_android", version = "0.7.3")
 bazel_dep(name = "rules_java", version = "9.3.0")
 
+bazel_dep(name = "hermetic_android_toolchains", version = "0.3.0", dev_dependency = True)
 bazel_dep(name = "rules_kotlin", version = "2.4.0", dev_dependency = True)
 bazel_dep(name = "protobuf", version = "33.4", dev_dependency = True)
 
@@ -36,3 +37,27 @@ use_repo(maven, "rules_detekt_dependencies", "unpinned_rules_detekt_dependencies
 
 bazel_dep(name = "bazel_skylib", version = "1.8.2", dev_dependency = True)
 bazel_dep(name = "stardoc", version = "0.7.2", dev_dependency = True, repo_name = "io_bazel_stardoc")
+
+android = use_extension(
+    "@hermetic_android_toolchains//:extensions.bzl",
+    "android",
+    dev_dependency = True,
+)
+android.sdk(
+    build_tools_version = "35.0.0",
+    version = "35",
+)
+use_repo(android, "androidsdk")
+
+rules_android_sdk = use_extension(
+    "@rules_android//rules/android_sdk_repository:rule.bzl",
+    "android_sdk_repository_extension",
+    dev_dependency = True,
+)
+
+override_repo(rules_android_sdk, "androidsdk")
+
+register_toolchains(
+    "@androidsdk//:all",
+    dev_dependency = True,
+)
