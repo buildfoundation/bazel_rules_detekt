@@ -180,16 +180,47 @@ def _test_action_blank_contents():
         target_under_test = ":test_target_blank",
     )
 
+# Version-specific failure policy
+
+def _action_failure_policy_impl(ctx):
+    env = analysistest.begin(ctx)
+
+    actions = analysistest.target_actions(env)
+    asserts.equals(env, 6, len(actions))
+
+    action = actions[0]
+    assert_argv_contains(env, action, "--fail-on-severity")
+    assert_argv_contains(env, action, "Info")
+
+    return analysistest.end(env)
+
+action_failure_policy_test = analysistest.make(_action_failure_policy_impl)
+
+def _test_action_failure_policy():
+    detekt(
+        name = "test_target_failure_policy",
+        srcs = ["path A.kt", "path B.kt", "path C.kt"],
+        fail_on_severity = "Info",
+        tags = ["manual"],
+    )
+
+    action_failure_policy_test(
+        name = "action_failure_policy_test",
+        target_under_test = ":test_target_failure_policy",
+    )
+
 # Suite
 
 def test_suite(name):
     _test_action_full_contents()
     _test_action_blank_contents()
+    _test_action_failure_policy()
 
     native.test_suite(
         name = name,
         tests = [
             ":action_full_contents_test",
             ":action_blank_contents_test",
+            ":action_failure_policy_test",
         ],
     )

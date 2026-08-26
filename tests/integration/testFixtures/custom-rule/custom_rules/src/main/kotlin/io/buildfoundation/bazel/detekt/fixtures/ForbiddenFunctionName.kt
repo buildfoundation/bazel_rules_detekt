@@ -1,34 +1,26 @@
 package io.buildfoundation.bazel.detekt.fixtures
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
-import io.gitlab.arturbosch.detekt.api.Config
-import io.gitlab.arturbosch.detekt.api.Debt
-import io.gitlab.arturbosch.detekt.api.Entity
-import io.gitlab.arturbosch.detekt.api.Issue
-import io.gitlab.arturbosch.detekt.api.Rule
-import io.gitlab.arturbosch.detekt.api.RuleSet
-import io.gitlab.arturbosch.detekt.api.RuleSetProvider
-import io.gitlab.arturbosch.detekt.api.Severity
+import dev.detekt.api.Config
+import dev.detekt.api.Entity
+import dev.detekt.api.Finding
+import dev.detekt.api.Rule
+import dev.detekt.api.RuleSet
+import dev.detekt.api.RuleSetId
+import dev.detekt.api.RuleSetProvider
 import org.jetbrains.kotlin.psi.KtNamedFunction
 
-class ForbiddenFunctionName(config: Config) : Rule(config) {
-    override val issue = Issue(
-        javaClass.simpleName,
-        Severity.CodeSmell,
-        "Flags forbidden fixture function names.",
-        Debt.FIVE_MINS,
-    )
+class ForbiddenFunctionName(config: Config) : Rule(config, "Flags forbidden fixture function names.") {
 
     override fun visitNamedFunction(function: KtNamedFunction) {
         super.visitNamedFunction(function)
         if (function.name == "customRuleViolation") {
-            report(CodeSmell(issue, Entity.from(function), "customRuleViolation is forbidden."))
+            report(Finding(Entity.from(function), "customRuleViolation is forbidden."))
         }
     }
 }
 
 class CustomRuleSetProvider : RuleSetProvider {
-    override val ruleSetId = "custom"
+    override val ruleSetId = RuleSetId("custom")
 
-    override fun instance(config: Config) = RuleSet(ruleSetId, listOf(ForbiddenFunctionName(config)))
+    override fun instance() = RuleSet(ruleSetId, listOf(::ForbiddenFunctionName))
 }

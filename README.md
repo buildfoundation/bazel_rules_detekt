@@ -17,7 +17,8 @@ for the [Bazel build system](https://bazel.build).
 
 | `bazel_rules_detekt`                | Default Detekt  | Kotlin compiler | Max `language_version` | Min JDK | Max tested JDK | Bazel     |
 | ----------------------------------- | --------------- | --------------- | ---------------------- | ------- | -------------- | --------- |
-| **v0.8.1.9 – v0.8.1.13** _(latest)_ | 1.23.8          | 2.0.21          | `2.0`                  | 8       | 21             | 8.x – 9.x |
+| **working tree / next release**     | 2.0.0-alpha.6   | 2.4.10          | `2.5`                  | 8       | 25             | 8.x – 9.x |
+| v0.8.1.9 – v0.8.2.3               | 1.23.8          | 2.0.21          | `2.0`                  | 8       | 21             | 8.x – 9.x |
 | v0.8.1.3 – v0.8.1.8                 | 1.23.5          | 1.9.22          | `1.9`                  | 8       | 17             | 7.x – 9.x |
 | v0.8.1 – v0.8.1.2                   | 1.23.1          | 1.9.0           | `1.9`                  | 8       | 17             | 6.x       |
 | v0.7.0                              | 1.22.0          | —               | —                      | 8       | —              | 5.x       |
@@ -30,9 +31,11 @@ For detailed per-Detekt-version Kotlin and JDK compatibility, see the [Detekt co
 
 > **Note:** The Kotlin compiler bundled with Detekt determines which `language_version` values are valid — setting it higher than what the bundled compiler supports will cause Detekt to fail. The default Detekt version can always be overridden — see [Detekt Version](#detekt-version).
 
-> **Note:** Detekt 2.x is currently in alpha (targeting Kotlin 2.2+) and is not yet recommended for production use.
+> **Note:** Detekt 2.x is currently in alpha. The default is 2.0.0-alpha.6; the compatibility suite also validates a Detekt 1.23.8 override.
 
 > **Note:** JDK 25 and above are **not** supported with Detekt 1.23.x. The bundled Kotlin compiler performs a hard version check that fails on JDK 25+. This is resolved in the Detekt 2.x series.
+
+> **Note:** The wrapper reflects over the Detekt 1.x and 2.x CLI entry points during this alpha migration. Detekt 1.x compatibility will be deprecated after Detekt 2.x stabilizes and removed in a subsequent breaking release.
 
 The project is developed and tested against **Bazel 8 and 9** with Bzlmod.
 
@@ -146,22 +149,25 @@ detekt_test(
 ### Configuration Options
 
 All three rules share the same configuration options. In addition to `srcs`, `cfgs`, `baseline`, `plugins`,
-and report options, most attributes correspond directly to
-[Detekt CLI flags](https://detekt.dev/docs/1.23.8/gettingstarted/cli/#use-the-cli) and pass them
-through when explicitly set.
+and report options, most attributes correspond directly to Detekt CLI flags and pass them through when explicitly set.
+
+`max_issues` is retained for Detekt 1.x. Detekt 2.x uses `fail_on_severity` (`Never`, `Info`, `Warning`, or `Error`);
+the attributes are mutually exclusive and must match the selected Detekt major version.
 
 More information can be found in the [attributes](docs/attrs.md).
 
 ### Reports
 
-A plain-text report (`{name}_detekt_report.txt`) is **always** generated. Other report formats are
-available for opt-in via configuration options..
+A plain-text report (`{name}_detekt_report.txt`) is **always** generated. Detekt 1.x writes its native text
+report; Detekt 2.x writes captured console output to the same artifact. `xml_report` keeps the same output
+name and maps to Detekt 2.x's Checkstyle report ID. Other formats are opt-in.
 
 ## Advanced Configuration
 
 ### Detekt Version
 
-The default bundled version is **1.23.8**. To override it:
+The default bundled version is **2.0.0-alpha.6**. To override it (including the supported Detekt 1.23.8
+compatibility runtime):
 
 #### `MODULE.bazel` Configuration
 
@@ -244,7 +250,7 @@ published Maven artifacts and locally built JARs.
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
     artifacts = [
-        "io.gitlab.arturbosch.detekt:detekt-formatting:1.23.8",
+        "dev.detekt:detekt-rules-ktlint-wrapper:2.0.0-alpha.6",
     ],
 )
 use_repo(maven, "maven")
@@ -256,9 +262,14 @@ load("@rules_detekt//detekt:defs.bzl", "detekt_test")
 detekt_test(
     name = "my_detekt",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
-    plugins = ["@maven//:io_gitlab_arturbosch_detekt_detekt_formatting"],
+    plugins = ["@maven//:dev_detekt_detekt_rules_ktlint_wrapper"],
 )
 ```
+
+For a Detekt 1.x override, use the matching legacy coordinate instead:
+`io.gitlab.arturbosch.detekt:detekt-formatting:1.23.8`. Plugin binaries are not interchangeable
+between majors because their public API packages differ (`io.gitlab.arturbosch.detekt.api` versus
+`dev.detekt.api`).
 
 **Custom local plugin** built with [`rules_kotlin`](https://github.com/bazelbuild/rules_kotlin):
 
@@ -333,12 +344,15 @@ Type resolution enables more advanced static analysis by giving Detekt access to
 including return types, nullability, and symbol information — capabilities that match those of the Kotlin compiler
 itself. Rules requiring it are annotated with `@RequiresFullAnalysis` in Detekt's source.
 
-Use `jvm_target` and `language_version` to match the compilation settings of your project:
+Provide the compile dependencies through `deps` and use `jvm_target` and `language_version` to match the
+compilation settings of your project. With Detekt 2.x, a non-empty `deps` automatically selects full analysis;
+the Detekt 1.x runtime keeps its existing classpath behavior.
 
 ```python
 detekt_test(
     name = "my_detekt",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
+    deps = [":my_compiled_library"],
     jvm_target = "11",
     language_version = "2.0",
 )

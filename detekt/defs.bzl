@@ -69,17 +69,19 @@ _ATTRS = {
     ),
     "jvm_target": attr.string(
         default = "1.8",
-        values = ["1.8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"],
-        doc = "EXPERIMENTAL: Target version of the generated JVM bytecode that was generated during compilation and is now being used for type resolution (1.8, 9, 10, ..., 20)",
+        doc = "EXPERIMENTAL: Target version of the generated JVM bytecode that was generated during compilation and is now being used for type resolution (1.8, 9, 10, ..., 26). The selected Detekt version validates this value.",
     ),
     "language_version": attr.string(
         default = "",
-        values = ["", "1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "2.0", "2.1", "2.2"],
-        doc = "EXPERIMENTAL: Compatibility mode for Kotlin language version X.Y, reports errors for all language features that came out later",
+        doc = "EXPERIMENTAL: Compatibility mode for Kotlin language version X.Y, reports errors for all language features that came out later. The selected Detekt version validates this value.",
     ),
     "max_issues": attr.int(
         default = -1,
         doc = "Passes only when found issues count does not exceed specified issues count.",
+    ),
+    "fail_on_severity": attr.string(
+        default = "",
+        doc = "Detekt 2.x failure threshold (Error, Warning, Info, or Never). Mutually exclusive with max_issues.",
     ),
     "parallel": attr.bool(
         default = False,
@@ -203,7 +205,12 @@ def _impl(
         detekt_arguments.add("--language-version", ctx.attr.language_version)
 
     if ctx.attr.max_issues >= 0:
+        if ctx.attr.fail_on_severity:
+            fail("max_issues and fail_on_severity cannot be used together")
         detekt_arguments.add("--max-issues", ctx.attr.max_issues)
+
+    if ctx.attr.fail_on_severity:
+        detekt_arguments.add("--fail-on-severity", ctx.attr.fail_on_severity)
 
     if ctx.attr.parallel:
         detekt_arguments.add("--parallel")
@@ -219,7 +226,7 @@ def _impl(
             platform_jar_files = ctx.toolchains[JDK_TOOLCHAIN_TYPE].java.bootclasspath.to_list()
 
         action_inputs.extend(platform_jar_files + classpath)
-        detekt_arguments.add("--classpath", ":".join([f.path for f in platform_jar_files] + [f.path for f in classpath]))
+        detekt_arguments.add("--classpath", ctx.configuration.host_path_separator.join([f.path for f in platform_jar_files] + [f.path for f in classpath]))
 
     plugin_jars = [plugin for plugin in ctx.files.plugins if plugin.extension == "jar"]
     action_inputs.extend(plugin_jars)

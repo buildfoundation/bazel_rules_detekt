@@ -13,7 +13,7 @@ filegroup(
 
 filegroup(
     name = "jvm_classpath_srcs",
-    srcs = JVM_CLASSPATH_SRCS,
+    srcs = JVM_CLASSPATH_SRCS + JVM_STATIC_SRCS,
 )
 
 kt_jvm_library(
