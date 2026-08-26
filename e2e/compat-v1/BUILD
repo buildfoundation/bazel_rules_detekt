@@ -20,6 +20,16 @@ detekt_test(
 )
 
 detekt_test(
+    name = "expected_failure_test",
+    srcs = ["src/Compat.kt"],
+    base_path = ".",
+    cfgs = ["detekt.yml"],
+    max_issues = 0,
+    plugins = [":custom_rules"],
+    tags = ["manual"],
+)
+
+detekt_test(
     name = "compat_v1_report",
     srcs = [
         "src/Compat.kt",
@@ -43,6 +53,12 @@ kt_jvm_library(
 kt_jvm_library(
     name = "compat_api",
     srcs = ["src/CompatApi.kt"],
+)
+
+detekt_create_baseline(
+    name = "baseline with spaces",
+    srcs = ["src/Clean.kt"],
+    tags = ["manual"],
 )
 
 detekt_create_baseline(
@@ -99,6 +115,11 @@ genrule(
     srcs = [":compat_v1_test"],
     outs = ["compat_v1_txt_report_normalized.txt"],
     cmd = "sed -E 's# at .*/src/# at src/#' $(location :compat_v1_test) > $@",
+    cmd_ps = """
+$$text = [IO.File]::ReadAllText('$(location :compat_v1_test)').Replace('\\', '/')
+$$text = $$text.Replace("`r`n", "`n") -replace ' at .*/src/', ' at src/'
+[IO.File]::WriteAllText('$@', $$text, [Text.UTF8Encoding]::new($$false))
+""",
 )
 
 write_file(

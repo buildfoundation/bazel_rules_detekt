@@ -38,6 +38,14 @@ For detailed per-Detekt-version Kotlin and JDK compatibility, see the [Detekt co
 
 The project is developed and tested against **Bazel 8 and 9** with Bzlmod.
 
+### Windows
+
+Windows CI covers Bazel 8 and 9 with both local and persistent-worker Detekt
+execution. The rules use native Windows launchers and manifest-only runfiles,
+so Developer Mode and filesystem symlinks are not required. Keep Bazel's
+output root short (for example, `--output_user_root=C:/b`) to avoid Windows
+path-length limits.
+
 ## Usage
 
 Refer to [GitHub releases](https://github.com/buildfoundation/bazel_rules_detekt/releases) for the version and the SHA-256 hashsum.

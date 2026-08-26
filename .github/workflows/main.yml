@@ -79,3 +79,195 @@ jobs:
       - name: "Detekt 1.23.8 compatibility tests"
         working-directory: e2e/compat-v1
         run: bazel test --strategy=Detekt=${{ matrix.detekt-strategy }} //...
+
+  windows:
+    name: Windows (Bazel ${{ matrix.bazel }}, Detekt ${{ matrix.detekt-strategy }})
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: "rules detekt"
+    env:
+      USE_BAZEL_VERSION: ${{ matrix.bazel }}
+    strategy:
+      fail-fast: false
+      matrix:
+        bazel: ["8.x", "9.x"]
+        detekt-strategy: [local, worker]
+    steps:
+      - name: "Checkout the sources"
+        uses: actions/checkout@v7
+        with:
+          path: "rules detekt"
+      - name: "Setup Bazel"
+        uses: bazel-contrib/setup-bazel@0.19.0
+        with:
+          bazelisk-cache: true
+          disk-cache: true
+          repository-cache: true
+      - name: "Root tests"
+        shell: pwsh
+        run: |
+          # Keep the output root short for Windows tools with MAX_PATH limits.
+          # rules_pmd emits POSIX shell launchers, so its tests remain in the Linux matrix.
+          $bazelArgs = @(
+            "--output_user_root=C:/b",
+            "test",
+            "--modify_execution_info=Detekt=+no-cache",
+            "--nocache_test_results",
+            "--strategy=Detekt=${{ matrix.detekt-strategy }}",
+            "--noenable_runfiles",
+            "//tests/analysis/...",
+            "//tests/integration/...",
+            "//tests/unit:tests"
+          )
+          & bazel @bazelArgs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: "Run the Detekt 2 expected-failure launcher"
+        working-directory: "rules detekt/e2e/smoke"
+        shell: pwsh
+        run: |
+          $log = Join-Path $env:RUNNER_TEMP "detekt-2-expected-failure.log"
+          $bazelArgs = @(
+            "--output_user_root=C:/b",
+            "test",
+            "--modify_execution_info=Detekt=+no-cache",
+            "--nocache_test_results",
+            "--strategy=Detekt=${{ matrix.detekt-strategy }}",
+            "--noenable_runfiles",
+            "--test_tag_filters=",
+            "--test_output=all",
+            "//:expected_failure_test"
+          )
+          & bazel @bazelArgs *> $log
+          $exitCode = $LASTEXITCODE
+          Get-Content -Path $log
+          $output = [IO.File]::ReadAllText($log)
+          if ($exitCode -ne 3) { throw "expected Detekt 2 test failure (Bazel 3), got $exitCode" }
+          if ($output.Contains("InvalidConfig") -or -not $output.Contains("[UndocumentedPublicClass]")) {
+            throw "expected Detekt 2 finding was not reported"
+          }
+          exit 0
+      - name: "Detekt 1.23.8 compatibility tests"
+        working-directory: "rules detekt/e2e/compat-v1"
+        shell: pwsh
+        run: |
+          $bazelArgs = @(
+            "--output_user_root=C:/b",
+            "test",
+            "--modify_execution_info=Detekt=+no-cache",
+            "--nocache_test_results",
+            "--strategy=Detekt=${{ matrix.detekt-strategy }}",
+            "--noenable_runfiles",
+            "//..."
+          )
+          & bazel @bazelArgs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: "Run the Detekt 1 expected-failure launcher"
+        working-directory: "rules detekt/e2e/compat-v1"
+        shell: pwsh
+        run: |
+          $log = Join-Path $env:RUNNER_TEMP "detekt-1-expected-failure.log"
+          $bazelArgs = @(
+            "--output_user_root=C:/b",
+            "test",
+            "--modify_execution_info=Detekt=+no-cache",
+            "--nocache_test_results",
+            "--strategy=Detekt=${{ matrix.detekt-strategy }}",
+            "--noenable_runfiles",
+            "--test_tag_filters=",
+            "--test_output=all",
+            "//:expected_failure_test"
+          )
+          & bazel @bazelArgs *> $log
+          $exitCode = $LASTEXITCODE
+          Get-Content -Path $log
+          $output = [IO.File]::ReadAllText($log)
+          if ($exitCode -ne 3) { throw "expected Detekt 1 test failure (Bazel 3), got $exitCode" }
+          if ($output.Contains("InvalidConfig") -or -not $output.Contains("ForbiddenFunctionName -")) {
+            throw "expected Detekt 1 finding was not reported"
+          }
+          exit 0
+      - name: "Run the Detekt 2 baseline copier"
+        shell: pwsh
+        run: |
+          $baseline = Join-Path $PWD "tests/integration/default_baseline.xml"
+          Set-Content -Path $baseline -Value "sentinel" -NoNewline
+          $expected = @(
+            '<?xml version="1.0" ?>',
+            '<SmellBaseline>',
+            '  <ManuallySuppressedIssues></ManuallySuppressedIssues>',
+            '  <CurrentIssues>',
+            '  </CurrentIssues>',
+            '</SmellBaseline>'
+          ) -join "`n"
+          $expected += "`n"
+          try {
+            $bazelArgs = @(
+              "--output_user_root=C:/b",
+              "run",
+              "--modify_execution_info=Detekt=+no-cache",
+              "--strategy=Detekt=${{ matrix.detekt-strategy }}",
+              "--noenable_runfiles",
+              "//tests/integration:jvm_clean_baseline"
+            )
+            & bazel @bazelArgs
+            if ($LASTEXITCODE -ne 0) { throw "Detekt 2 baseline launcher exited with $LASTEXITCODE" }
+            $actual = [IO.File]::ReadAllText($baseline).Replace("`r`n", "`n")
+            if ($actual -eq "sentinel" -or $actual -ne $expected) {
+              Write-Host "Unexpected baseline contents:"
+              Get-Content -Path $baseline
+              throw "Detekt 2 baseline copier did not overwrite the sentinel"
+            }
+          } finally {
+            Remove-Item -Force -ErrorAction SilentlyContinue $baseline
+          }
+      - name: "Run the baseline copier"
+        working-directory: "rules detekt/e2e/compat-v1"
+        shell: pwsh
+        run: |
+          $baseline = Join-Path $PWD "default_baseline.xml"
+          Set-Content -Path $baseline -Value "sentinel" -NoNewline
+          $expected = @(
+            '<?xml version="1.0" ?>',
+            '<SmellBaseline>',
+            '  <ManuallySuppressedIssues></ManuallySuppressedIssues>',
+            '  <CurrentIssues>',
+            '  </CurrentIssues>',
+            '</SmellBaseline>'
+          ) -join "`n"
+          $expected += "`n"
+          try {
+            $bazelArgs = @(
+              "--output_user_root=C:/b",
+              "run",
+              "--modify_execution_info=Detekt=+no-cache",
+              "--strategy=Detekt=${{ matrix.detekt-strategy }}",
+              "--noenable_runfiles",
+              "//:baseline with spaces"
+            )
+            & bazel @bazelArgs
+            if ($LASTEXITCODE -ne 0) { throw "baseline launcher exited with $LASTEXITCODE" }
+            $actual = [IO.File]::ReadAllText($baseline).Replace("`r`n", "`n")
+            if ($actual -eq "sentinel" -or $actual -ne $expected) {
+              Write-Host "Unexpected baseline contents:"
+              Get-Content -Path $baseline
+              throw "baseline copier did not overwrite the sentinel with the expected baseline"
+            }
+          } finally {
+            Remove-Item -Force -ErrorAction SilentlyContinue $baseline
+          }
+      - name: "External smoke test"
+        working-directory: "rules detekt/e2e/smoke"
+        shell: pwsh
+        run: |
+          $bazelArgs = @(
+            "--output_user_root=C:/b",
+            "test",
+            "--modify_execution_info=Detekt=+no-cache",
+            "--nocache_test_results",
+            "--strategy=Detekt=${{ matrix.detekt-strategy }}",
+            "--noenable_runfiles",
+            "//..."
+          )
+          & bazel @bazelArgs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
