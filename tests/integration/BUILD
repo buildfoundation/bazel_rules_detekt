@@ -1,6 +1,31 @@
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
-load("//detekt:defs.bzl", "detekt_test")
+load("//detekt:defs.bzl", "detekt_create_baseline", "detekt_test")
+
+detekt_create_baseline(
+    name = "jvm_clean_baseline",
+    srcs = ["//tests/integration/testFixtures/basic-jvm:jvm_static_srcs"],
+)
+
+write_file(
+    name = "jvm_clean_baseline_expected",
+    out = "jvm_clean_baseline_expected.xml",
+    content = [
+        '<?xml version="1.0" ?>',
+        "<SmellBaseline>",
+        "  <ManuallySuppressedIssues></ManuallySuppressedIssues>",
+        "  <CurrentIssues>",
+        "  </CurrentIssues>",
+        "</SmellBaseline>\n",
+    ],
+    newline = "unix",
+)
+
+diff_test(
+    name = "jvm_clean_baseline_test",
+    file1 = ":jvm_clean_baseline_expected",
+    file2 = ":jvm_clean_baseline",
+)
 
 detekt_test(
     name = "jvm_static_analysis_test",
