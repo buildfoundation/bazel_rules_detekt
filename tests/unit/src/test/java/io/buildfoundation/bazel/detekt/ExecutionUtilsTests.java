@@ -74,4 +74,21 @@ public class ExecutionUtilsTests {
         List<String> expectedArgs = new ArrayList<>(Arrays.asList("--input", "one"));
         assertEquals(ExecutionUtils.sanitizeDetektArguments(args), expectedArgs);
     }
+
+    @Test
+    public void sanitizeDetektArgumentsPreservesWindowsPathsWithSpaces() {
+        String source = "C:\\workspace with spaces\\src\\Main.kt";
+        String report = "C:\\workspace with spaces\\out\\detekt report.txt";
+        String executionResult = "C:\\workspace with spaces\\out\\exit code.txt";
+        List<String> args = new ArrayList<>(Arrays.asList(
+                "--input", source,
+                "--report", "txt:" + report,
+                "--execution-result", executionResult
+        ));
+
+        assertEquals(Arrays.asList(
+                "--input", source,
+                "--report", "txt:" + report
+        ), ExecutionUtils.sanitizeDetektArguments(args));
+    }
 }

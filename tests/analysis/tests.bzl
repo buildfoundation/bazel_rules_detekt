@@ -36,13 +36,19 @@ def _expand_paths(ctx, values):
     ]
 
 def _input_short_path(file):
-    path = file.short_path
+    path = file.short_path.replace("\\", "/")
     prefix = "_middlemen/"
     suffix = "-runfiles"
     if path.startswith(prefix) and path.endswith(suffix):
         # Bazel 8: _middlemen/detekt_Swrapper_Sbin-runfiles
         # Bazel 9: detekt/wrapper/bin.runfiles
-        return path[len(prefix):len(path) - len(suffix)].replace("_S", "/") + ".runfiles"
+        path = path[len(prefix):len(path) - len(suffix)].replace("_S", "/") + ".runfiles"
+    if path.endswith(".exe.runfiles"):
+        return path[:-len(".exe.runfiles")] + ".runfiles"
+    if path.endswith(".exe.runfiles_manifest"):
+        return path[:-len(".exe.runfiles_manifest")] + ".runfiles_manifest"
+    if path.endswith(".exe"):
+        return path[:-len(".exe")]
     return path
 
 def _input_short_paths(files):
@@ -51,9 +57,54 @@ def _input_short_paths(files):
         for file in files.to_list()
     ]
 
+def _normalize_path(value):
+    return value.replace("\\", "/")
+
+def _assert_wrapper_inputs(env, action):
+    wrapper_paths = [
+        _input_short_path(file)
+        for file in action.inputs.to_list()
+        if _normalize_path(file.short_path).startswith("detekt/wrapper/bin") or _normalize_path(file.short_path).startswith("_middlemen/detekt_Swrapper_Sbin")
+    ]
+    asserts.true(
+        env,
+        "detekt/wrapper/bin" in wrapper_paths,
+        "Expected the Detekt wrapper executable in {paths}".format(paths = wrapper_paths),
+    )
+    asserts.true(
+        env,
+        "detekt/wrapper/bin.jar" in wrapper_paths,
+        "Expected the Detekt wrapper jar in {paths}".format(paths = wrapper_paths),
+    )
+    asserts.true(
+        env,
+        any([path.endswith(".runfiles") for path in wrapper_paths]) or any([path.endswith(".runfiles_manifest") for path in wrapper_paths]),
+        "Expected wrapper runfiles in {paths}".format(paths = wrapper_paths),
+    )
+    allowed_wrapper_paths = [
+        "detekt/wrapper/bin",
+        "detekt/wrapper/bin.jar",
+        "detekt/wrapper/bin.runfiles",
+        "detekt/wrapper/bin.runfiles_manifest",
+    ]
+    asserts.equals(
+        env,
+        sorted([path for path in wrapper_paths if path in allowed_wrapper_paths]),
+        sorted(wrapper_paths),
+    )
+
 def assert_argv_contains_prefix_suffix(env, action, prefix, suffix):
+    """Fails unless an action argument has the requested prefix and suffix.
+
+    Args:
+      env: Analysis test environment.
+      action: Action whose arguments are inspected.
+      prefix: Required argument prefix.
+      suffix: Required argument suffix.
+    """
     for arg in action.argv:
-        if arg.startswith(prefix) and arg.endswith(suffix):
+        normalized = _normalize_path(arg)
+        if normalized.startswith(_normalize_path(prefix)) and normalized.endswith(_normalize_path(suffix)):
             return
     unittest.fail(
         env,
@@ -64,10 +115,24 @@ def assert_argv_contains_prefix_suffix(env, action, prefix, suffix):
         ),
     )
 
+def _assert_argv_contains_executable(env, action, prefix, suffix):
+    for arg in action.argv:
+        normalized = _normalize_path(arg)
+        if (normalized.startswith(_normalize_path(prefix)) or "/" + _normalize_path(prefix) in normalized) and (normalized.endswith(_normalize_path(suffix)) or normalized.endswith(_normalize_path(suffix + ".exe"))):
+            return
+    unittest.fail(
+        env,
+        "Expected an executable arg with prefix '{prefix}' and suffix '{suffix}' in {args}".format(
+            prefix = prefix,
+            suffix = suffix,
+            args = action.argv,
+        ),
+    )
+
 def assert_argv_contains(env, action, flag):
     asserts.true(
         env,
-        flag in action.argv,
+        flag in [_normalize_path(arg) for arg in action.argv],
         "Expected {args} to contain {flag}".format(args = action.argv, flag = flag),
     )
 
@@ -126,11 +191,11 @@ def assert_input_lacks_suffix(env, action, suffix):
 def _action_full_contents_test_impl(ctx):
     env = analysistest.begin(ctx)
 
-    actions = analysistest.target_actions(env)
-    asserts.equals(env, 6, len(actions))
+    actions = [action for action in analysistest.target_actions(env) if action.mnemonic == "Detekt"]
+    asserts.equals(env, 1, len(actions))
 
     action = actions[0]
-    assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/detekt/wrapper/bin")
+    _assert_argv_contains_executable(env, action, "bazel-out/", "/detekt/wrapper/bin")
     assert_argv_contains(env, action, "--input")
     assert_argv_contains(env, action, _expand_path(ctx, "{{source_dir}}/path A.kt,{{source_dir}}/path B.kt,{{source_dir}}/path C.kt"))
 
@@ -164,10 +229,15 @@ def _action_full_contents_test_impl(ctx):
         "tests/analysis/config B.yml",
         "tests/analysis/config C.yml",
         "tests/analysis/baseline.xml",
-        "detekt/wrapper/bin",
-        "detekt/wrapper/bin.jar",
-        "detekt/wrapper/bin.runfiles",
     ])
+
+    actual_inputs = _input_short_paths(action.inputs)
+    asserts.equals(
+        env,
+        sorted(expected_inputs),
+        sorted([path for path in actual_inputs if not path.startswith("detekt/wrapper/bin")]),
+    )
+    _assert_wrapper_inputs(env, action)
 
     expected_outputs = _expand_paths(env.ctx, [
         "{{source_dir}}/test_target_full_detekt_report.txt",
@@ -176,7 +246,6 @@ def _action_full_contents_test_impl(ctx):
         "{{source_dir}}/test_target_full_exit_code.txt",
     ])
 
-    asserts.equals(env, expected_inputs, _input_short_paths(action.inputs))
     asserts.equals(env, expected_outputs, [file.short_path for file in action.outputs.to_list()])
 
     return analysistest.end(env)
@@ -217,11 +286,11 @@ def _test_action_full_contents():
 def _action_blank_contents_test_impl(ctx):
     env = analysistest.begin(ctx)
 
-    actions = analysistest.target_actions(env)
-    asserts.equals(env, 6, len(actions))
+    actions = [action for action in analysistest.target_actions(env) if action.mnemonic == "Detekt"]
+    asserts.equals(env, 1, len(actions))
 
     action = actions[0]
-    assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/detekt/wrapper/bin")
+    _assert_argv_contains_executable(env, action, "bazel-out/", "/detekt/wrapper/bin")
     assert_argv_contains(env, action, "--input")
     assert_argv_contains(env, action, _expand_path(ctx, "{{source_dir}}/path A.kt,{{source_dir}}/path B.kt,{{source_dir}}/path C.kt"))
     assert_argv_contains(env, action, "--jvm-target")
@@ -236,17 +305,21 @@ def _action_blank_contents_test_impl(ctx):
         "tests/analysis/path A.kt",
         "tests/analysis/path B.kt",
         "tests/analysis/path C.kt",
-        "detekt/wrapper/bin",
-        "detekt/wrapper/bin.jar",
-        "detekt/wrapper/bin.runfiles",
     ])
+
+    actual_inputs = _input_short_paths(action.inputs)
+    asserts.equals(
+        env,
+        sorted(expected_inputs),
+        sorted([path for path in actual_inputs if not path.startswith("detekt/wrapper/bin")]),
+    )
+    _assert_wrapper_inputs(env, action)
 
     expected_outputs = _expand_paths(env.ctx, [
         "{{source_dir}}/test_target_blank_detekt_report.txt",
         "{{source_dir}}/test_target_blank_exit_code.txt",
     ])
 
-    asserts.equals(env, expected_inputs, _input_short_paths(action.inputs))
     asserts.equals(env, expected_outputs, [file.short_path for file in action.outputs.to_list()])
 
     return analysistest.end(env)
@@ -270,8 +343,8 @@ def _test_action_blank_contents():
 def _action_failure_policy_impl(ctx):
     env = analysistest.begin(ctx)
 
-    actions = analysistest.target_actions(env)
-    asserts.equals(env, 6, len(actions))
+    actions = [action for action in analysistest.target_actions(env) if action.mnemonic == "Detekt"]
+    asserts.equals(env, 1, len(actions))
 
     action = actions[0]
     assert_argv_contains(env, action, "--fail-on-severity")
@@ -300,11 +373,11 @@ def _test_action_failure_policy():
 def _action_toolchain_a_test_impl(ctx):
     env = analysistest.begin(ctx)
 
-    actions = analysistest.target_actions(env)
-    asserts.equals(env, 6, len(actions))
+    actions = [action for action in analysistest.target_actions(env) if action.mnemonic == "Detekt"]
+    asserts.equals(env, 1, len(actions))
 
     action = actions[0]
-    assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/tests/analysis/custom_detekt_wrapper")
+    _assert_argv_contains_executable(env, action, "bazel-out/", "/tests/analysis/custom_detekt_wrapper")
     assert_argv_contains(env, action, "--input")
     assert_argv_contains(env, action, _expand_path(ctx, "{{source_dir}}/path A.kt,{{source_dir}}/path B.kt,{{source_dir}}/path C.kt"))
     assert_argv_contains(env, action, "--config")
@@ -372,7 +445,7 @@ def _action_toolchain_b_test_impl(ctx):
     asserts.equals(env, 1, len(actions))
 
     action = actions[0]
-    assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/detekt/wrapper/bin")
+    _assert_argv_contains_executable(env, action, "bazel-out/", "/detekt/wrapper/bin")
     assert_argv_contains(env, action, "--config")
     assert_argv_contains(env, action, _expand_path(ctx, "{{source_dir}}/config B.yml"))
     assert_argv_contains(env, action, "--jvm-target")
@@ -418,11 +491,11 @@ def _test_action_toolchain_b():
 def _action_select_test_impl(ctx):
     env = analysistest.begin(ctx)
 
-    actions = analysistest.target_actions(env)
-    asserts.equals(env, 6, len(actions))
+    actions = [action for action in analysistest.target_actions(env) if action.mnemonic == "Detekt"]
+    asserts.equals(env, 1, len(actions))
 
     action = actions[0]
-    assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/detekt/wrapper/bin")
+    _assert_argv_contains_executable(env, action, "bazel-out/", "/detekt/wrapper/bin")
     assert_argv_contains(env, action, "--config")
     assert_argv_contains(env, action, _expand_path(ctx, "{{source_dir}}/config B.yml"))
     assert_argv_contains(env, action, "--jvm-target")
@@ -498,11 +571,11 @@ def _test_action_failure_policy_conflict():
 def _action_baseline_test_impl(ctx):
     env = analysistest.begin(ctx)
 
-    actions = analysistest.target_actions(env)
-    asserts.equals(env, 6, len(actions))
+    actions = [action for action in analysistest.target_actions(env) if action.mnemonic == "Detekt"]
+    asserts.equals(env, 1, len(actions))
 
     action = actions[0]
-    assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/tests/analysis/custom_detekt_wrapper")
+    _assert_argv_contains_executable(env, action, "bazel-out/", "/tests/analysis/custom_detekt_wrapper")
     assert_argv_contains(env, action, "--config")
     assert_argv_contains(env, action, _expand_path(ctx, "{{source_dir}}/config A.yml"))
     assert_argv_contains(env, action, "--create-baseline")
@@ -538,7 +611,7 @@ def _test_action_baseline():
 def _action_config_override_impl(ctx):
     env = analysistest.begin(ctx)
     action = [a for a in analysistest.target_actions(env) if a.mnemonic == "Detekt"][0]
-    assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/tests/analysis/custom_detekt_wrapper")
+    _assert_argv_contains_executable(env, action, "bazel-out/", "/tests/analysis/custom_detekt_wrapper")
     for flag in [
         "--build-upon-default-config",
         "--disable-default-rulesets",
@@ -710,13 +783,62 @@ def _test_plugin_jars():
     )
     return tests + [":invalid_plugin_files_test"]
 
+# Windows result launcher selection
+
+def _windows_result_launcher_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    target = analysistest.target_under_test(env)
+    executable = target[DefaultInfo].files_to_run.executable
+
+    asserts.true(env, executable.short_path.endswith(".bat"))
+    asserts.false(env, executable.short_path.endswith(".sh"))
+
+    launcher_actions = [
+        action
+        for action in analysistest.target_actions(env)
+        if action.mnemonic == "TemplateExpand" and action.outputs.to_list()[0].short_path.endswith(".bat")
+    ]
+    asserts.equals(env, 1, len(launcher_actions))
+    launcher_inputs = _input_short_paths(launcher_actions[0].inputs)
+    asserts.equals(env, ["detekt/result_script.bat.tpl"], launcher_inputs)
+
+    runfile_paths = [
+        file.short_path
+        for file in target[DefaultInfo].default_runfiles.files.to_list()
+    ]
+    asserts.true(env, "tests/analysis/test_target_windows_launcher_exit_code.txt" in runfile_paths)
+    asserts.true(env, "tests/analysis/test_target_windows_launcher_detekt_report.txt" in runfile_paths)
+    asserts.true(env, "tests/analysis/test_target_windows_launcher_baseline.xml" in runfile_paths)
+
+    return analysistest.end(env)
+
+windows_result_launcher_test = analysistest.make(
+    _windows_result_launcher_test_impl,
+    config_settings = {
+        "//command_line_option:platforms": str(Label("//tests/analysis:windows_platform")),
+    },
+)
+
+def _test_windows_result_launcher():
+    detekt_create_baseline(
+        name = "test_target_windows_launcher",
+        srcs = ["path A.kt"],
+        baseline = "baseline.xml",
+        tags = ["manual"],
+    )
+
+    windows_result_launcher_test(
+        name = "windows_result_launcher_test",
+        target_under_test = ":test_target_windows_launcher",
+    )
+
 # Suite
 
 def test_suite(name):
-    """Declare the rule analysis test suite.
+    """Creates the Detekt rule analysis test suite.
 
     Args:
-      name: Name of the test suite target.
+      name: Name of the generated test suite.
     """
     _test_action_full_contents()
     _test_action_blank_contents()
@@ -727,6 +849,7 @@ def test_suite(name):
     _test_action_failure_policy_conflict()
     _test_action_baseline()
     config_tests = _test_config_profiles()
+    _test_windows_result_launcher()
 
     native.test_suite(
         name = name,
@@ -740,5 +863,6 @@ def test_suite(name):
             ":action_select_test",
             ":action_failure_policy_conflict_test",
             ":action_baseline_test",
+            ":windows_result_launcher_test",
         ],
     )
