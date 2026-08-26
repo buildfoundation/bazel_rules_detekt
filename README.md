@@ -17,7 +17,6 @@ for the [Bazel build system](https://bazel.build).
 
 | `bazel_rules_detekt`                | Default Detekt  | Kotlin compiler | Max `language_version` | Min JDK | Max tested JDK | Bazel     |
 | ----------------------------------- | --------------- | --------------- | ---------------------- | ------- | -------------- | --------- |
-| **working tree / next release**     | 2.0.0-alpha.6   | 2.4.10          | `2.5`                  | 8       | 25             | 8.x – 9.x |
 | v0.8.1.9 – v0.8.2.3               | 1.23.8          | 2.0.21          | `2.0`                  | 8       | 21             | 8.x – 9.x |
 | v0.8.1.3 – v0.8.1.8                 | 1.23.5          | 1.9.22          | `1.9`                  | 8       | 17             | 7.x – 9.x |
 | v0.8.1 – v0.8.1.2                   | 1.23.1          | 1.9.0           | `1.9`                  | 8       | 17             | 6.x       |
