@@ -4,11 +4,14 @@ import io.buildfoundation.bazel.detekt.ExecutionUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
 
@@ -42,6 +45,7 @@ public interface Executable {
             }
 
             ExecutableResult result;
+            boolean reportWriteFailed = false;
             Path executionResultOutputPath = Paths.get(ExecutionUtils.getRequiredArgumentValue(detektWrapperArguments, "--execution-result"));
 
             try {
@@ -56,8 +60,15 @@ public interface Executable {
                 try {
                     String output = outputBuffer.toString(charset);
                     String error = errorBuffer.toString(charset);
+                    String diagnostics = output + error;
+                    try {
+                        writeTextReport(detektWrapperArguments, output, error);
+                    } catch (RuntimeException reportError) {
+                        reportWriteFailed = true;
+                        diagnostics += System.lineSeparator() + reportError.getMessage();
+                    }
 
-                    result = new ExecutableResult.Failure(output + error);
+                    result = new ExecutableResult.Failure(diagnostics);
                 } catch (UnsupportedEncodingException unsupportedEncodingException) {
                     result = new ExecutableResult.Failure("Unknown Detekt error, please report this issue");
                 }
@@ -68,10 +79,41 @@ public interface Executable {
 
             ExecutionUtils.writeExecutionResultToFile(result.statusCode(), executionResultOutputPath);
 
-            if (ExecutionUtils.shouldRunAsTestTarget(detektWrapperArguments)) {
+            if (ExecutionUtils.shouldRunAsTestTarget(detektWrapperArguments) && !reportWriteFailed) {
                 result = new ExecutableResult.Success();
             }
             return result;
+        }
+
+        private void writeTextReport(List<String> arguments, String output, String error) {
+            String reportPath = getTextReportPath(arguments);
+            if (reportPath == null || (output.isEmpty() && error.isEmpty())) {
+                return;
+            }
+
+            try {
+                Path path = Paths.get(reportPath);
+                if (!Files.exists(path) || Files.size(path) == 0) {
+                    Files.write(path, (output + error).getBytes(charset), StandardOpenOption.CREATE,
+                            StandardOpenOption.TRUNCATE_EXISTING);
+                } else if (!error.isEmpty()) {
+                    Files.write(path, error.getBytes(charset), StandardOpenOption.APPEND);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Unable to write Detekt text report " + reportPath, e);
+            }
+        }
+
+        private static String getTextReportPath(List<String> arguments) {
+            for (int index = 0; index + 1 < arguments.size(); index++) {
+                if ("--report".equals(arguments.get(index))) {
+                    String report = arguments.get(index + 1);
+                    if (report.startsWith("txt:")) {
+                        return report.substring("txt:".length());
+                    }
+                }
+            }
+            return null;
         }
     }
 

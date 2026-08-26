@@ -2,3 +2,6 @@ custom:
   active: true
   ForbiddenFunctionName:
     active: true
+potential-bugs:
+  UnnecessarySafeCall:
+    active: true
