@@ -4,11 +4,21 @@ Rule declarations.
 
 load("@rules_java//java:defs.bzl", "JavaInfo")
 
+_SHARED_ATTRS = [
+    "build_upon_default_config",
+    "cfgs",
+    "disable_default_rulesets",
+    "fail_on_severity",
+    "jvm_target",
+    "language_version",
+    "max_issues",
+    "parallel",
+    "plugins",
+]
+
 _ATTRS = {
-    "_detekt_wrapper": attr.label(
-        default = "//detekt/wrapper:bin",
-        executable = True,
-        cfg = "exec",
+    "detekt_explicit_attrs": attr.string_list(
+        default = [],
     ),
     "_result_script_template": attr.label(
         default = Label("//detekt:result_script.sh.tpl"),
@@ -23,12 +33,12 @@ _ATTRS = {
     "plugins": attr.label_list(
         default = [],
         providers = [JavaInfo],
-        doc = "Extra paths to plugin jars.",
+        doc = "Extra paths to plugin jars. If omitted, inherits from the detekt toolchain; an explicit empty list clears toolchain plugins.",
     ),
     "cfgs": attr.label_list(
         default = [],
         allow_files = [".yml"],
-        doc = "Path to the config file (path/to/config.yml). Multiple configuration files can be specified.",
+        doc = "Path to the config file (path/to/config.yml). Multiple configuration files can be specified. If omitted, inherits from the detekt toolchain; an explicit empty list clears toolchain configs.",
     ),
     "config_resource": attr.string(
         default = "",
@@ -53,11 +63,11 @@ _ATTRS = {
     ),
     "build_upon_default_config": attr.bool(
         default = False,
-        doc = "Preconfigures detekt with a bunch of rules and some opinionated defaults for you. Allows additional provided configurations to override the defaults.",
+        doc = "Preconfigures detekt with a bunch of rules and some opinionated defaults for you. If omitted, inherits from the detekt toolchain; explicit False clears the toolchain value.",
     ),
     "disable_default_rulesets": attr.bool(
         default = False,
-        doc = "Disables default rule sets.",
+        doc = "Disables default rule sets. If omitted, inherits from the detekt toolchain; explicit False clears the toolchain value.",
     ),
     "excludes": attr.string_list(
         default = [],
@@ -68,28 +78,28 @@ _ATTRS = {
         doc = "Globbing patterns describing paths to include in the analysis. Useful in combination with 'excludes' patterns.",
     ),
     "jvm_target": attr.string(
-        default = "1.8",
-        doc = "EXPERIMENTAL: Target version of the generated JVM bytecode that was generated during compilation and is now being used for type resolution (1.8, 9, 10, ..., 26). The selected Detekt version validates this value.",
+        default = "",
+        doc = "EXPERIMENTAL: Target version of the generated JVM bytecode that was generated during compilation and is now being used for type resolution (1.8, 9, 10, ..., 26). If omitted, inherits from the detekt toolchain; explicit values, including empty string, replace it. The selected Detekt version validates this value.",
     ),
     "language_version": attr.string(
         default = "",
-        doc = "EXPERIMENTAL: Compatibility mode for Kotlin language version X.Y, reports errors for all language features that came out later. The selected Detekt version validates this value.",
+        doc = "EXPERIMENTAL: Compatibility mode for Kotlin language version X.Y, reports errors for all language features that came out later. If omitted, inherits from the detekt toolchain; explicit values, including empty string, replace it. The selected Detekt version validates this value.",
     ),
     "max_issues": attr.int(
         default = -1,
-        doc = "Passes only when found issues count does not exceed specified issues count.",
+        doc = "Detekt 1.x failure threshold: passes only when the found issue count does not exceed this value. If omitted, inherits from the detekt toolchain; explicit -1 clears it. Mutually exclusive with fail_on_severity.",
     ),
     "fail_on_severity": attr.string(
         default = "",
-        doc = "Detekt 2.x failure threshold (Error, Warning, Info, or Never). Mutually exclusive with max_issues.",
+        doc = "Detekt 2.x failure threshold (Error, Warning, Info, or Never). If omitted, inherits from the detekt toolchain; explicit empty string clears it. Mutually exclusive with max_issues.",
     ),
     "parallel": attr.bool(
         default = False,
-        doc = "Enables parallel compilation and analysis of source files. Do some benchmarks first before enabling this flag. Heuristics show performance benefits starting from 2000 lines of Kotlin code.",
+        doc = "Enables parallel compilation and analysis of source files. If omitted, inherits from the detekt toolchain; explicit False clears the toolchain value.",
     ),
     "txt_report": attr.bool(
         default = False,
-        doc = "Enables / disables the text report generation. The report file name is `{target_name}_detekt_report.txt`.",
+        doc = "Enables / disables the text report generation. The report file name is `{target_name}_detekt_report.txt`; Detekt 2.x uses captured console output for this artifact.",
     ),
     "html_report": attr.bool(
         default = False,
@@ -97,7 +107,7 @@ _ATTRS = {
     ),
     "xml_report": attr.bool(
         default = False,
-        doc = "Enables / disables the XML report generation. The report file name is `{target_name}_detekt_report.xml`. FYI Detekt uses the Checkstyle XML reporting format which makes it compatible with tools like SonarQube.",
+        doc = "Enables / disables the XML report generation. The report file name is `{target_name}_detekt_report.xml`. Detekt 2.x maps this output to its `checkstyle` report ID; the format is compatible with tools like SonarQube.",
     ),
     "md_report": attr.bool(
         default = False,
@@ -116,11 +126,28 @@ _ATTRS = {
         doc = "Whether detekt target corresponds to android kotlin library or regular jvm library",
         default = False,
     ),
+    "detekt_toolchain": attr.label(
+        default = None,
+        cfg = "exec",
+        providers = [platform_common.ToolchainInfo],
+        doc = "Optional label of a target providing platform_common.ToolchainInfo. If omitted, uses the registered detekt toolchain.",
+    ),
 }
+
+# Stardoc can consume this schema without exposing the implementation rules.
+DETEKT_ATTRIBUTES = _ATTRS
 
 TOOLCHAIN_TYPE = Label("//detekt:toolchain_type")
 ANDROID_SDK_TOOLCHAIN_TYPE = Label("@rules_android//toolchains/android_sdk:toolchain_type")
 JDK_TOOLCHAIN_TYPE = Label("@bazel_tools//tools/jdk:toolchain_type")
+
+def _uses_rule_attr(ctx, name):
+    return name in ctx.attr.detekt_explicit_attrs
+
+def _detekt_toolchain(ctx):
+    if ctx.attr.detekt_toolchain != None:
+        return ctx.attr.detekt_toolchain[platform_common.ToolchainInfo]
+    return ctx.toolchains[TOOLCHAIN_TYPE]
 
 def _impl(
         ctx,
@@ -128,12 +155,7 @@ def _impl(
         create_baseline = False):
     action_inputs = []
     action_outputs = []
-
-    java_arguments = ctx.actions.args()
-
-    for jvm_flag in ctx.toolchains[TOOLCHAIN_TYPE].jvm_flags:
-        # The Bazel-generated execution script requires "=" between argument names and values.
-        java_arguments.add("--jvm_flag={}".format(jvm_flag))
+    detekt_toolchain = _detekt_toolchain(ctx)
 
     detekt_arguments = ctx.actions.args()
 
@@ -148,8 +170,9 @@ def _impl(
     action_inputs.extend(ctx.files.srcs)
     detekt_arguments.add_joined("--input", ctx.files.srcs, join_with = ",")
 
-    action_inputs.extend(ctx.files.cfgs)
-    detekt_arguments.add_joined("--config", ctx.files.cfgs, join_with = ",")
+    cfgs = ctx.files.cfgs if _uses_rule_attr(ctx, "cfgs") else detekt_toolchain.cfgs
+    action_inputs.extend(cfgs)
+    detekt_arguments.add_joined("--config", cfgs, join_with = ",")
 
     if ctx.attr.config_resource:
         detekt_arguments.add("--config-resource", ctx.attr.config_resource)
@@ -187,10 +210,12 @@ def _impl(
     if ctx.attr.base_path:
         detekt_arguments.add("--base-path", ctx.attr.base_path)
 
-    if ctx.attr.build_upon_default_config:
+    build_upon_default_config = ctx.attr.build_upon_default_config if _uses_rule_attr(ctx, "build_upon_default_config") else detekt_toolchain.build_upon_default_config
+    if build_upon_default_config:
         detekt_arguments.add("--build-upon-default-config")
 
-    if ctx.attr.disable_default_rulesets:
+    disable_default_rulesets = ctx.attr.disable_default_rulesets if _uses_rule_attr(ctx, "disable_default_rulesets") else detekt_toolchain.disable_default_rulesets
+    if disable_default_rulesets:
         detekt_arguments.add("--disable-default-rulesets")
 
     if ctx.attr.excludes:
@@ -199,20 +224,31 @@ def _impl(
     if ctx.attr.includes:
         detekt_arguments.add_joined("--includes", ctx.attr.includes, join_with = ",")
 
-    detekt_arguments.add("--jvm-target", ctx.attr.jvm_target)
+    jvm_target = ctx.attr.jvm_target if _uses_rule_attr(ctx, "jvm_target") else detekt_toolchain.jvm_target
+    if jvm_target:
+        detekt_arguments.add("--jvm-target", jvm_target)
 
-    if ctx.attr.language_version:
-        detekt_arguments.add("--language-version", ctx.attr.language_version)
+    language_version = ctx.attr.language_version if _uses_rule_attr(ctx, "language_version") else detekt_toolchain.language_version
+    if language_version:
+        detekt_arguments.add("--language-version", language_version)
 
-    if ctx.attr.max_issues >= 0:
-        if ctx.attr.fail_on_severity:
+    rule_policy = _uses_rule_attr(ctx, "max_issues") or _uses_rule_attr(ctx, "fail_on_severity")
+    max_issues = ctx.attr.max_issues if _uses_rule_attr(ctx, "max_issues") else -1
+    fail_on_severity = ctx.attr.fail_on_severity if _uses_rule_attr(ctx, "fail_on_severity") else ""
+    if not rule_policy:
+        max_issues = detekt_toolchain.max_issues
+        fail_on_severity = detekt_toolchain.fail_on_severity
+
+    if max_issues >= 0:
+        if fail_on_severity:
             fail("max_issues and fail_on_severity cannot be used together")
-        detekt_arguments.add("--max-issues", ctx.attr.max_issues)
+        detekt_arguments.add("--max-issues", max_issues)
 
-    if ctx.attr.fail_on_severity:
-        detekt_arguments.add("--fail-on-severity", ctx.attr.fail_on_severity)
+    if fail_on_severity:
+        detekt_arguments.add("--fail-on-severity", fail_on_severity)
 
-    if ctx.attr.parallel:
+    parallel = ctx.attr.parallel if _uses_rule_attr(ctx, "parallel") else detekt_toolchain.parallel
+    if parallel:
         detekt_arguments.add("--parallel")
 
     if run_as_test_target:
@@ -228,7 +264,8 @@ def _impl(
         action_inputs.extend(platform_jar_files + classpath)
         detekt_arguments.add("--classpath", ctx.configuration.host_path_separator.join([f.path for f in platform_jar_files] + [f.path for f in classpath]))
 
-    plugin_jars = [plugin for plugin in ctx.files.plugins if plugin.extension == "jar"]
+    plugins = ctx.files.plugins if _uses_rule_attr(ctx, "plugins") else detekt_toolchain.plugins
+    plugin_jars = [plugin for plugin in plugins if plugin.extension == "jar"]
     action_inputs.extend(plugin_jars)
     detekt_arguments.add_joined("--plugins", plugin_jars, join_with = ",")
 
@@ -265,13 +302,13 @@ def _impl(
         progress_message = "Running Detekt for {}".format(str(ctx.label)),
         inputs = action_inputs,
         outputs = action_outputs + [execution_result],
-        executable = ctx.executable._detekt_wrapper,
+        executable = detekt_toolchain.detekt_wrapper.files_to_run,
         execution_requirements = {
             "requires-worker-protocol": "proto",
             "supports-workers": "1",
             "supports-multiplex-workers": "1",
         },
-        arguments = [java_arguments, detekt_arguments],
+        arguments = [detekt_arguments],
     )
     run_files.append(txt_report)
 
@@ -308,14 +345,14 @@ def _detekt_create_baseline_impl(ctx):
 def _detekt_test_impl(ctx):
     return _impl(ctx = ctx, run_as_test_target = True)
 
-detekt = rule(
+_detekt_rule = rule(
     implementation = _detekt_impl,
     attrs = _ATTRS,
     provides = [DefaultInfo],
     toolchains = [TOOLCHAIN_TYPE, ANDROID_SDK_TOOLCHAIN_TYPE, JDK_TOOLCHAIN_TYPE],
 )
 
-detekt_create_baseline = rule(
+_detekt_create_baseline_rule = rule(
     implementation = _detekt_create_baseline_impl,
     attrs = _ATTRS,
     provides = [DefaultInfo],
@@ -323,10 +360,31 @@ detekt_create_baseline = rule(
     executable = True,
 )
 
-detekt_test = rule(
+_detekt_test = rule(
     implementation = _detekt_test_impl,
     attrs = _ATTRS,
     provides = [DefaultInfo],
     toolchains = [TOOLCHAIN_TYPE, ANDROID_SDK_TOOLCHAIN_TYPE, JDK_TOOLCHAIN_TYPE],
     test = True,
 )
+
+def _declare(native_rule, name, kwargs):
+    attrs = dict(kwargs)
+    attrs["detekt_explicit_attrs"] = [
+        attr_name
+        for attr_name in _SHARED_ATTRS
+        if attr_name in kwargs and kwargs[attr_name] != None
+    ]
+    native_rule(name = name, **attrs)
+
+def detekt(name, **kwargs):
+    """Run Detekt analysis for the supplied Kotlin sources."""
+    _declare(_detekt_rule, name, kwargs)
+
+def detekt_create_baseline(name, **kwargs):
+    """Create a Detekt baseline for the supplied Kotlin sources."""
+    _declare(_detekt_create_baseline_rule, name, kwargs)
+
+def detekt_test(name, **kwargs):
+    """Run Detekt analysis as a test for the supplied Kotlin sources."""
+    _declare(_detekt_test, name, kwargs)

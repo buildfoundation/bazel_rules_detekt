@@ -1,9 +1,17 @@
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("@rules_detekt//detekt:defs.bzl", "detekt_create_baseline", "detekt_test")
+load("@rules_detekt//detekt:toolchain.bzl", "detekt_toolchain")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 package(default_visibility = ["//visibility:public"])
+
+detekt_toolchain(
+    name = "compat_v1_toolchain_impl",
+    cfgs = ["detekt.yml"],
+    max_issues = 2,
+    plugins = [":custom_rules"],
+)
 
 detekt_test(
     name = "compat_v1_test",
@@ -12,9 +20,7 @@ detekt_test(
         "src/CompatTypeResolution.kt",
     ],
     base_path = ".",
-    cfgs = ["detekt.yml"],
-    max_issues = 2,
-    plugins = [":custom_rules"],
+    detekt_toolchain = ":compat_v1_toolchain_impl",
     txt_report = True,
     deps = [":compat_api"],
 )
@@ -23,9 +29,8 @@ detekt_test(
     name = "expected_failure_test",
     srcs = ["src/Compat.kt"],
     base_path = ".",
-    cfgs = ["detekt.yml"],
+    detekt_toolchain = ":compat_v1_toolchain_impl",
     max_issues = 0,
-    plugins = [":custom_rules"],
     tags = ["manual"],
 )
 
@@ -36,9 +41,7 @@ detekt_test(
         "src/CompatTypeResolution.kt",
     ],
     base_path = ".",
-    cfgs = ["detekt.yml"],
-    max_issues = 2,
-    plugins = [":custom_rules"],
+    detekt_toolchain = ":compat_v1_toolchain_impl",
     xml_report = True,
     deps = [":compat_api"],
 )
@@ -58,6 +61,7 @@ kt_jvm_library(
 detekt_create_baseline(
     name = "clean_baseline",
     srcs = ["src/Clean.kt"],
+    detekt_toolchain = ":compat_v1_toolchain_impl",
 )
 
 write_file(

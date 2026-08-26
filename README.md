@@ -8,7 +8,7 @@ for the [Bazel build system](https://bazel.build).
 - configuration and baseline files;
 - HTML, text, XML, Markdown, and SARIF reports;
 - [plugins](https://detekt.dev/docs/extensions/extensions/);
-- customizable Detekt version and JVM flags;
+- customizable Detekt version;
 - [persistent workers](https://blog.bazel.build/2015/12/10/java-workers.html) support;
 - baseline generation via `detekt_create_baseline`;
 - configuration options via [attributes](docs/attrs.md).
@@ -147,11 +147,17 @@ detekt_test(
 
 ### Configuration Options
 
-All three rules share the same configuration options. In addition to `srcs`, `cfgs`, `baseline`, `plugins`,
-and report options, most attributes correspond directly to Detekt CLI flags and pass them through when explicitly set.
+All three rules share the same configuration options. In addition to `srcs`, most attributes correspond directly to
+Detekt CLI flags and pass them through when explicitly set.
 
-`max_issues` is retained for Detekt 1.x. Detekt 2.x uses `fail_on_severity` (`Never`, `Info`, `Warning`, or `Error`);
-the attributes are mutually exclusive and must match the selected Detekt major version.
+`cfgs`, `plugins`, `build_upon_default_config`, `disable_default_rulesets`, `jvm_target`, `language_version`,
+`max_issues`, `fail_on_severity`, `parallel`, and the executable wrapper can be configured once on a toolchain.
+`srcs`, `deps`, `baseline`, `excludes`, `includes`, `all_rules`, `auto_correct`, `base_path`, `config_resource`,
+`is_android`, and report options remain rule-level settings.
+
+`max_issues` is the failure policy for Detekt 1.x. Detekt 2.x uses `fail_on_severity` (`Never`, `Info`, `Warning`, or
+`Error`). Both policies cannot be active at the same level; inactive clear values such as `max_issues = -1` may
+coexist with the other policy. Choose the active option that matches the selected Detekt major version.
 
 More information can be found in the [attributes](docs/attrs.md).
 
@@ -212,31 +218,93 @@ use_repo(detekt, "detekt_cli_all")
 
 Each template may contain `{version}` which will be replaced with the version string.
 
-### JVM Flags
+### Toolchain Configuration and Profiles
 
-The default toolchain uses `-Xms16m -Xmx128m`. To customize JVM flags, define your own toolchain
-in a `BUILD` file:
+`detekt_toolchain` defines a reusable implementation profile. Its executable wrapper, shared configuration, plugins,
+and shared analysis defaults are used by rules that select the profile. The default JVM target remains `1.8`.
+
+The wrapper is an exec-configured `java_binary`. Configure its JVM options through Bazel, for example in `.bazelrc`:
+
+```text
+build --host_jvmopt=-Xmx512m
+```
+
+The `detekt_toolchain` rule is the implementation label used by a rule; it is not the native `toolchain()` registration
+wrapper. Register one implementation when you want it to be the fallback for rules that do not select a profile:
 
 ```python
+load("@rules_detekt//detekt:defs.bzl", "detekt_test")
 load("@rules_detekt//detekt:toolchain.bzl", "detekt_toolchain")
 
 detekt_toolchain(
-    name = "my_detekt_toolchain_impl",
-    jvm_flags = ["-Xms16m", "-Xmx512m"],
+    name = "detekt_default_impl",
+    cfgs = ["//:detekt.yml"],
+    plugins = ["@maven//:dev_detekt_detekt_rules_ktlint_wrapper"],
+    build_upon_default_config = True,
+    disable_default_rulesets = True,
+    jvm_target = "11",
+    language_version = "2.0",
+    fail_on_severity = "Error",
+    parallel = True,
 )
 
 toolchain(
-    name = "my_detekt_toolchain",
-    toolchain = ":my_detekt_toolchain_impl",
+    name = "detekt_registered",
+    toolchain = ":detekt_default_impl",
     toolchain_type = "@rules_detekt//detekt:toolchain_type",
+)
+
+detekt_test(
+    name = "uses_registered_profile",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
 )
 ```
 
-Then register it in `MODULE.bazel`:
+```python
+register_toolchains("//:detekt_registered")
+```
+
+Multiple profiles can coexist in one repository. Select an implementation directly with the rule’s
+`detekt_toolchain` attribute; omitting that attribute uses the registered native toolchain:
 
 ```python
-register_toolchains("//mypackage:my_detekt_toolchain")
+detekt_toolchain(
+    name = "detekt_strict_impl",
+    fail_on_severity = "Error",
+)
+
+detekt_toolchain(
+    name = "detekt_lenient_impl",
+    fail_on_severity = "Never",
+)
+
+detekt_test(
+    name = "strict_profile",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    detekt_toolchain = ":detekt_strict_impl",
+)
+
+detekt_test(
+    name = "lenient_profile",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    detekt_toolchain = ":detekt_lenient_impl",
+    fail_on_severity = "Warning",
+)
 ```
+
+Profiles configure the selected runtime; they do not select a Detekt version. To use the supported Detekt 1.23.8
+override, configure that version separately and use its matching 1.x plugins and `max_issues` policy.
+
+For shared options, an omitted rule attribute (or `None` where accepted) inherits from the selected toolchain.
+Explicit values always win: `False`, `[]`, an empty `language_version`, or `max_issues = -1` clears an inherited
+value; list-valued options replace the toolchain list rather than append to it. A rule-level failure option replaces
+the inherited failure-policy pair, so a rule can select either `max_issues` or `fail_on_severity` without inheriting
+the other option. Both policies cannot be active at the same level; inactive clear values may coexist with the other
+policy.
+
+The profile’s runtime determines which failure policy is valid: use `max_issues` with Detekt 1.23.8 and
+`fail_on_severity` with Detekt 2.0.0-alpha.6. JVM and Kotlin language versions are also validated by the selected
+runtime, and plugins must be built for the same Detekt major version.
 
 ### Plugins
 
@@ -314,7 +382,7 @@ detekt_test(
 ### JVM Target
 
 Use `jvm_target` to set the JVM bytecode target version that matches what was used during compilation.
-This defaults to `1.8` if not explicitly set:
+If not explicitly set, it inherits from the detekt toolchain:
 
 ```python
 detekt_test(
@@ -327,7 +395,7 @@ detekt_test(
 ### Language Version
 
 Detekt will report errors for any language features introduced after the specified version if
-`language_version` is specified. When unset, no compatibility restriction is applied:
+`language_version` is specified. If not explicitly set, it inherits from the detekt toolchain:
 
 ```python
 detekt_test(
