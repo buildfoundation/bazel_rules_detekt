@@ -1,1 +1,2 @@
 common --repo_env=ACCEPTED_ANDROID_SDK_LICENSE_VERSION=35
+common --test_tag_filters=-manual

@@ -3,6 +3,7 @@ package io.buildfoundation.bazel.detekt.execute;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -153,8 +154,8 @@ public class DetektExecutableTests {
 
     @Test
     public void preservesExistingTextReportAndAppendsFailureDiagnostics() throws IOException {
-        Path report = Files.createTempFile("detekt-report", ".txt");
-        Files.write(report, Arrays.asList("native report"));
+        Path report = Files.createTempFile("detekt report", ".txt");
+        Files.write(report, "native report\n".getBytes(StandardCharsets.UTF_8));
         Path executionResult = Files.createTempFile("detekt-execution-result", ".txt");
 
         Detekt detekt = (args, output, error) -> {

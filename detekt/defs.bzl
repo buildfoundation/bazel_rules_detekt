@@ -14,6 +14,13 @@ _ATTRS = {
         default = Label("//detekt:result_script.sh.tpl"),
         allow_single_file = True,
     ),
+    "_result_script_bat_template": attr.label(
+        default = Label("//detekt:result_script.bat.tpl"),
+        allow_single_file = True,
+    ),
+    "_windows_constraint": attr.label(
+        default = Label("@platforms//os:windows"),
+    ),
     "srcs": attr.label_list(
         mandatory = True,
         allow_files = [".kt", ".kts"],
@@ -122,10 +129,22 @@ TOOLCHAIN_TYPE = Label("//detekt:toolchain_type")
 ANDROID_SDK_TOOLCHAIN_TYPE = Label("@rules_android//toolchains/android_sdk:toolchain_type")
 JDK_TOOLCHAIN_TYPE = Label("@bazel_tools//tools/jdk:toolchain_type")
 
+def _runfiles_path(ctx, file):
+    """Returns the manifest key for a file in this target's runfiles."""
+    short_path = file.short_path
+    if short_path.startswith("../"):
+        # External repository paths already contain Bazel's canonical runfiles
+        # repository name (for example, ../+repo+extension/path).
+        return short_path[3:]
+    if ctx.workspace_name:
+        return "{}/{}".format(ctx.workspace_name, short_path)
+    return short_path
+
 def _impl(
         ctx,
         run_as_test_target = False,
         create_baseline = False):
+    is_windows = ctx.target_platform_has_constraint(ctx.attr._windows_constraint[platform_common.ConstraintValueInfo])
     action_inputs = []
     action_outputs = []
 
@@ -164,16 +183,34 @@ def _impl(
         run_files.append(internal_baseline)
         action_outputs.append(internal_baseline)
         detekt_arguments.add("--baseline", internal_baseline)
-        final_baseline = ctx.files.baseline[0].short_path if len(ctx.files.baseline) != 0 else "%s/%s" % (ctx.label.package, default_baseline)
+        final_baseline = ctx.files.baseline[0].short_path if len(ctx.files.baseline) != 0 else "/".join([part for part in [ctx.label.package, default_baseline] if part])
 
-        baseline_script = """
+        if is_windows:
+            baseline_script = """
+if not defined BUILD_WORKING_DIRECTORY (
+    echo BUILD_WORKING_DIRECTORY is not set 1>&2
+    exit /b 1
+)
+set "BUILD_WORKING_DIRECTORY=%BUILD_WORKING_DIRECTORY:/=\\%"
+if not defined baseline_file (
+    echo Unable to locate generated baseline 1>&2
+    exit /b 1
+)
+copy /Y "%baseline_file%" "%BUILD_WORKING_DIRECTORY%\\{target}" >nul
+if errorlevel 1 exit /b 1
+echo Updated "{target}"
+""".format(
+                target = final_baseline.replace("/", "\\"),
+            )
+        else:
+            baseline_script = """
                     #!/bin/bash
-                    cp -rf {source} $BUILD_WORKING_DIRECTORY/{target}
-                    echo "$(tput setaf 2)Updated {target} $(tput sgr0)"
+                    cp -f "{source}" "$BUILD_WORKING_DIRECTORY/{target}"
+                    echo "Updated {target}"
                             """.format(
-            source = internal_baseline.short_path,
-            target = final_baseline,
-        )
+                source = internal_baseline.short_path,
+                target = final_baseline,
+            )
     elif ctx.attr.baseline != None:
         action_inputs.append(ctx.file.baseline)
         detekt_arguments.add("--baseline", ctx.file.baseline)
@@ -275,16 +312,27 @@ def _impl(
     )
     run_files.append(txt_report)
 
-    # Note: this is not compatible with Windows, feel free to submit PR!
-    # text report-contents are always printed to shell
-    result_script = ctx.actions.declare_file(ctx.attr.name + ".sh")
+    execution_result_path = _runfiles_path(ctx, execution_result) if is_windows else execution_result.short_path
+    text_report_path = _runfiles_path(ctx, txt_report) if is_windows else txt_report.short_path
+    baseline_file_path = _runfiles_path(ctx, internal_baseline) if is_windows and internal_baseline else ""
+    baseline_lookup = ""
+    if baseline_file_path:
+        baseline_lookup = """
+set "baseline_file="
+call :rlocation "{baseline_file}" baseline_file
+if defined baseline_file set "baseline_file=%baseline_file:/=\\%"
+""".format(baseline_file = baseline_file_path)
+
+    # Text report contents are always printed by the launcher.
+    result_script = ctx.actions.declare_file(ctx.attr.name + (".bat" if is_windows else ".sh"))
     ctx.actions.expand_template(
         output = result_script,
-        template = ctx.file._result_script_template,
+        template = ctx.file._result_script_bat_template if is_windows else ctx.file._result_script_template,
         substitutions = {
             "{baseline_script}": baseline_script,
-            "{execution_result}": execution_result.short_path,
-            "{text_report}": txt_report.short_path,
+            "{baseline_file_lookup}": baseline_lookup,
+            "{execution_result}": execution_result_path,
+            "{text_report}": text_report_path,
         },
         is_executable = True,
     )
