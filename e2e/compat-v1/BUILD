@@ -20,6 +20,16 @@ detekt_test(
 )
 
 detekt_test(
+    name = "expected_failure_test",
+    srcs = ["src/Compat.kt"],
+    base_path = ".",
+    cfgs = ["detekt.yml"],
+    max_issues = 0,
+    plugins = [":custom_rules"],
+    tags = ["manual"],
+)
+
+detekt_test(
     name = "compat_v1_report",
     srcs = [
         "src/Compat.kt",
