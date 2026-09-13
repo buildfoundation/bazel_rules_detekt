@@ -5,6 +5,11 @@ The rule analysis tests.
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
 load("//detekt:defs.bzl", "detekt", "detekt_create_baseline", "detekt_test")
 
+def _assert_rule_kind(name, expected):
+    rule = native.existing_rule(name)
+    if rule == None or rule["kind"] != expected:
+        fail("Expected {} to have kind {}, got {}".format(name, expected, rule))
+
 def _expand_path(ctx, value):
     source_dir = ctx.build_file_path.replace("/BUILD", "")
     output_dir = ctx.bin_dir.path
@@ -182,6 +187,7 @@ def _test_action_full_contents():
         # and we do not want to change the test every time the Detekt artifact is updated.
         tags = ["manual"],
     )
+    _assert_rule_kind("test_target_full", "detekt")
 
     action_full_contents_test(
         name = "action_full_contents_test",
@@ -425,6 +431,7 @@ def _test_action_toolchain_b():
         max_issues = 0,
         tags = ["manual"],
     )
+    _assert_rule_kind("test_target_toolchain_b", "detekt_test")
 
     action_toolchain_b_test(
         name = "action_toolchain_b_test",
@@ -555,6 +562,7 @@ def _test_action_baseline():
         detekt_toolchain = ":toolchain_a_impl",
         tags = ["manual"],
     )
+    _assert_rule_kind("test_target_baseline", "detekt_create_baseline")
 
     action_baseline_test(
         name = "action_baseline_test",

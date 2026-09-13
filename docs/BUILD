@@ -10,7 +10,10 @@ exports_files(
 
 bzl_library(
     name = "detekt_defs",
-    srcs = ["//detekt:defs.bzl"],
+    srcs = [
+        "//detekt:defs.bzl",
+        "//detekt:rules.bzl",
+    ],
     visibility = ["//docs:__pkg__"],
     deps = [
         "@rules_java//java:rules",

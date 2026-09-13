@@ -18,4 +18,5 @@ toolchain(
 exports_files([
     "defs.bzl",
     "result_script.sh.tpl",
+    "rules.bzl",
 ])
