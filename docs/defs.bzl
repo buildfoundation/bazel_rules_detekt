@@ -14,7 +14,7 @@ def _docs_impl(_ctx):
 _DOC_ATTRS = {
     name: attribute
     for name, attribute in DETEKT_ATTRIBUTES.items()
-    if name != "detekt_explicit_attrs"
+    if not name.endswith("_mirror") and not name.startswith("_")
 }
 
 detekt = rule(

@@ -5,9 +5,6 @@ Rule declarations.
 load("@rules_java//java:defs.bzl", "JavaInfo")
 
 _ATTRS = {
-    "detekt_explicit_attrs": attr.string_list(
-        default = [],
-    ),
     "_result_script_template": attr.label(
         default = Label("//detekt:result_script.sh.tpl"),
         allow_single_file = True,
@@ -23,10 +20,18 @@ _ATTRS = {
         providers = [JavaInfo],
         doc = "Extra paths to plugin jars. If omitted, inherits from the detekt toolchain; an explicit empty list clears toolchain plugins.",
     ),
+    "detekt_plugins_mirror": attr.label_list(
+        default = [Label("//detekt:defs.bzl")],
+        allow_files = True,
+    ),
     "cfgs": attr.label_list(
         default = [],
         allow_files = [".yml"],
         doc = "Path to the config file (path/to/config.yml). Multiple configuration files can be specified. If omitted, inherits from the detekt toolchain; an explicit empty list clears toolchain configs.",
+    ),
+    "detekt_cfgs_mirror": attr.label_list(
+        default = [Label("//detekt:defs.bzl")],
+        allow_files = True,
     ),
     "config_resource": attr.string(
         default = "",
@@ -53,9 +58,15 @@ _ATTRS = {
         default = False,
         doc = "Preconfigures detekt with a bunch of rules and some opinionated defaults for you. If omitted, inherits from the detekt toolchain; explicit False clears the toolchain value.",
     ),
+    "detekt_build_upon_default_config_mirror": attr.bool(
+        default = True,
+    ),
     "disable_default_rulesets": attr.bool(
         default = False,
         doc = "Disables default rule sets. If omitted, inherits from the detekt toolchain; explicit False clears the toolchain value.",
+    ),
+    "detekt_disable_default_rulesets_mirror": attr.bool(
+        default = True,
     ),
     "excludes": attr.string_list(
         default = [],
@@ -69,21 +80,36 @@ _ATTRS = {
         default = "",
         doc = "EXPERIMENTAL: Target version of the generated JVM bytecode that was generated during compilation and is now being used for type resolution (1.8, 9, 10, ..., 26). If omitted, inherits from the detekt toolchain; explicit values, including empty string, replace it. The selected Detekt version validates this value.",
     ),
+    "detekt_jvm_target_mirror": attr.string(
+        default = "__detekt_inherit__",
+    ),
     "language_version": attr.string(
         default = "",
         doc = "EXPERIMENTAL: Compatibility mode for Kotlin language version X.Y, reports errors for all language features that came out later. If omitted, inherits from the detekt toolchain; explicit values, including empty string, replace it. The selected Detekt version validates this value.",
+    ),
+    "detekt_language_version_mirror": attr.string(
+        default = "__detekt_inherit__",
     ),
     "max_issues": attr.int(
         default = -1,
         doc = "Detekt 1.x failure threshold: passes only when the found issue count does not exceed this value. If omitted, inherits from the detekt toolchain; explicit -1 clears it. Mutually exclusive with fail_on_severity.",
     ),
+    "detekt_max_issues_mirror": attr.int(
+        default = -2,
+    ),
     "fail_on_severity": attr.string(
         default = "",
         doc = "Detekt 2.x failure threshold (Error, Warning, Info, or Never). If omitted, inherits from the detekt toolchain; explicit empty string clears it. Mutually exclusive with max_issues.",
     ),
+    "detekt_fail_on_severity_mirror": attr.string(
+        default = "__detekt_inherit__",
+    ),
     "parallel": attr.bool(
         default = False,
         doc = "Enables parallel compilation and analysis of source files. If omitted, inherits from the detekt toolchain; explicit False clears the toolchain value.",
+    ),
+    "detekt_parallel_mirror": attr.bool(
+        default = True,
     ),
     "txt_report": attr.bool(
         default = False,
@@ -130,7 +156,9 @@ ANDROID_SDK_TOOLCHAIN_TYPE = Label("@rules_android//toolchains/android_sdk:toolc
 JDK_TOOLCHAIN_TYPE = Label("@bazel_tools//tools/jdk:toolchain_type")
 
 def _uses_rule_attr(ctx, name):
-    return name in ctx.attr.detekt_explicit_attrs
+    # Multi-branch None branches resolve to each attribute's distinct default; explicit values resolve equally.
+    # Bazel simplifies a selector containing only a default None branch to type defaults.
+    return getattr(ctx.attr, name) == getattr(ctx.attr, "detekt_" + name + "_mirror")
 
 def _detekt_toolchain(ctx):
     if ctx.attr.detekt_toolchain != None:

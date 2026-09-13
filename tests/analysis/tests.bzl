@@ -421,13 +421,22 @@ def _action_toolchain_b_test_impl(ctx):
 
     return analysistest.end(env)
 
-action_toolchain_b_test = analysistest.make(_action_toolchain_b_test_impl)
+action_toolchain_b_test = analysistest.make(
+    _action_toolchain_b_test_impl,
+    config_settings = {
+        "//command_line_option:compilation_mode": "fastbuild",
+    },
+)
 
 def _test_action_toolchain_b():
     detekt_test(
         name = "test_target_toolchain_b",
         srcs = ["path A.kt", "path B.kt", "path C.kt"],
         detekt_toolchain = ":toolchain_b_impl",
+        language_version = select({
+            ":select_toolchain_b": "1.7",
+            "//conditions:default": None,
+        }),
         max_issues = 0,
         tags = ["manual"],
     )
@@ -454,9 +463,9 @@ def _action_select_test_impl(ctx):
     assert_argv_contains(env, action, "17")
     assert_argv_contains(env, action, "--language-version")
     assert_argv_contains(env, action, "1.9")
-    assert_argv_contains(env, action, "--max-issues")
-    assert_argv_contains(env, action, "0")
-    assert_argv_lacks(env, action, "--fail-on-severity")
+    assert_argv_lacks(env, action, "--max-issues")
+    assert_argv_contains(env, action, "--fail-on-severity")
+    assert_argv_contains(env, action, "Warning")
     assert_argv_lacks(env, action, "--parallel")
     assert_input_contains(env, action, _expand_path(ctx, "{{source_dir}}/config C.yml"))
     assert_input_lacks(env, action, _expand_path(ctx, "{{source_dir}}/config B.yml"))
@@ -492,7 +501,7 @@ def _test_action_select():
             "//conditions:default": "1.8",
         }),
         max_issues = select({
-            ":select_toolchain_b": 0,
+            ":select_toolchain_b": None,
             "//conditions:default": -1,
         }),
         parallel = select({
@@ -505,6 +514,225 @@ def _test_action_select():
     action_select_test(
         name = "action_select_test",
         target_under_test = ":test_target_select",
+    )
+
+# A None branch inherits the toolchain value after select() resolution.
+
+def _action_select_none_test_impl(ctx):
+    env = analysistest.begin(ctx)
+
+    actions = [
+        action
+        for action in analysistest.target_actions(env)
+        if action.mnemonic == "Detekt"
+    ]
+    asserts.equals(env, 1, len(actions))
+
+    action = actions[0]
+    assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/tests/analysis/custom_detekt_wrapper")
+    assert_argv_contains(env, action, "--config")
+    assert_argv_contains(env, action, _expand_path(ctx, "{{source_dir}}/config A.yml"))
+    assert_argv_contains(env, action, "--build-upon-default-config")
+    assert_argv_contains(env, action, "--disable-default-rulesets")
+    assert_argv_contains(env, action, "--jvm-target")
+    assert_argv_contains(env, action, "17")
+    assert_argv_contains(env, action, "--language-version")
+    assert_argv_contains(env, action, "1.9")
+    assert_argv_contains(env, action, "--max-issues")
+    assert_argv_contains(env, action, "3")
+    assert_argv_contains(env, action, "--parallel")
+    assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/libanalysis_plugin.jar")
+    assert_input_contains(env, action, _expand_path(ctx, "{{source_dir}}/config A.yml"))
+    assert_input_contains_suffix(env, action, "/libanalysis_plugin.jar")
+
+    return analysistest.end(env)
+
+action_select_none_test = analysistest.make(
+    _action_select_none_test_impl,
+    config_settings = {
+        "//command_line_option:compilation_mode": "fastbuild",
+    },
+)
+
+def _test_action_select_none():
+    detekt(
+        name = "test_target_select_none",
+        srcs = ["path A.kt"],
+        detekt_toolchain = ":toolchain_a_impl",
+        cfgs = select({
+            ":select_toolchain_b": ["config B.yml"],
+            "//conditions:default": None,
+        }),
+        build_upon_default_config = select({
+            ":select_toolchain_b": False,
+            "//conditions:default": None,
+        }),
+        disable_default_rulesets = select({
+            ":select_toolchain_b": False,
+            "//conditions:default": None,
+        }),
+        jvm_target = select({
+            ":select_toolchain_b": "11",
+            "//conditions:default": None,
+        }),
+        language_version = select({
+            ":select_toolchain_b": "1.8",
+            "//conditions:default": None,
+        }),
+        max_issues = select({
+            ":select_toolchain_b": -1,
+            "//conditions:default": None,
+        }),
+        fail_on_severity = select({
+            ":select_toolchain_b": "Never",
+            "//conditions:default": None,
+        }),
+        parallel = select({
+            ":select_toolchain_b": False,
+            "//conditions:default": None,
+        }),
+        plugins = select({
+            ":select_toolchain_b": [],
+            "//conditions:default": None,
+        }),
+        tags = ["manual"],
+    )
+
+    action_select_none_test(
+        name = "action_select_none_test",
+        target_under_test = ":test_target_select_none",
+    )
+
+# Explicit clearing values still win when selected from a branch.
+
+def _action_select_clear_test_impl(ctx):
+    env = analysistest.begin(ctx)
+
+    actions = [
+        action
+        for action in analysistest.target_actions(env)
+        if action.mnemonic == "Detekt"
+    ]
+    asserts.equals(env, 1, len(actions))
+
+    action = actions[0]
+    assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/tests/analysis/custom_detekt_wrapper")
+    assert_argv_lacks(env, action, "--config")
+    assert_argv_lacks(env, action, "--build-upon-default-config")
+    assert_argv_lacks(env, action, "--disable-default-rulesets")
+    assert_argv_lacks(env, action, "--jvm-target")
+    assert_argv_lacks(env, action, "--language-version")
+    assert_argv_lacks(env, action, "--max-issues")
+    assert_argv_lacks(env, action, "--fail-on-severity")
+    assert_argv_lacks(env, action, "--parallel")
+    assert_argv_lacks(env, action, "--plugins")
+    assert_input_lacks(env, action, _expand_path(ctx, "{{source_dir}}/config A.yml"))
+    assert_input_lacks_suffix(env, action, "/libanalysis_plugin.jar")
+
+    return analysistest.end(env)
+
+action_select_clear_test = analysistest.make(
+    _action_select_clear_test_impl,
+    config_settings = {
+        "//command_line_option:compilation_mode": "opt",
+    },
+)
+
+def _test_action_select_clear():
+    detekt(
+        name = "test_target_select_clear",
+        srcs = ["path A.kt"],
+        detekt_toolchain = ":toolchain_a_impl",
+        cfgs = select({
+            ":select_toolchain_b": [],
+            "//conditions:default": ["config A.yml"],
+        }),
+        build_upon_default_config = select({
+            ":select_toolchain_b": False,
+            "//conditions:default": True,
+        }),
+        disable_default_rulesets = select({
+            ":select_toolchain_b": False,
+            "//conditions:default": True,
+        }),
+        jvm_target = select({
+            ":select_toolchain_b": "",
+            "//conditions:default": "17",
+        }),
+        language_version = select({
+            ":select_toolchain_b": "",
+            "//conditions:default": "1.9",
+        }),
+        max_issues = select({
+            ":select_toolchain_b": -1,
+            "//conditions:default": 3,
+        }),
+        fail_on_severity = select({
+            ":select_toolchain_b": "",
+            "//conditions:default": None,
+        }),
+        parallel = select({
+            ":select_toolchain_b": False,
+            "//conditions:default": True,
+        }),
+        plugins = select({
+            ":select_toolchain_b": [],
+            "//conditions:default": [":analysis_plugin"],
+        }),
+        tags = ["manual"],
+    )
+
+    action_select_clear_test(
+        name = "action_select_clear_test",
+        target_under_test = ":test_target_select_clear",
+    )
+
+# A selector containing only a default None branch is simplified to type defaults by Bazel.
+
+def _action_select_default_only_test_impl(ctx):
+    env = analysistest.begin(ctx)
+
+    actions = [
+        action
+        for action in analysistest.target_actions(env)
+        if action.mnemonic == "Detekt"
+    ]
+    asserts.equals(env, 1, len(actions))
+
+    action = actions[0]
+    assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/tests/analysis/custom_detekt_wrapper")
+    assert_argv_lacks(env, action, "--config")
+    assert_argv_lacks(env, action, "--language-version")
+    assert_argv_contains(env, action, "--jvm-target")
+    assert_argv_contains(env, action, "17")
+    assert_input_lacks(env, action, _expand_path(ctx, "{{source_dir}}/config A.yml"))
+
+    return analysistest.end(env)
+
+action_select_default_only_test = analysistest.make(
+    _action_select_default_only_test_impl,
+    config_settings = {
+        "//command_line_option:compilation_mode": "fastbuild",
+    },
+)
+
+def _test_action_select_default_only():
+    detekt(
+        name = "test_target_select_default_only",
+        srcs = ["path A.kt"],
+        detekt_toolchain = ":toolchain_a_impl",
+        cfgs = select({
+            "//conditions:default": None,
+        }),
+        language_version = select({
+            "//conditions:default": None,
+        }),
+        tags = ["manual"],
+    )
+
+    action_select_default_only_test(
+        name = "action_select_default_only_test",
+        target_under_test = ":test_target_select_default_only",
     )
 
 # A rule cannot activate both failure policies at once.
@@ -553,13 +781,22 @@ def _action_baseline_test_impl(ctx):
 
     return analysistest.end(env)
 
-action_baseline_test = analysistest.make(_action_baseline_test_impl)
+action_baseline_test = analysistest.make(
+    _action_baseline_test_impl,
+    config_settings = {
+        "//command_line_option:compilation_mode": "fastbuild",
+    },
+)
 
 def _test_action_baseline():
     detekt_create_baseline(
         name = "test_target_baseline",
         srcs = ["path A.kt"],
         detekt_toolchain = ":toolchain_a_impl",
+        cfgs = select({
+            ":select_toolchain_b": ["config B.yml"],
+            "//conditions:default": None,
+        }),
         tags = ["manual"],
     )
     _assert_rule_kind("test_target_baseline", "detekt_create_baseline")
@@ -584,6 +821,9 @@ def test_suite(name):
     _test_action_toolchain_override()
     _test_action_toolchain_b()
     _test_action_select()
+    _test_action_select_none()
+    _test_action_select_clear()
+    _test_action_select_default_only()
     _test_action_failure_policy_conflict()
     _test_action_baseline()
 
@@ -598,6 +838,9 @@ def test_suite(name):
             ":action_toolchain_override_test",
             ":action_toolchain_b_test",
             ":action_select_test",
+            ":action_select_none_test",
+            ":action_select_clear_test",
+            ":action_select_default_only_test",
             ":action_failure_policy_conflict_test",
             ":action_baseline_test",
         ],

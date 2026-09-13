@@ -295,7 +295,9 @@ detekt_test(
 Profiles configure the selected runtime; they do not select a Detekt version. To use the supported Detekt 1.23.8
 override, configure that version separately and use its matching 1.x plugins and `max_issues` policy.
 
-For shared options, an omitted rule attribute (or `None` where accepted) inherits from the selected toolchain.
+For shared options, an omitted rule attribute or direct `None` inherits from the selected toolchain. A `None` branch in
+a selector with other branches also inherits after resolution. Bazel simplifies `select({"//conditions:default": None})`
+to the attribute's type default; omit the attribute or use direct `None` for unconditional inheritance.
 Explicit values always win: `False`, `[]`, an empty `language_version`, or `max_issues = -1` clears an inherited
 value; list-valued options replace the toolchain list rather than append to it. A rule-level failure option replaces
 the inherited failure-policy pair, so a rule can select either `max_issues` or `fail_on_severity` without inheriting

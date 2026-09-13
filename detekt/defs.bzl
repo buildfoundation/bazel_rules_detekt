@@ -31,11 +31,10 @@ _SHARED_ATTRS = [
 
 def _declare(native_rule, name, kwargs):
     attrs = dict(kwargs)
-    attrs["detekt_explicit_attrs"] = [
-        attr_name
-        for attr_name in _SHARED_ATTRS
-        if attr_name in kwargs and kwargs[attr_name] != None
-    ]
+
+    # Forward shared values to mirrors so a multi-branch select(None) remains distinguishable from explicit clears.
+    for attr_name in _SHARED_ATTRS:
+        attrs["detekt_" + attr_name + "_mirror"] = kwargs.get(attr_name)
     native_rule(name = name, **attrs)
 
 def detekt(name, **kwargs):
