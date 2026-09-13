@@ -14,13 +14,17 @@ detekt_test(
     detekt_toolchain = ":smoke_toolchain_impl",
 )
 
+detekt_toolchain(
+    name = "strict_toolchain_impl",
+    fail_on_severity = "Warning",
+    jvm_target = "1.8",
+    parallel = False,
+)
+
 detekt_test(
     name = "expected_failure_test",
     srcs = ["Smoke.kt"],
     all_rules = True,
-    detekt_toolchain = ":smoke_toolchain_impl",
-    fail_on_severity = "Warning",
-    jvm_target = "1.8",
-    parallel = False,
+    detekt_toolchain = ":strict_toolchain_impl",
     tags = ["manual"],
 )

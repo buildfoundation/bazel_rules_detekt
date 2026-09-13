@@ -28,12 +28,12 @@ detekt_toolchain = rule(
     attrs = {
         "build_upon_default_config": attr.bool(
             default = False,
-            doc = "Default value for the build_upon_default_config rule attribute; explicit rule values replace it.",
+            doc = "Use Detekt's built-in configuration as a base for the supplied configuration files.",
         ),
         "cfgs": attr.label_list(
             default = [],
             allow_files = [".yml"],
-            doc = "Default config files used when a rule omits cfgs; an explicit empty list clears them.",
+            doc = "Configuration files for rules using this toolchain.",
         ),
         "detekt_wrapper": attr.label(
             default = Label("//detekt/wrapper:bin"),
@@ -43,32 +43,32 @@ detekt_toolchain = rule(
         ),
         "disable_default_rulesets": attr.bool(
             default = False,
-            doc = "Default value for the disable_default_rulesets rule attribute; explicit rule values replace it.",
+            doc = "Disable Detekt's default rule sets, using only rule sets supplied by plugins.",
         ),
         "fail_on_severity": attr.string(
             default = "",
-            doc = "Default Detekt 2.x failure threshold; mutually exclusive with max_issues.",
+            doc = "Detekt 2.x failure threshold (Error, Warning, Info, or Never). Empty string uses the runtime default. Mutually exclusive with an active max_issues threshold.",
         ),
         "jvm_target": attr.string(
             default = "1.8",
-            doc = "Default JVM bytecode target used when a rule omits jvm_target; the selected Detekt version validates it.",
+            doc = "JVM bytecode target; the selected Detekt version validates it.",
         ),
         "language_version": attr.string(
             default = "",
-            doc = "Default Kotlin language version used when a rule omits language_version; the selected Detekt version validates it.",
+            doc = "Kotlin language version; the selected Detekt version validates it.",
         ),
         "max_issues": attr.int(
             default = -1,
-            doc = "Default Detekt 1.x issue threshold; mutually exclusive with fail_on_severity.",
+            doc = "Detekt 1.x issue threshold; -1 leaves it unset. Mutually exclusive with fail_on_severity.",
         ),
         "parallel": attr.bool(
             default = False,
-            doc = "Default value for the parallel rule attribute; explicit rule values replace it.",
+            doc = "Enable parallel compilation and analysis of source files.",
         ),
         "plugins": attr.label_list(
             default = [],
             providers = [JavaInfo],
-            doc = "Default plugin targets used when a rule omits plugins; an explicit empty list clears them.",
+            doc = "Plugin targets for rules using this toolchain.",
         ),
     },
 )

@@ -25,12 +25,18 @@ detekt_test(
     deps = [":compat_api"],
 )
 
+detekt_toolchain(
+    name = "strict_v1_toolchain_impl",
+    cfgs = ["detekt.yml"],
+    max_issues = 0,
+    plugins = [":custom_rules"],
+)
+
 detekt_test(
     name = "expected_failure_test",
     srcs = ["src/Compat.kt"],
     base_path = ".",
-    detekt_toolchain = ":compat_v1_toolchain_impl",
-    max_issues = 0,
+    detekt_toolchain = ":strict_v1_toolchain_impl",
     tags = ["manual"],
 )
 
