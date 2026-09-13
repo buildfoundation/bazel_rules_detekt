@@ -8,7 +8,7 @@ for the [Bazel build system](https://bazel.build).
 - configuration and baseline files;
 - HTML, text, XML, Markdown, and SARIF reports;
 - [plugins](https://detekt.dev/docs/extensions/extensions/);
-- customizable Detekt version and JVM flags;
+- customizable Detekt version;
 - [persistent workers](https://blog.bazel.build/2015/12/10/java-workers.html) support;
 - baseline generation via `detekt_create_baseline`;
 - configuration options via [attributes](docs/attrs.md).
@@ -147,13 +147,19 @@ detekt_test(
 
 ### Configuration Options
 
-All three rules share the same configuration options. In addition to `srcs`, `cfgs`, `baseline`, `plugins`,
-and report options, most attributes correspond directly to Detekt CLI flags and pass them through when explicitly set.
+All three rules share the same configuration options. In addition to `srcs`, most attributes correspond directly to
+Detekt CLI flags and pass them through when explicitly set.
 
-`max_issues` is retained for Detekt 1.x. Detekt 2.x uses `fail_on_severity` (`Never`, `Info`, `Warning`, or `Error`);
-the attributes are mutually exclusive and must match the selected Detekt major version.
+`cfgs`, `plugins`, `build_upon_default_config`, `disable_default_rulesets`, `jvm_target`, `language_version`,
+`max_issues`, `fail_on_severity`, `parallel`, and the executable wrapper are configured only on `detekt_toolchain`.
+`srcs`, `deps`, `baseline`, `excludes`, `includes`, `all_rules`, `auto_correct`, `base_path`, `config_resource`,
+`is_android`, and report options remain rule-level settings.
 
-More information can be found in the [attributes](docs/attrs.md).
+`max_issues` is the failure policy for Detekt 1.x. Detekt 2.x uses `fail_on_severity` (`Never`, `Info`, `Warning`, or
+`Error`). Both policies cannot be active on the same toolchain; inactive values such as `max_issues = -1` may
+coexist with the other policy. Choose the active option that matches the selected Detekt major version.
+
+See the [rule attributes](docs/attrs.md) and [toolchain attributes](docs/toolchain_attrs.md).
 
 ### Reports
 
@@ -212,35 +218,99 @@ use_repo(detekt, "detekt_cli_all")
 
 Each template may contain `{version}` which will be replaced with the version string.
 
-### JVM Flags
+### Toolchain Configuration and Profiles
 
-The default toolchain uses `-Xms16m -Xmx128m`. To customize JVM flags, define your own toolchain
-in a `BUILD` file:
+`detekt_toolchain` defines a reusable implementation profile. Its executable wrapper, shared configuration, plugins,
+and shared analysis defaults are used by rules that select the profile. The default JVM target remains `1.8`.
+
+The wrapper is an exec-configured `java_binary`. Configure its JVM options through Bazel, for example in `.bazelrc`:
+
+```text
+build --host_jvmopt=-Xmx512m
+```
+
+The `detekt_toolchain` rule is the implementation label used by a rule; it is not the native `toolchain()` registration
+wrapper. Register one implementation when you want it to be the fallback for rules that do not select a profile:
+
+```python
+load("@rules_detekt//detekt:defs.bzl", "detekt_test")
+load("@rules_detekt//detekt:toolchain.bzl", "detekt_toolchain")
+
+detekt_toolchain(
+    name = "detekt_default_impl",
+    cfgs = ["//:detekt.yml"],
+    plugins = ["@maven//:dev_detekt_detekt_rules_ktlint_wrapper"],
+    build_upon_default_config = True,
+    disable_default_rulesets = True,
+    jvm_target = "11",
+    language_version = "2.0",
+    fail_on_severity = "Error",
+    parallel = True,
+)
+
+toolchain(
+    name = "detekt_registered",
+    toolchain = ":detekt_default_impl",
+    toolchain_type = "@rules_detekt//detekt:toolchain_type",
+)
+
+detekt_test(
+    name = "uses_registered_profile",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+)
+```
+
+```python
+register_toolchains("//:detekt_registered")
+```
+
+Multiple profiles can coexist in one repository. Select an implementation directly with the rule’s
+`detekt_toolchain` attribute; omitting that attribute uses the registered native toolchain:
 
 ```python
 load("@rules_detekt//detekt:toolchain.bzl", "detekt_toolchain")
 
 detekt_toolchain(
-    name = "my_detekt_toolchain_impl",
-    jvm_flags = ["-Xms16m", "-Xmx512m"],
+    name = "detekt_strict_impl",
+    fail_on_severity = "Error",
 )
 
-toolchain(
-    name = "my_detekt_toolchain",
-    toolchain = ":my_detekt_toolchain_impl",
-    toolchain_type = "@rules_detekt//detekt:toolchain_type",
+detekt_toolchain(
+    name = "detekt_lenient_impl",
+    fail_on_severity = "Never",
+)
+
+detekt_test(
+    name = "strict_profile",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    detekt_toolchain = ":detekt_strict_impl",
+)
+
+detekt_test(
+    name = "lenient_profile",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    detekt_toolchain = ":detekt_lenient_impl",
 )
 ```
 
-Then register it in `MODULE.bazel`:
+Profiles configure the selected runtime; they do not select a Detekt version. To use the supported Detekt 1.23.8
+override, configure that version separately and use its matching 1.x plugins and `max_issues` policy.
 
-```python
-register_toolchains("//mypackage:my_detekt_toolchain")
-```
+### Migrating rule-level options
+
+`cfgs`, `plugins`, `build_upon_default_config`, `disable_default_rulesets`, `jvm_target`, `language_version`,
+`max_issues`, `fail_on_severity`, and `parallel` are no longer accepted by `detekt`, `detekt_test`, or
+`detekt_create_baseline`. Move them into a `detekt_toolchain` target and pass its label using `detekt_toolchain`.
+Define separate profiles when targets need different settings; there is no rule-level override or merging.
+Rules without an explicit profile use the registered toolchain.
+
+The profile’s runtime determines which failure policy is valid: use `max_issues` with Detekt 1.23.8 and
+`fail_on_severity` with Detekt 2.0.0-alpha.6. JVM and Kotlin language versions are also validated by the selected
+runtime, and plugins must be built for the same Detekt major version.
 
 ### Plugins
 
-The `plugins` attribute accepts any Bazel label that provides `JavaInfo`. This covers both
+The toolchain’s `plugins` attribute accepts any Bazel label that provides `JavaInfo`. This covers both
 published Maven artifacts and locally built JARs.
 
 **Maven artifact** (e.g., the [formatting rule set](https://detekt.dev/docs/rules/formatting/)):
@@ -256,12 +326,19 @@ use_repo(maven, "maven")
 ```
 
 ```python
+load("@rules_detekt//detekt:toolchain.bzl", "detekt_toolchain")
+
 load("@rules_detekt//detekt:defs.bzl", "detekt_test")
+
+detekt_toolchain(
+    name = "my_detekt_toolchain",
+    plugins = ["@maven//:dev_detekt_detekt_rules_ktlint_wrapper"],
+)
 
 detekt_test(
     name = "my_detekt",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
-    plugins = ["@maven//:dev_detekt_detekt_rules_ktlint_wrapper"],
+    detekt_toolchain = ":my_detekt_toolchain",
 )
 ```
 
@@ -273,6 +350,8 @@ between majors because their public API packages differ (`io.gitlab.arturbosch.d
 **Custom local plugin** built with [`rules_kotlin`](https://github.com/bazelbuild/rules_kotlin):
 
 ```python
+load("@rules_detekt//detekt:toolchain.bzl", "detekt_toolchain")
+
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_detekt//detekt:defs.bzl", "detekt_test")
 
@@ -281,30 +360,44 @@ kt_jvm_library(
     srcs = glob(["src/main/kotlin/**/*.kt"]),
 )
 
+detekt_toolchain(
+    name = "my_detekt_toolchain",
+    plugins = [":my_custom_rules"],
+)
+
 detekt_test(
     name = "my_detekt",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
-    plugins = [":my_custom_rules"],
+    detekt_toolchain = ":my_detekt_toolchain",
 )
 ```
 
 ### Configuration File
 
-Pass one or more Detekt YAML configuration files via `cfgs`. Files must use the `.yml` extension.
+Pass one or more Detekt YAML configuration files via the toolchain’s `cfgs` attribute. Files must use the `.yml` extension.
 You may pass raw file labels or `filegroup` targets:
 
 ```python
+load("@rules_detekt//detekt:toolchain.bzl", "detekt_toolchain")
+
+detekt_toolchain(
+    name = "my_detekt_toolchain",
+    cfgs = [":detekt.yml"],
+)
+
 detekt_test(
     name = "my_detekt",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
-    cfgs = [":detekt.yml"],
+    detekt_toolchain = ":my_detekt_toolchain",
 )
 ```
 
-To extend Detekt's built-in defaults rather than replace them, also set `build_upon_default_config = True`:
+To extend Detekt's built-in defaults rather than replace them, set `build_upon_default_config = True` on the toolchain:
 
 ```python
-detekt_test(
+load("@rules_detekt//detekt:toolchain.bzl", "detekt_toolchain")
+
+detekt_toolchain(
     ...
     build_upon_default_config = True,
     ...
@@ -314,26 +407,40 @@ detekt_test(
 ### JVM Target
 
 Use `jvm_target` to set the JVM bytecode target version that matches what was used during compilation.
-This defaults to `1.8` if not explicitly set:
+Set it on the toolchain (default: `1.8`):
 
 ```python
+load("@rules_detekt//detekt:toolchain.bzl", "detekt_toolchain")
+
+detekt_toolchain(
+    name = "my_detekt_toolchain",
+    jvm_target = "11",
+)
+
 detekt_test(
     name = "my_detekt",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
-    jvm_target = "11",
+    detekt_toolchain = ":my_detekt_toolchain",
 )
 ```
 
 ### Language Version
 
 Detekt will report errors for any language features introduced after the specified version if
-`language_version` is specified. When unset, no compatibility restriction is applied:
+`language_version` is specified on the toolchain:
 
 ```python
+load("@rules_detekt//detekt:toolchain.bzl", "detekt_toolchain")
+
+detekt_toolchain(
+    name = "my_detekt_toolchain",
+    language_version = "2.0",
+)
+
 detekt_test(
     name = "my_detekt",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
-    language_version = "2.0",
+    detekt_toolchain = ":my_detekt_toolchain",
 )
 ```
 
@@ -343,17 +450,24 @@ Type resolution enables more advanced static analysis by giving Detekt access to
 including return types, nullability, and symbol information — capabilities that match those of the Kotlin compiler
 itself. Rules requiring it are annotated with `@RequiresFullAnalysis` in Detekt's source.
 
-Provide the compile dependencies through `deps` and use `jvm_target` and `language_version` to match the
+Provide the compile dependencies through rule-level `deps` and set toolchain `jvm_target` and `language_version` to match the
 compilation settings of your project. With Detekt 2.x, a non-empty `deps` automatically selects full analysis;
 the Detekt 1.x runtime keeps its existing classpath behavior.
 
 ```python
+load("@rules_detekt//detekt:toolchain.bzl", "detekt_toolchain")
+
+detekt_toolchain(
+    name = "my_detekt_toolchain",
+    jvm_target = "11",
+    language_version = "2.0",
+)
+
 detekt_test(
     name = "my_detekt",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
     deps = [":my_compiled_library"],
-    jvm_target = "11",
-    language_version = "2.0",
+    detekt_toolchain = ":my_detekt_toolchain",
 )
 ```
 

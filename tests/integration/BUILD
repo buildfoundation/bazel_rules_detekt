@@ -1,6 +1,20 @@
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("//detekt:defs.bzl", "detekt_create_baseline", "detekt_test")
+load("//detekt:toolchain.bzl", "detekt_toolchain")
+
+detekt_toolchain(
+    name = "type_resolution_toolchain",
+    cfgs = ["detekt_type_resolution.yml"],
+    fail_on_severity = "Never",
+)
+
+detekt_toolchain(
+    name = "custom_rules_toolchain",
+    cfgs = ["//tests/integration/testFixtures/custom-rule:custom_rule_config"],
+    fail_on_severity = "Never",
+    plugins = ["//tests/integration/testFixtures/custom-rule:custom_rules"],
+)
 
 detekt_create_baseline(
     name = "jvm_clean_baseline",
@@ -36,8 +50,7 @@ detekt_test(
     name = "jvm_classpath_analysis_test",
     srcs = ["//tests/integration/testFixtures/basic-jvm:jvm_classpath_srcs"],
     base_path = ".",
-    cfgs = ["detekt_type_resolution.yml"],
-    fail_on_severity = "Never",
+    detekt_toolchain = ":type_resolution_toolchain",
     xml_report = True,
     deps = ["//tests/integration/testFixtures/basic-jvm:jvm_api"],
 )
@@ -51,8 +64,7 @@ detekt_test(
     name = "android_classpath_analysis_test",
     srcs = ["//tests/integration/testFixtures/basic-android:android_classpath_srcs"],
     base_path = ".",
-    cfgs = ["detekt_type_resolution.yml"],
-    fail_on_severity = "Never",
+    detekt_toolchain = ":type_resolution_toolchain",
     is_android = True,
     xml_report = True,
     deps = ["//tests/integration/testFixtures/basic-android:android_api"],
@@ -62,9 +74,7 @@ detekt_test(
     name = "custom_rule_analysis_test",
     srcs = ["//tests/integration/testFixtures/custom-rule:custom_rule_violation_srcs"],
     base_path = ".",
-    cfgs = ["//tests/integration/testFixtures/custom-rule:custom_rule_config"],
-    fail_on_severity = "Never",
-    plugins = ["//tests/integration/testFixtures/custom-rule:custom_rules"],
+    detekt_toolchain = ":custom_rules_toolchain",
     xml_report = True,
 )
 
