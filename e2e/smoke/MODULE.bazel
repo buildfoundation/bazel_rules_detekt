@@ -1,5 +1,5 @@
 bazel_dep(name = "rules_detekt", version = "0.0.0", dev_dependency = True)
-bazel_dep(name = "hermetic_android_toolchains", version = "0.3.0", dev_dependency = True)
+bazel_dep(name = "hermetic_android_toolchains", version = "0.4.0", dev_dependency = True)
 bazel_dep(name = "rules_android", version = "0.7.3", dev_dependency = True)
 
 local_path_override(
