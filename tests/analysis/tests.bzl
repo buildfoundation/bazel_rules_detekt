@@ -3,8 +3,8 @@ The rule analysis tests.
 """
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
+load("//detekt:config.bzl", "detekt_config")
 load("//detekt:defs.bzl", "detekt", "detekt_create_baseline", "detekt_test")
-load("//detekt:toolchain.bzl", "detekt_toolchain")
 
 def _assert_rule_kind(name, expected):
     rule = native.existing_rule(name)
@@ -22,7 +22,7 @@ def _assert_rule_kind(name, expected):
         "parallel",
     ]:
         if option in rule:
-            fail("{} must be configured on the toolchain, not {}".format(option, expected))
+            fail("{} must be configured on detekt_config, not {}".format(option, expected))
 
 def _expand_path(ctx, value):
     source_dir = ctx.build_file_path.replace("/BUILD", "")
@@ -184,8 +184,8 @@ def _action_full_contents_test_impl(ctx):
 action_full_contents_test = analysistest.make(_action_full_contents_test_impl)
 
 def _test_action_full_contents():
-    detekt_toolchain(
-        name = "full_toolchain",
+    detekt_config(
+        name = "full_config",
         cfgs = ["config A.yml", "config B.yml", "config C.yml"],
         build_upon_default_config = True,
         disable_default_rulesets = True,
@@ -197,7 +197,7 @@ def _test_action_full_contents():
     detekt(
         name = "test_target_full",
         srcs = ["path A.kt", "path B.kt", "path C.kt"],
-        detekt_toolchain = ":full_toolchain",
+        config = ":full_config",
         baseline = "baseline.xml",
         html_report = True,
         xml_report = True,
@@ -282,11 +282,11 @@ def _action_failure_policy_impl(ctx):
 action_failure_policy_test = analysistest.make(_action_failure_policy_impl)
 
 def _test_action_failure_policy():
-    detekt_toolchain(name = "info_toolchain", fail_on_severity = "Info")
+    detekt_config(name = "info_config", fail_on_severity = "Info")
     detekt(
         name = "test_target_failure_policy",
         srcs = ["path A.kt", "path B.kt", "path C.kt"],
-        detekt_toolchain = ":info_toolchain",
+        config = ":info_config",
         tags = ["manual"],
     )
 
@@ -462,7 +462,7 @@ def _test_action_select():
         target_under_test = ":test_target_select",
     )
 
-# A toolchain cannot activate both failure policies at once.
+# A config cannot activate both failure policies at once.
 
 def _action_failure_policy_conflict_impl(ctx):
     env = analysistest.begin(ctx)
@@ -475,8 +475,8 @@ action_failure_policy_conflict_test = analysistest.make(
 )
 
 def _test_action_failure_policy_conflict():
-    detekt_toolchain(
-        name = "conflicting_toolchain",
+    detekt_config(
+        name = "conflicting_config",
         max_issues = 0,
         fail_on_severity = "Error",
         tags = ["manual"],
@@ -484,7 +484,7 @@ def _test_action_failure_policy_conflict():
     detekt(
         name = "test_target_failure_policy_conflict",
         srcs = ["path A.kt"],
-        detekt_toolchain = ":conflicting_toolchain",
+        config = ":conflicting_config",
         tags = ["manual"],
     )
 
@@ -533,6 +533,128 @@ def _test_action_baseline():
         target_under_test = ":test_target_baseline",
     )
 
+# Explicit profiles replace all defaults without changing the executable.
+
+def _action_config_override_impl(ctx):
+    env = analysistest.begin(ctx)
+    action = [a for a in analysistest.target_actions(env) if a.mnemonic == "Detekt"][0]
+    assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/tests/analysis/custom_detekt_wrapper")
+    for flag in [
+        "--build-upon-default-config",
+        "--disable-default-rulesets",
+        "--parallel",
+        "--max-issues",
+    ]:
+        assert_argv_lacks(env, action, flag)
+    assert_input_lacks(env, action, _expand_path(ctx, "{{source_dir}}/config A.yml"))
+    assert_input_lacks_suffix(env, action, "/libanalysis_plugin.jar")
+    if ctx.attr.empty:
+        assert_argv_contains(env, action, "1.8")
+        assert_argv_lacks(env, action, "--config")
+        assert_argv_lacks(env, action, "--plugins")
+        assert_argv_lacks(env, action, "--language-version")
+        assert_argv_lacks(env, action, "--fail-on-severity")
+    else:
+        assert_argv_contains(env, action, "11")
+        assert_argv_contains(env, action, "--fail-on-severity")
+        assert_argv_contains(env, action, "Warning")
+        assert_input_contains(env, action, _expand_path(ctx, "{{source_dir}}/config B.yml"))
+    return analysistest.end(env)
+
+action_config_override_test = analysistest.make(
+    _action_config_override_impl,
+    attrs = {"empty": attr.bool()},
+    config_settings = {
+        "//command_line_option:extra_toolchains": ["//tests/analysis:custom_defaults_toolchain"],
+        "//command_line_option:compilation_mode": "fastbuild",
+    },
+)
+
+action_config_none_test = analysistest.make(
+    _action_toolchain_a_test_impl,
+    config_settings = {
+        "//command_line_option:extra_toolchains": ["//tests/analysis:custom_defaults_toolchain"],
+        "//command_line_option:compilation_mode": "opt",
+    },
+)
+
+def _action_target_config_impl(ctx):
+    env = analysistest.begin(ctx)
+    action = [a for a in analysistest.target_actions(env) if a.mnemonic == "Detekt"][0]
+    assert_argv_contains(env, action, "--jvm-target")
+    assert_argv_contains(env, action, "17")
+    assert_argv_lacks(env, action, "11")
+    return analysistest.end(env)
+
+action_target_config_test = analysistest.make(
+    _action_target_config_impl,
+    config_settings = {
+        "//command_line_option:extra_toolchains": ["//tests/analysis:target_config_toolchain"],
+        "//command_line_option:compilation_mode": "fastbuild",
+    },
+)
+
+def _test_config_profiles():
+    tests = []
+    for name, attrs in {
+        "explicit_config": {"config": ":target_config"},
+        "direct_toolchain_config": {"detekt_toolchain": ":target_config_toolchain_impl"},
+        "registered_toolchain_config": {},
+    }.items():
+        detekt(
+            name = name,
+            srcs = ["path A.kt"],
+            tags = ["manual"],
+            **attrs
+        )
+        action_target_config_test(
+            name = name + "_test",
+            target_under_test = ":" + name,
+        )
+        tests.append(":" + name + "_test")
+
+    for kind, rule in [
+        ("detekt", detekt),
+        ("detekt_test", detekt_test),
+        ("detekt_create_baseline", detekt_create_baseline),
+    ]:
+        for profile in ["config_b", "empty_config"]:
+            name = kind + "_" + profile
+            rule(
+                name = name,
+                srcs = ["path A.kt", "path B.kt", "path C.kt"],
+                config = ":" + profile,
+                detekt_toolchain = ":toolchain_a_impl" if kind == "detekt_create_baseline" else None,
+                tags = ["manual"],
+            )
+            action_config_override_test(
+                name = name + "_test",
+                target_under_test = ":" + name,
+                empty = profile == "empty_config",
+            )
+            tests.append(":" + name + "_test")
+
+    # Both branches exercise the same target: None inherits, a label replaces.
+    detekt(
+        name = "conditional_config",
+        srcs = ["path A.kt", "path B.kt", "path C.kt"],
+        config = select({
+            ":select_toolchain_b": None,
+            "//conditions:default": ":config_b",
+        }),
+        tags = ["manual"],
+    )
+    action_config_none_test(
+        name = "conditional_config_none_test",
+        target_under_test = ":conditional_config",
+    )
+    action_config_override_test(
+        name = "conditional_config_label_test",
+        target_under_test = ":conditional_config",
+    )
+    tests.extend([":conditional_config_none_test", ":conditional_config_label_test"])
+    return tests
+
 # Suite
 
 def test_suite(name):
@@ -549,10 +671,11 @@ def test_suite(name):
     _test_action_select()
     _test_action_failure_policy_conflict()
     _test_action_baseline()
+    config_tests = _test_config_profiles()
 
     native.test_suite(
         name = name,
-        tests = [
+        tests = config_tests + [
             ":action_full_contents_test",
             ":action_blank_contents_test",
             ":action_failure_policy_test",

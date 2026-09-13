@@ -3,6 +3,7 @@ Rule declarations.
 """
 
 load("@rules_java//java:defs.bzl", "JavaInfo")
+load(":config.bzl", "DetektConfigInfo")
 
 _ATTRS = {
     "_result_script_template": attr.label(
@@ -75,9 +76,13 @@ _ATTRS = {
     ),
     "detekt_toolchain": attr.label(
         default = None,
-        cfg = "exec",
         providers = [platform_common.ToolchainInfo],
         doc = "Optional label of a target providing platform_common.ToolchainInfo. If omitted, uses the registered detekt toolchain.",
+    ),
+    "config": attr.label(
+        default = None,
+        providers = [DetektConfigInfo],
+        doc = "Analysis configuration. If omitted (or None), uses the selected toolchain's default_config. An explicit config replaces the entire default profile; individual options are not merged.",
     ),
 }
 
@@ -97,6 +102,7 @@ def _impl(
     action_inputs = []
     action_outputs = []
     detekt_toolchain = _detekt_toolchain(ctx)
+    config = ctx.attr.config[DetektConfigInfo] if ctx.attr.config != None else detekt_toolchain.default_config
 
     detekt_arguments = ctx.actions.args()
 
@@ -111,7 +117,7 @@ def _impl(
     action_inputs.extend(ctx.files.srcs)
     detekt_arguments.add_joined("--input", ctx.files.srcs, join_with = ",")
 
-    cfgs = detekt_toolchain.cfgs
+    cfgs = config.cfgs
     action_inputs.extend(cfgs)
     detekt_arguments.add_joined("--config", cfgs, join_with = ",")
 
@@ -151,10 +157,10 @@ def _impl(
     if ctx.attr.base_path:
         detekt_arguments.add("--base-path", ctx.attr.base_path)
 
-    if detekt_toolchain.build_upon_default_config:
+    if config.build_upon_default_config:
         detekt_arguments.add("--build-upon-default-config")
 
-    if detekt_toolchain.disable_default_rulesets:
+    if config.disable_default_rulesets:
         detekt_arguments.add("--disable-default-rulesets")
 
     if ctx.attr.excludes:
@@ -163,16 +169,16 @@ def _impl(
     if ctx.attr.includes:
         detekt_arguments.add_joined("--includes", ctx.attr.includes, join_with = ",")
 
-    jvm_target = detekt_toolchain.jvm_target
+    jvm_target = config.jvm_target
     if jvm_target:
         detekt_arguments.add("--jvm-target", jvm_target)
 
-    language_version = detekt_toolchain.language_version
+    language_version = config.language_version
     if language_version:
         detekt_arguments.add("--language-version", language_version)
 
-    max_issues = detekt_toolchain.max_issues
-    fail_on_severity = detekt_toolchain.fail_on_severity
+    max_issues = config.max_issues
+    fail_on_severity = config.fail_on_severity
 
     if max_issues >= 0:
         if fail_on_severity:
@@ -182,7 +188,7 @@ def _impl(
     if fail_on_severity:
         detekt_arguments.add("--fail-on-severity", fail_on_severity)
 
-    if detekt_toolchain.parallel:
+    if config.parallel:
         detekt_arguments.add("--parallel")
 
     if run_as_test_target:
@@ -198,7 +204,7 @@ def _impl(
         action_inputs.extend(platform_jar_files + classpath)
         detekt_arguments.add("--classpath", ctx.configuration.host_path_separator.join([f.path for f in platform_jar_files] + [f.path for f in classpath]))
 
-    plugins = detekt_toolchain.plugins
+    plugins = config.plugins
     plugin_jars = [plugin for plugin in plugins if plugin.extension == "jar"]
     action_inputs.extend(plugin_jars)
     detekt_arguments.add_joined("--plugins", plugin_jars, join_with = ",")
