@@ -6,7 +6,7 @@ module(
 bazel_dep(name = "rules_detekt", version = "0.0.0", dev_dependency = True)
 
 bazel_dep(name = "bazel_skylib", version = "1.8.2")
-bazel_dep(name = "rules_kotlin", version = "2.4.0")
+bazel_dep(name = "rules_kotlin", version = "2.4.10")
 
 local_path_override(
     module_name = "rules_detekt",
