@@ -1,8 +1,8 @@
+load("@rules_detekt//detekt:config.bzl", "detekt_config")
 load("@rules_detekt//detekt:defs.bzl", "detekt_test")
-load("@rules_detekt//detekt:toolchain.bzl", "detekt_toolchain")
 
-detekt_toolchain(
-    name = "smoke_toolchain_impl",
+detekt_config(
+    name = "smoke_config",
     fail_on_severity = "Never",
     jvm_target = "11",
     parallel = True,
@@ -11,11 +11,11 @@ detekt_toolchain(
 detekt_test(
     name = "smoke_test",
     srcs = ["Smoke.kt"],
-    detekt_toolchain = ":smoke_toolchain_impl",
+    config = ":smoke_config",
 )
 
-detekt_toolchain(
-    name = "strict_toolchain_impl",
+detekt_config(
+    name = "strict_config",
     fail_on_severity = "Warning",
     jvm_target = "1.8",
     parallel = False,
@@ -25,6 +25,6 @@ detekt_test(
     name = "expected_failure_test",
     srcs = ["Smoke.kt"],
     all_rules = True,
-    detekt_toolchain = ":strict_toolchain_impl",
+    config = ":strict_config",
     tags = ["manual"],
 )
