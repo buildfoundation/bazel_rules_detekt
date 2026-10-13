@@ -118,7 +118,7 @@ genrule(
     testonly = True,
     srcs = [":compat_v1_test"],
     outs = ["compat_v1_txt_report_normalized.txt"],
-    cmd = "sed -E 's# at .*/src/# at src/#' $(location :compat_v1_test) > $@",
+    cmd = "sed -E 's# at .*/src/# at src/#' $(execpath :compat_v1_test) > $@",
 )
 
 write_file(
