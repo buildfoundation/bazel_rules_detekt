@@ -10,7 +10,7 @@ register_toolchains("//detekt:default_toolchain")
 detekt = use_extension("//detekt:extensions.bzl", "detekt")
 use_repo(detekt, "detekt_cli_all")
 
-bazel_dep(name = "rules_android", version = "0.7.3")
+bazel_dep(name = "rules_android", version = "0.8.0")
 bazel_dep(name = "rules_java", version = "9.3.0")
 
 bazel_dep(name = "hermetic_android_toolchains", version = "0.5.0", dev_dependency = True)
