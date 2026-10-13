@@ -1,3 +1,4 @@
+load("@rules_java//java:defs.bzl", "java_binary")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 package(default_visibility = ["//tests/integration:__pkg__"])
@@ -17,4 +18,11 @@ kt_jvm_library(
     srcs = glob(["custom_rules/src/main/kotlin/**/*.kt"]),
     resources = glob(["custom_rules/src/main/resources/**"]),
     deps = ["@detekt_cli_all//jar"],
+)
+
+java_binary(
+    name = "custom_rules_plugin",
+    create_executable = False,
+    deploy_env = ["//detekt/wrapper:bin"],
+    runtime_deps = [":custom_rules"],
 )

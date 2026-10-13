@@ -10,7 +10,7 @@ detekt_config(
     name = "compat_v1_config",
     cfgs = ["detekt.yml"],
     max_issues = 2,
-    plugins = [":custom_rules"],
+    plugins = [":custom_rules.jar"],
 )
 
 detekt_test(
@@ -29,7 +29,7 @@ detekt_config(
     name = "strict_v1_config",
     cfgs = ["detekt.yml"],
     max_issues = 0,
-    plugins = [":custom_rules"],
+    plugins = [":custom_rules.jar"],
 )
 
 detekt_test(

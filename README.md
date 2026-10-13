@@ -260,8 +260,9 @@ attribute defaults. No individual options are inherited or merged. If `config` i
 in a `select()`, the selected toolchain's `default_config` is used. The bundled default config preserves the
 existing defaults, including JVM target `1.8`.
 
-Configuration labels and their YAML inputs use the target configuration, so their `select()` expressions describe
-the code being analyzed. Plugin dependencies and the wrapper are built in the execution configuration.
+Configuration labels, YAML inputs, and plugin JARs use the target configuration, so their `select()` expressions
+describe the code being analyzed. The wrapper is built in the execution configuration. Plugin JARs are supplied
+artifacts; callers are responsible for making them compatible with the runtime and execution platform.
 
 `detekt_toolchain` selects the executable wrapper and can reference a repository-wide default profile:
 
@@ -317,8 +318,15 @@ runtime, and plugins must be built for the same Detekt major version.
 
 ### Plugins
 
-The config's `plugins` attribute accepts any Bazel label that provides `JavaInfo`. This covers both
-published Maven artifacts and locally built JARs.
+The config's `plugins` attribute accepts `.jar` file labels, including generated outputs, and targets or
+`filegroup`s that contain only JAR files. `JavaInfo` is not required, and transitive dependencies are not
+automatically collected. Non-JAR files are rejected.
+
+Supply ready-to-load plugin JARs containing their required dependencies and `META-INF/services` entries.
+A deploy JAR is useful for plugins with additional dependencies; exclude dependencies already supplied by
+Detekt, including its API. Callers must ensure the JAR's bytecode, Detekt API version, and any native contents
+are compatible with the selected runtime and execution platform. Generated JARs are built in the target
+configuration, with no execution transition applied by `detekt_config`.
 
 **Maven artifact** (e.g., the [formatting rule set](https://detekt.dev/docs/rules/formatting/)):
 
@@ -359,17 +367,27 @@ between majors because their public API packages differ (`io.gitlab.arturbosch.d
 ```python
 load("@rules_detekt//detekt:config.bzl", "detekt_config")
 
+load("@rules_java//java:defs.bzl", "java_binary")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_detekt//detekt:defs.bzl", "detekt_test")
 
 kt_jvm_library(
     name = "my_custom_rules",
     srcs = glob(["src/main/kotlin/**/*.kt"]),
+    resources = glob(["src/main/resources/**"]),
+    deps = ["@detekt_cli_all//jar"],
+)
+
+java_binary(
+    name = "my_custom_rules_plugin",
+    create_executable = False,
+    deploy_env = ["@rules_detekt//detekt/wrapper:bin"],
+    runtime_deps = [":my_custom_rules"],
 )
 
 detekt_config(
     name = "my_detekt_config",
-    plugins = [":my_custom_rules"],
+    plugins = [":my_custom_rules_plugin_deploy.jar"],
 )
 
 detekt_test(
@@ -378,6 +396,10 @@ detekt_test(
     config = ":my_detekt_config",
 )
 ```
+
+The `deploy_env` excludes dependencies supplied by the bundled Detekt wrapper. If a plugin needs no
+additional runtime dependencies, its ordinary JAR (for example `:my_custom_rules.jar`) is sufficient.
+Existing `JavaInfo` targets can still be used if their default outputs contain only the required JARs.
 
 ### Configuration File
 

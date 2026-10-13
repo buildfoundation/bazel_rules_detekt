@@ -13,4 +13,4 @@ Name           | Type                               | Default            | Descr
 `language_version` | [`string`](https://docs.bazel.build/versions/master/skylark/lib/string.html) | `""` | Kotlin language version; the selected Detekt version validates it.
 `max_issues` | [`int`](https://docs.bazel.build/versions/master/skylark/lib/int.html) | `-1` | Detekt 1.x issue threshold; -1 leaves it unset. Mutually exclusive with fail_on_severity.
 `parallel` | [`bool`](https://docs.bazel.build/versions/master/skylark/lib/bool.html) | `False` | Enable parallel compilation and analysis of source files.
-`plugins` | [`[Label]`](https://docs.bazel.build/versions/master/skylark/lib/list.html) | `[]` | JavaInfo plugin targets, built for the execution platform.
+`plugins` | [`[Label]`](https://docs.bazel.build/versions/master/skylark/lib/list.html) | `[]` | Ready-to-load plugin JARs. Generated JARs use the target configuration. Callers must supply required dependencies and ensure compatibility with the Detekt runtime and execution platform.

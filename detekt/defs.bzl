@@ -204,10 +204,8 @@ def _impl(
         action_inputs.extend(platform_jar_files + classpath)
         detekt_arguments.add("--classpath", ctx.configuration.host_path_separator.join([f.path for f in platform_jar_files] + [f.path for f in classpath]))
 
-    plugins = config.plugins
-    plugin_jars = [plugin for plugin in plugins if plugin.extension == "jar"]
-    action_inputs.extend(plugin_jars)
-    detekt_arguments.add_joined("--plugins", plugin_jars, join_with = ",")
+    action_inputs.extend(config.plugins)
+    detekt_arguments.add_joined("--plugins", config.plugins, join_with = ",")
 
     txt_report = ctx.actions.declare_file("{}_detekt_report.txt".format(ctx.label.name))
     action_outputs.append(txt_report)

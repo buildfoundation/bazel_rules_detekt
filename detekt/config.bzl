@@ -2,8 +2,6 @@
 Reusable Detekt analysis configuration.
 """
 
-load("@rules_java//java:defs.bzl", "JavaInfo")
-
 DetektConfigInfo = provider(
     doc = "Analysis options shared by Detekt targets.",
     fields = [
@@ -22,6 +20,10 @@ DetektConfigInfo = provider(
 def _impl(ctx):
     if ctx.attr.max_issues >= 0 and ctx.attr.fail_on_severity:
         fail("max_issues and fail_on_severity cannot both be enabled on a detekt_config")
+
+    for plugin in ctx.files.plugins:
+        if plugin.extension != "jar":
+            fail("plugins must contain only .jar files, got: " + plugin.short_path, attr = "plugins")
 
     config = DetektConfigInfo(
         build_upon_default_config = ctx.attr.build_upon_default_config,
@@ -75,10 +77,9 @@ detekt_config = rule(
             doc = "Enable parallel compilation and analysis of source files.",
         ),
         "plugins": attr.label_list(
-            cfg = "exec",
             default = [],
-            providers = [JavaInfo],
-            doc = "JavaInfo plugin targets, built for the execution platform.",
+            allow_files = [".jar"],
+            doc = "Ready-to-load plugin JARs. Generated JARs use the target configuration. Callers must supply required dependencies and ensure compatibility with the Detekt runtime and execution platform.",
         ),
     },
 )

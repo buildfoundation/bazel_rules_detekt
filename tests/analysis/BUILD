@@ -8,6 +8,19 @@ java_library(
     srcs = ["AnalysisPlugin.java"],
 )
 
+filegroup(
+    name = "plugin_jars",
+    srcs = [":libanalysis_plugin.jar"],
+)
+
+filegroup(
+    name = "mixed_plugin_files",
+    srcs = [
+        "AnalysisPlugin.java",
+        ":libanalysis_plugin.jar",
+    ],
+)
+
 genrule(
     name = "custom_wrapper_bin",
     outs = ["custom_detekt_wrapper"],
@@ -24,7 +37,7 @@ detekt_config(
     language_version = "1.9",
     max_issues = 3,
     parallel = True,
-    plugins = [":analysis_plugin"],
+    plugins = [":plugin_jars"],
 )
 
 detekt_config(

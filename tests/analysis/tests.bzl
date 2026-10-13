@@ -319,7 +319,7 @@ def _action_toolchain_a_test_impl(ctx):
     assert_argv_contains(env, action, "3")
     assert_argv_contains(env, action, "--parallel")
     assert_argv_contains(env, action, "--plugins")
-    assert_argv_contains_prefix_suffix(env, action, "bazel-out/", "/libanalysis_plugin.jar")
+    assert_argv_contains(env, action, action.outputs.to_list()[0].dirname + "/libanalysis_plugin.jar")
     assert_argv_contains(env, action, "--report")
     assert_input_contains(env, action, _expand_path(ctx, "{{source_dir}}/config A.yml"))
     assert_input_lacks(env, action, _expand_path(ctx, "{{source_dir}}/config B.yml"))
@@ -655,6 +655,61 @@ def _test_config_profiles():
     tests.extend([":conditional_config_none_test", ":conditional_config_label_test"])
     return tests
 
+# Plugin JAR artifacts stay in the target configuration, including generated files.
+
+def _action_plugin_jars_impl(ctx):
+    env = analysistest.begin(ctx)
+    action = [a for a in analysistest.target_actions(env) if a.mnemonic == "Detekt"][0]
+    plugin_path = action.outputs.to_list()[0].dirname + "/libanalysis_plugin.jar"
+    assert_argv_contains(env, action, "--plugins")
+    assert_argv_contains(env, action, plugin_path)
+    asserts.true(env, plugin_path in [f.path for f in action.inputs.to_list()])
+    return analysistest.end(env)
+
+action_plugin_jars_test = analysistest.make(
+    _action_plugin_jars_impl,
+    config_settings = {"//command_line_option:compilation_mode": "fastbuild"},
+)
+
+def _invalid_plugin_files_impl(ctx):
+    env = analysistest.begin(ctx)
+    asserts.expect_failure(env, "plugins must contain only .jar files, got: tests/analysis/AnalysisPlugin.java")
+    return analysistest.end(env)
+
+invalid_plugin_files_test = analysistest.make(_invalid_plugin_files_impl, expect_failure = True)
+
+def _test_plugin_jars():
+    detekt_config(
+        name = "jar_config",
+        plugins = [":libanalysis_plugin.jar"],
+    )
+    tests = []
+    for kind, rule in [
+        ("detekt", detekt),
+        ("detekt_test", detekt_test),
+        ("detekt_create_baseline", detekt_create_baseline),
+    ]:
+        name = kind + "_plugin_jars"
+        rule(
+            name = name,
+            srcs = ["path A.kt"],
+            config = ":jar_config",
+            tags = ["manual"],
+        )
+        action_plugin_jars_test(name = name + "_test", target_under_test = ":" + name)
+        tests.append(":" + name + "_test")
+
+    detekt_config(
+        name = "invalid_plugin_config",
+        plugins = [":mixed_plugin_files"],
+        tags = ["manual"],
+    )
+    invalid_plugin_files_test(
+        name = "invalid_plugin_files_test",
+        target_under_test = ":invalid_plugin_config",
+    )
+    return tests + [":invalid_plugin_files_test"]
+
 # Suite
 
 def test_suite(name):
@@ -675,7 +730,7 @@ def test_suite(name):
 
     native.test_suite(
         name = name,
-        tests = config_tests + [
+        tests = config_tests + _test_plugin_jars() + [
             ":action_full_contents_test",
             ":action_blank_contents_test",
             ":action_failure_policy_test",

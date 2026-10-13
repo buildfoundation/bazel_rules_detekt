@@ -13,7 +13,7 @@ detekt_config(
     name = "custom_rules_config",
     cfgs = ["//tests/integration/testFixtures/custom-rule:custom_rule_config"],
     fail_on_severity = "Never",
-    plugins = ["//tests/integration/testFixtures/custom-rule:custom_rules"],
+    plugins = ["//tests/integration/testFixtures/custom-rule:custom_rules_plugin_deploy.jar"],
 )
 
 detekt_create_baseline(
