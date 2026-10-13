@@ -12,3 +12,4 @@ common --incompatible_enable_proto_toolchain_resolution
 
 # rules_android 0.8.0 uses Java 17 syntax in its build tools.
 common --tool_java_language_version=17
+common --tool_java_runtime_version=remotejdk_17
