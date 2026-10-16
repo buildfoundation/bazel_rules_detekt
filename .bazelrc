@@ -4,11 +4,10 @@ common --repo_env=ACCEPTED_ANDROID_SDK_LICENSE_VERSION=35
 common --@protobuf//bazel/toolchains:prefer_prebuilt_protoc
 common --incompatible_enable_proto_toolchain_resolution
 
-# abseil-cpp and protobuf (pulled in by stardoc) use std::visit/std::get with std::variant,
-# which requires macOS 10.13+. Set the minimum OS for both target and host/exec tool builds.
-# Uncomment the below if running into Stardoc issues on Mac.
-# build --macos_minimum_os=10.13
-# build --host_macos_minimum_os=10.13
+# abseil-cpp and protobuf use std::visit/std::get with std::variant which requires macOS 10.13+.
+# Set the minimum OS for both target and host/exec tool builds.
+build --macos_minimum_os=10.13
+build --host_macos_minimum_os=10.13
 
 # rules_android 0.8.0 uses Java 17 syntax in its build tools.
 common --tool_java_language_version=17
