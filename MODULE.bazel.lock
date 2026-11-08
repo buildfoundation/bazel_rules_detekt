@@ -272,7 +272,7 @@
   "moduleExtensions": {
     "//detekt:extensions.bzl%detekt": {
       "general": {
-        "bzlTransitiveDigest": "dEjb0B4Lk+Is3MlGxE5U/dOjmL6YFX1DHFfFzXmf2OE=",
+        "bzlTransitiveDigest": "U6sAL//WyMGnFOcPr4r18m8guKePMHN/bTARwBOrYAM=",
         "usagesDigest": "UG2mEIEsdvU/+QeBWiCHDHs5hMI++iFUzBav0bmCZKM=",
         "recordedInputs": [
           "REPO_MAPPING:,bazel_tools bazel_tools"

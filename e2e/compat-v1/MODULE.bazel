@@ -13,6 +13,13 @@ local_path_override(
     path = "../..",
 )
 
+# Sets its own detekt_version, which must not override or conflict with this root module's.
+bazel_dep(name = "ignored_detekt_version", version = "0.0.0")
+local_path_override(
+    module_name = "ignored_detekt_version",
+    path = "ignored_detekt_version",
+)
+
 detekt = use_extension(
     "@rules_detekt//detekt:extensions.bzl",
     "detekt",
