@@ -10,6 +10,13 @@ register_toolchains("//detekt:default_toolchain")
 detekt = use_extension("//detekt:extensions.bzl", "detekt")
 use_repo(detekt, "detekt_cli_all")
 
+# This repository's own tests run against Detekt 2; users get the 1.x default.
+detekt_dev = use_extension("//detekt:extensions.bzl", "detekt", dev_dependency = True)
+detekt_dev.detekt_version(
+    sha256 = "d46ca62ea4d62769b5d5c3ba94d49fa9b80ba11c7dba74ddb6df7fcc2c19c5fd",
+    version = "2.0.0-alpha.6",
+)
+
 bazel_dep(name = "rules_android", version = "0.8.1")
 bazel_dep(name = "rules_java", version = "9.3.0")
 

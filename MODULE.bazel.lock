@@ -272,8 +272,8 @@
   "moduleExtensions": {
     "//detekt:extensions.bzl%detekt": {
       "general": {
-        "bzlTransitiveDigest": "dEjb0B4Lk+Is3MlGxE5U/dOjmL6YFX1DHFfFzXmf2OE=",
-        "usagesDigest": "UG2mEIEsdvU/+QeBWiCHDHs5hMI++iFUzBav0bmCZKM=",
+        "bzlTransitiveDigest": "Okyi/nMFAvWOAS4rvcypDqhDCI776bxgl10Y3ERfK8o=",
+        "usagesDigest": "e3okCiNXOrlgCTJvQ7aZaKOk0Kk7ggMCr5D+XQMijUA=",
         "recordedInputs": [
           "REPO_MAPPING:,bazel_tools bazel_tools"
         ],

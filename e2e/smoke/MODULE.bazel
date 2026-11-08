@@ -30,3 +30,9 @@ register_toolchains(
     "@androidsdk//:all",
     dev_dependency = True,
 )
+
+detekt = use_extension("@rules_detekt//detekt:extensions.bzl", "detekt")
+detekt.detekt_version(
+    sha256 = "d46ca62ea4d62769b5d5c3ba94d49fa9b80ba11c7dba74ddb6df7fcc2c19c5fd",
+    version = "2.0.0-alpha.6",
+)
