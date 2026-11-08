@@ -145,16 +145,40 @@ detekt_test(
 )
 ```
 
+### `detekt_auto_correct`
+
+`detekt_auto_correct` is an executable rule that runs Detekt with `--auto-correct` and rewrites the
+workspace sources in place. Only rules that support auto-correction change code, such as the
+[ktlint rule set](https://detekt.dev/docs/rules/formatting/) added through a config's `plugins`.
+
+```python
+load("@rules_detekt//detekt:defs.bzl", "detekt_auto_correct")
+
+detekt_auto_correct(
+    name = "my_detekt_fix",
+    srcs = glob(["src/main/kotlin/**/*.kt"]),
+    config = ":my_detekt_config",
+)
+```
+
+```console
+$ bazel run //mypackage:my_detekt_fix
+```
+
+Auto-correction only happens through `bazel run`, which exposes the workspace. `bazel build` and `bazel test` never
+modify sources, and `srcs` must be source files in the main repository. Remaining findings are printed, and the
+exit code follows the config's failure policy. Report attributes are not available on this rule.
+
 ### Configuration Options
 
-All three rules share the same configuration options. In addition to `srcs`, most attributes correspond directly to
+All rules share the same configuration options. In addition to `srcs`, most attributes correspond directly to
 Detekt CLI flags and pass them through when explicitly set.
 
 `cfgs`, `plugins`, `build_upon_default_config`, `disable_default_rulesets`, `jvm_target`, `language_version`,
 `max_issues`, `fail_on_severity`, and `parallel` are configured on reusable `detekt_config` targets.
 The executable wrapper and a `default_config` reference are configured on `detekt_toolchain`.
-`srcs`, `deps`, `baseline`, `excludes`, `includes`, `all_rules`, `auto_correct`, `base_path`, `config_resource`,
-`is_android`, and report options remain rule-level settings.
+`srcs`, `deps`, `baseline`, `excludes`, `includes`, `all_rules`, `base_path`, `config_resource`, `is_android`, and
+report options remain rule-level settings.
 
 `max_issues` is the failure policy for Detekt 1.x. Detekt 2.x uses `fail_on_severity` (`Never`, `Info`, `Warning`, or
 `Error`). Both policies cannot be active on the same config; inactive values such as `max_issues = -1` may
@@ -315,6 +339,9 @@ at the new profile. Define separate profiles when targets need different setting
 The selected runtime determines which failure policy is valid: use `max_issues` with Detekt 1.23.8 and
 `fail_on_severity` with Detekt 2.0.0-alpha.6. JVM and Kotlin language versions are also validated by the selected
 runtime, and plugins must be built for the same Detekt major version.
+
+The rule-level `auto_correct` attribute has been removed because build and test actions must not edit sources. Define a
+[`detekt_auto_correct`](#detekt_auto_correct) target with the same `srcs` and `config`, and `bazel run` it instead.
 
 ### Plugins
 

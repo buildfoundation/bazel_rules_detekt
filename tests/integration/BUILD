@@ -1,7 +1,8 @@
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//detekt:config.bzl", "detekt_config")
-load("//detekt:defs.bzl", "detekt_create_baseline", "detekt_test")
+load("//detekt:defs.bzl", "detekt_auto_correct", "detekt_create_baseline", "detekt_test")
 
 detekt_config(
     name = "type_resolution_config",
@@ -14,6 +15,27 @@ detekt_config(
     cfgs = ["//tests/integration/testFixtures/custom-rule:custom_rule_config"],
     fail_on_severity = "Never",
     plugins = ["//tests/integration/testFixtures/custom-rule:custom_rules_plugin_deploy.jar"],
+)
+
+detekt_config(
+    name = "ktlint_config",
+    fail_on_severity = "Never",
+    plugins = ["@detekt_ktlint_wrapper//jar:file"],
+)
+
+detekt_auto_correct(
+    name = "jvm_auto_correct",
+    srcs = ["//tests/integration/testFixtures/basic-jvm:jvm_static_srcs"],
+    config = ":ktlint_config",
+)
+
+sh_test(
+    name = "auto_correct_test",
+    srcs = ["auto_correct_test.sh"],
+    data = [
+        ":jvm_auto_correct",
+        "//tests/integration/testFixtures/basic-jvm:jvm_static_srcs",
+    ],
 )
 
 detekt_create_baseline(

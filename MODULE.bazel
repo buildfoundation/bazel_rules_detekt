@@ -35,7 +35,18 @@ maven.install(
 )
 use_repo(maven, "rules_detekt_dependencies", "unpinned_rules_detekt_dependencies")
 
+http_jar = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_jar")
+
+# Auto-corrects formatting in tests/integration:auto_correct_test.
+http_jar(
+    name = "detekt_ktlint_wrapper",
+    dev_dependency = True,
+    sha256 = "48a8e4aee758334dc885a88a813ae6295d4218a4ef980afa7be036dee4c9d956",
+    urls = ["https://repo1.maven.org/maven2/dev/detekt/detekt-rules-ktlint-wrapper/2.0.0-alpha.6/detekt-rules-ktlint-wrapper-2.0.0-alpha.6.jar"],
+)
+
 bazel_dep(name = "bazel_skylib", version = "1.8.2", dev_dependency = True)
+bazel_dep(name = "rules_shell", version = "0.6.1", dev_dependency = True)
 bazel_dep(name = "stardoc", version = "0.7.2", dev_dependency = True, repo_name = "io_bazel_stardoc")
 
 android = use_extension(
