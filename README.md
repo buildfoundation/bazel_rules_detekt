@@ -357,6 +357,14 @@ detekt_test(
 )
 ```
 
+Some Detekt 2.x plugins, including `detekt-rules-ktlint-wrapper`, are compiled for Java 17. The wrapper runs on
+Bazel's tool Java runtime, which defaults to `remotejdk_11`, so these plugins fail with
+`UnsupportedClassVersionError`. Use a JDK 17+ tool runtime, for example in `.bazelrc`:
+
+```text
+common --tool_java_runtime_version=remotejdk_17
+```
+
 For a Detekt 1.x override, use the matching legacy coordinate instead:
 `io.gitlab.arturbosch.detekt:detekt-formatting:1.23.8`. Plugin binaries are not interchangeable
 between majors because their public API packages differ (`io.gitlab.arturbosch.detekt.api` versus
