@@ -4,7 +4,7 @@ The rule analysis tests.
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
 load("//detekt:config.bzl", "detekt_config")
-load("//detekt:defs.bzl", "detekt", "detekt_create_baseline", "detekt_test")
+load("//detekt:defs.bzl", "detekt", "detekt_auto_correct", "detekt_create_baseline", "detekt_test")
 
 def _assert_rule_kind(name, expected):
     rule = native.existing_rule(name)
@@ -533,6 +533,39 @@ def _test_action_baseline():
         target_under_test = ":test_target_baseline",
     )
 
+# Auto-correct only runs from `bazel run`: no build action may edit sources.
+
+def _auto_correct_test_impl(ctx):
+    env = analysistest.begin(ctx)
+    actions = analysistest.target_actions(env)
+    asserts.equals(env, [], [a for a in actions if a.mnemonic == "Detekt"])
+
+    params = [a for a in actions if a.outputs.to_list()[0].basename == "test_target_auto_correct.params"][0]
+    lines = params.content.splitlines()
+    for expected in [
+        "--auto-correct",
+        "tests/analysis/path A.kt",
+        "@@RUNFILES@@/tests/analysis/config B.yml",
+        "@@RUNFILES@@/tests/analysis/baseline.xml",
+    ]:
+        asserts.true(env, expected in lines, "Expected {} in {}".format(expected, lines))
+    return analysistest.end(env)
+
+auto_correct_test = analysistest.make(_auto_correct_test_impl)
+
+def _test_auto_correct():
+    detekt_auto_correct(
+        name = "test_target_auto_correct",
+        srcs = ["path A.kt"],
+        baseline = "baseline.xml",
+        config = ":config_b",
+        tags = ["manual"],
+    )
+    auto_correct_test(
+        name = "auto_correct_test",
+        target_under_test = ":test_target_auto_correct",
+    )
+
 # Explicit profiles replace all defaults without changing the executable.
 
 def _action_config_override_impl(ctx):
@@ -726,6 +759,7 @@ def test_suite(name):
     _test_action_select()
     _test_action_failure_policy_conflict()
     _test_action_baseline()
+    _test_auto_correct()
     config_tests = _test_config_profiles()
 
     native.test_suite(
@@ -740,5 +774,6 @@ def test_suite(name):
             ":action_select_test",
             ":action_failure_policy_conflict_test",
             ":action_baseline_test",
+            ":auto_correct_test",
         ],
     )

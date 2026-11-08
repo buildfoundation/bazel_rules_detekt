@@ -29,10 +29,6 @@ _ATTRS = {
         default = False,
         doc = "Activates all available (even unstable) rules.",
     ),
-    "auto_correct": attr.bool(
-        default = False,
-        doc = "Allow rules to auto correct code if they support it. The default rule sets do NOT support auto correcting and won't change any line in the users code base. However custom rules can be written to support auto correcting. The additional 'formatting' rule set, added with '--plugins', does support it and needs this flag.",
-    ),
     "base_path": attr.string(
         default = "",
         doc = "Specifies a directory as the base path. Currently it impacts all file paths in the formatted reports. File paths in console output and txt report are not affected and remain as absolute paths.",
@@ -95,13 +91,35 @@ def _detekt_toolchain(ctx):
         return ctx.attr.detekt_toolchain[platform_common.ToolchainInfo]
     return ctx.toolchains[TOOLCHAIN_TYPE]
 
+def _exec_path(file):
+    return file.path
+
+def _short_path(file):
+    return file.short_path
+
+def _runfiles_path(file):
+    # The auto-correct script swaps the placeholder for the runfiles directory.
+    return "@@RUNFILES@@/" + file.short_path
+
 def _impl(
         ctx,
         run_as_test_target = False,
-        create_baseline = False):
+        create_baseline = False,
+        auto_correct = False):
     action_inputs = []
     action_outputs = []
     detekt_toolchain = _detekt_toolchain(ctx)
+
+    # Auto-correct runs under `bazel run` from the workspace root, so it edits the real sources
+    # and reads everything else from runfiles. A build action would write through the
+    # sandbox's symlinks into the source tree instead.
+    src_path = _short_path if auto_correct else _exec_path
+    file_path = _runfiles_path if auto_correct else _exec_path
+    if auto_correct:
+        for src in ctx.files.srcs:
+            if not src.is_source or src.short_path.startswith("../"):
+                fail("detekt_auto_correct can only edit source files in the main repository, got " + src.short_path, attr = "srcs")
+
     config = ctx.attr.config[DetektConfigInfo] if ctx.attr.config != None else detekt_toolchain.default_config
 
     detekt_arguments = ctx.actions.args()
@@ -115,11 +133,11 @@ def _impl(
     detekt_arguments.use_param_file("@%s", use_always = True)
 
     action_inputs.extend(ctx.files.srcs)
-    detekt_arguments.add_joined("--input", ctx.files.srcs, join_with = ",")
+    detekt_arguments.add_joined("--input", ctx.files.srcs, join_with = ",", map_each = src_path)
 
     cfgs = config.cfgs
     action_inputs.extend(cfgs)
-    detekt_arguments.add_joined("--config", cfgs, join_with = ",")
+    detekt_arguments.add_joined("--config", cfgs, join_with = ",", map_each = file_path)
 
     if ctx.attr.config_resource:
         detekt_arguments.add("--config-resource", ctx.attr.config_resource)
@@ -146,12 +164,12 @@ def _impl(
         )
     elif ctx.attr.baseline != None:
         action_inputs.append(ctx.file.baseline)
-        detekt_arguments.add("--baseline", ctx.file.baseline)
+        detekt_arguments.add("--baseline", file_path(ctx.file.baseline))
 
     if ctx.attr.all_rules:
         detekt_arguments.add("--all-rules")
 
-    if ctx.attr.auto_correct:
+    if auto_correct:
         detekt_arguments.add("--auto-correct")
 
     if ctx.attr.base_path:
@@ -202,10 +220,30 @@ def _impl(
             platform_jar_files = ctx.toolchains[JDK_TOOLCHAIN_TYPE].java.bootclasspath.to_list()
 
         action_inputs.extend(platform_jar_files + classpath)
-        detekt_arguments.add("--classpath", ctx.configuration.host_path_separator.join([f.path for f in platform_jar_files] + [f.path for f in classpath]))
+        detekt_arguments.add("--classpath", ctx.configuration.host_path_separator.join([file_path(f) for f in platform_jar_files + classpath]))
 
     action_inputs.extend(config.plugins)
-    detekt_arguments.add_joined("--plugins", config.plugins, join_with = ",")
+    detekt_arguments.add_joined("--plugins", config.plugins, join_with = ",", map_each = file_path)
+
+    if auto_correct:
+        params = ctx.actions.declare_file(ctx.label.name + ".params")
+        ctx.actions.write(params, detekt_arguments)
+        wrapper = detekt_toolchain.detekt_wrapper
+        script = ctx.actions.declare_file(ctx.label.name + ".sh")
+        ctx.actions.expand_template(
+            output = script,
+            template = ctx.file._auto_correct_script_template,
+            substitutions = {
+                "{params}": params.short_path,
+                "{wrapper}": wrapper.files_to_run.executable.short_path,
+            },
+            is_executable = True,
+        )
+        runfiles = ctx.runfiles(files = action_inputs + [params, wrapper.files_to_run.executable])
+        return [DefaultInfo(
+            executable = script,
+            runfiles = runfiles.merge(wrapper.default_runfiles),
+        )]
 
     txt_report = ctx.actions.declare_file("{}_detekt_report.txt".format(ctx.label.name))
     action_outputs.append(txt_report)
@@ -283,6 +321,9 @@ def _detekt_create_baseline_impl(ctx):
 def _detekt_test_impl(ctx):
     return _impl(ctx = ctx, run_as_test_target = True)
 
+def _detekt_auto_correct_impl(ctx):
+    return _impl(ctx = ctx, auto_correct = True)
+
 detekt = rule(
     implementation = _detekt_impl,
     attrs = _ATTRS,
@@ -304,4 +345,19 @@ detekt_test = rule(
     provides = [DefaultInfo],
     toolchains = [TOOLCHAIN_TYPE, ANDROID_SDK_TOOLCHAIN_TYPE, JDK_TOOLCHAIN_TYPE],
     test = True,
+)
+
+detekt_auto_correct = rule(
+    implementation = _detekt_auto_correct_impl,
+    doc = "Runs Detekt with `--auto-correct` on the workspace sources. Only works with `bazel run`.",
+    attrs = dict(
+        {name: value for name, value in _ATTRS.items() if not name.endswith("_report")},
+        _auto_correct_script_template = attr.label(
+            default = Label("//detekt:auto_correct.sh.tpl"),
+            allow_single_file = True,
+        ),
+    ),
+    provides = [DefaultInfo],
+    toolchains = [TOOLCHAIN_TYPE, ANDROID_SDK_TOOLCHAIN_TYPE, JDK_TOOLCHAIN_TYPE],
+    executable = True,
 )
