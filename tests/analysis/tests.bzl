@@ -710,6 +710,60 @@ def _test_plugin_jars():
     )
     return tests + [":invalid_plugin_files_test"]
 
+# Only Android targets need an Android SDK.
+
+def _action_platform_jar_impl(ctx):
+    env = analysistest.begin(ctx)
+    action = [a for a in analysistest.target_actions(env) if a.mnemonic == "Detekt"][0]
+    assert_argv_contains(env, action, "--classpath")
+    classpath = action.argv[action.argv.index("--classpath") + 1] if "--classpath" in action.argv else ""
+    asserts.equals(env, ctx.attr.android, "android.jar" in classpath, "Unexpected classpath: " + classpath)
+    return analysistest.end(env)
+
+action_android_platform_jar_test = analysistest.make(
+    _action_platform_jar_impl,
+    attrs = {"android": attr.bool()},
+)
+
+action_without_android_sdk_test = analysistest.make(
+    _action_platform_jar_impl,
+    attrs = {"android": attr.bool()},
+    config_settings = {
+        "//command_line_option:extra_toolchains": ["//tests/analysis:no_android_sdk_toolchain"],
+    },
+)
+
+def _test_android_sdk():
+    tests = []
+    for kind, rule in [
+        ("detekt", detekt),
+        ("detekt_test", detekt_test),
+        ("detekt_create_baseline", detekt_create_baseline),
+    ]:
+        name = kind + "_without_android_sdk"
+        rule(
+            name = name,
+            srcs = ["path A.kt"],
+            deps = [":analysis_plugin"],
+            tags = ["manual"],
+        )
+        action_without_android_sdk_test(name = name + "_test", target_under_test = ":" + name)
+        tests.append(":" + name + "_test")
+
+    detekt(
+        name = "android_platform_jar",
+        srcs = ["path A.kt"],
+        deps = [":analysis_plugin"],
+        is_android = True,
+        tags = ["manual"],
+    )
+    action_android_platform_jar_test(
+        name = "android_platform_jar_test",
+        target_under_test = ":android_platform_jar",
+        android = True,
+    )
+    return tests + [":android_platform_jar_test"]
+
 # Suite
 
 def test_suite(name):
@@ -730,7 +784,7 @@ def test_suite(name):
 
     native.test_suite(
         name = name,
-        tests = config_tests + _test_plugin_jars() + [
+        tests = config_tests + _test_plugin_jars() + _test_android_sdk() + [
             ":action_full_contents_test",
             ":action_blank_contents_test",
             ":action_failure_policy_test",

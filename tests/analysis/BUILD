@@ -96,6 +96,15 @@ config_setting(
     values = {"compilation_mode": "opt"},
 )
 
+# Mimics rules_android without an Android SDK: its toolchain resolves to a target without ToolchainInfo.
+filegroup(name = "no_android_sdk")
+
+toolchain(
+    name = "no_android_sdk_toolchain",
+    toolchain = ":no_android_sdk",
+    toolchain_type = "@rules_android//toolchains/android_sdk:toolchain_type",
+)
+
 test_suite(
     name = "tests",
 )
