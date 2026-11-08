@@ -12,6 +12,7 @@ detekt_test(
     name = "smoke_test",
     srcs = ["Smoke.kt"],
     config = ":smoke_config",
+    md_report = True,
 )
 
 detekt_config(
