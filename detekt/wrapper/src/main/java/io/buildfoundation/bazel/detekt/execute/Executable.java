@@ -82,6 +82,13 @@ public interface Executable {
             if (ExecutionUtils.shouldRunAsTestTarget(detektWrapperArguments) && !reportWriteFailed) {
                 result = new ExecutableResult.Success();
             }
+
+            // Detekt prints --debug details to its console output, which is otherwise dropped on success.
+            if (result instanceof ExecutableResult.Success && detektWrapperArguments.contains("--debug")) {
+                Charset outputCharset = Charset.forName(charset);
+                result = new ExecutableResult.Success(new String(outputBuffer.toByteArray(), outputCharset)
+                        + new String(errorBuffer.toByteArray(), outputCharset));
+            }
             return result;
         }
 

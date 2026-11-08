@@ -8,9 +8,19 @@ public interface ExecutableResult {
 
     final class Success implements ExecutableResult {
 
+        final String output;
+
+        public Success() {
+            this("");
+        }
+
+        public Success(String output) {
+            this.output = output;
+        }
+
         @Override
         public String output() {
-            return "";
+            return output;
         }
 
         @Override

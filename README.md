@@ -153,8 +153,8 @@ Detekt CLI flags and pass them through when explicitly set.
 `cfgs`, `plugins`, `build_upon_default_config`, `disable_default_rulesets`, `jvm_target`, `language_version`,
 `max_issues`, `fail_on_severity`, and `parallel` are configured on reusable `detekt_config` targets.
 The executable wrapper and a `default_config` reference are configured on `detekt_toolchain`.
-`srcs`, `deps`, `baseline`, `excludes`, `includes`, `all_rules`, `auto_correct`, `base_path`, `config_resource`,
-`is_android`, and report options remain rule-level settings.
+`srcs`, `deps`, `baseline`, `excludes`, `includes`, `all_rules`, `auto_correct`, `debug`, `base_path`,
+`config_resource`, `is_android`, and report options remain rule-level settings.
 
 `max_issues` is the failure policy for Detekt 1.x. Detekt 2.x uses `fail_on_severity` (`Never`, `Info`, `Warning`, or
 `Error`). Both policies cannot be active on the same config; inactive values such as `max_issues = -1` may
@@ -499,6 +499,10 @@ detekt_test(
     config = ":my_detekt_config",
 )
 ```
+
+If Detekt reports compiler errors that affect the accuracy of reporting, `deps` is usually missing part of the
+classpath. Set `debug = True` on the target to print those errors, along with the loaded configuration and
+extensions. The output is shown with the action's output even when the analysis succeeds.
 
 ### Reports
 

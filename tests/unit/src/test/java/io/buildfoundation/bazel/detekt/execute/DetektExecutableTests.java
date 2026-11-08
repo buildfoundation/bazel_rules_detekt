@@ -55,6 +55,26 @@ public class DetektExecutableTests {
     }
 
     @Test
+    public void returnsV2DebugOutputOnSuccess() throws IOException {
+        for (boolean runAsTestTarget : new boolean[]{false, true}) {
+            List<String> args = new ArrayList<>(Arrays.asList(
+                    "--input", sourceFile().toString(),
+                    "--fail-on-severity", "Never",
+                    "--report", "txt:" + reportPath(),
+                    "--execution-result", Files.createTempFile("detekt-execution-result", ".txt").toString()));
+            if (runAsTestTarget) {
+                args.add("--run-as-test-target");
+            }
+            assertEquals("", runV2(args.toArray(new String[0])).output());
+
+            args.add("--debug");
+            ExecutableResult result = runV2(args.toArray(new String[0]));
+            assertEquals(ExecutableResult.Success.class, result.getClass());
+            assertTrue(result.output(), result.output().contains("Registered rule sets"));
+        }
+    }
+
+    @Test
     public void writesV2TextReportForFindingsFailure() throws IOException {
         Path report = reportPath();
         Path executionResult = Files.createTempFile("detekt-execution-result", ".txt");

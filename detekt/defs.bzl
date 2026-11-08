@@ -33,6 +33,10 @@ _ATTRS = {
         default = False,
         doc = "Allow rules to auto correct code if they support it. The default rule sets do NOT support auto correcting and won't change any line in the users code base. However custom rules can be written to support auto correcting. The additional 'formatting' rule set, added with '--plugins', does support it and needs this flag.",
     ),
+    "debug": attr.bool(
+        default = False,
+        doc = "Prints extra information about configurations, extensions, and compiler errors that reduce type resolution accuracy. The output is shown with the action's output, even when the analysis succeeds.",
+    ),
     "base_path": attr.string(
         default = "",
         doc = "Specifies a directory as the base path. Currently it impacts all file paths in the formatted reports. File paths in console output and txt report are not affected and remain as absolute paths.",
@@ -153,6 +157,9 @@ def _impl(
 
     if ctx.attr.auto_correct:
         detekt_arguments.add("--auto-correct")
+
+    if ctx.attr.debug:
+        detekt_arguments.add("--debug")
 
     if ctx.attr.base_path:
         detekt_arguments.add("--base-path", ctx.attr.base_path)

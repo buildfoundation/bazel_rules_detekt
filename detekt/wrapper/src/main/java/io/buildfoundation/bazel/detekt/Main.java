@@ -27,7 +27,7 @@ public final class Main {
     private static int runOneShot(Executable executable, String[] args) {
         ExecutableResult result = executable.execute(args);
 
-        if (result instanceof ExecutableResult.Failure) {
+        if (!result.output().isEmpty()) {
             System.err.println(result.output());
         }
 

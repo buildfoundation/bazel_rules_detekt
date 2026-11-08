@@ -155,6 +155,7 @@ def _action_full_contents_test_impl(ctx):
     assert_argv_contains(env, action, "--max-issues")
     assert_argv_contains(env, action, "7")
     assert_argv_contains(env, action, "--parallel")
+    assert_argv_contains(env, action, "--debug")
 
     expected_inputs = _expand_paths(env.ctx, [
         "tests/analysis/path A.kt",
@@ -199,6 +200,7 @@ def _test_action_full_contents():
         srcs = ["path A.kt", "path B.kt", "path C.kt"],
         config = ":full_config",
         baseline = "baseline.xml",
+        debug = True,
         html_report = True,
         xml_report = True,
         # The "plugins" option is skipped here since the path includes a declared Detekt version
@@ -229,6 +231,7 @@ def _action_blank_contents_test_impl(ctx):
     assert_argv_lacks(env, action, "--language-version")
     assert_argv_lacks(env, action, "--max-issues")
     assert_argv_lacks(env, action, "--parallel")
+    assert_argv_lacks(env, action, "--debug")
     assert_argv_contains(env, action, "--report")
     assert_argv_contains_prefix_suffix(env, action, "txt:", _expand_path(ctx, "{{source_dir}}/test_target_blank_detekt_report.txt"))
 
