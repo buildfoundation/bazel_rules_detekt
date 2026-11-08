@@ -476,6 +476,9 @@ Provide the compile dependencies through rule-level `deps` and set config `jvm_t
 compilation settings of your project. With Detekt 2.x, a non-empty `deps` automatically selects full analysis;
 the Detekt 1.x runtime keeps its existing classpath behavior.
 
+For Android code, set `is_android = True` to resolve types against the Android SDK's `android.jar` instead of
+the JDK. Only these targets need a registered Android SDK toolchain; other targets don't need an Android SDK.
+
 ```python
 load("@rules_detekt//detekt:config.bzl", "detekt_config")
 

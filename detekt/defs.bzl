@@ -5,7 +5,12 @@ Rule declarations.
 load("@rules_java//java:defs.bzl", "JavaInfo")
 load(":config.bzl", "DetektConfigInfo")
 
+def _android_jar(is_android):
+    # Only Android targets depend on the Android SDK, so other users don't need one registered.
+    return Label("@rules_android//tools/android:android_jar") if is_android else None
+
 _ATTRS = {
+    "_android_jar": attr.label(default = _android_jar),
     "_result_script_template": attr.label(
         default = Label("//detekt:result_script.sh.tpl"),
         allow_single_file = True,
@@ -71,7 +76,7 @@ _ATTRS = {
         providers = [JavaInfo],
     ),
     "is_android": attr.bool(
-        doc = "Whether detekt target corresponds to android kotlin library or regular jvm library",
+        doc = "Whether the target is Android code. Type resolution then uses the Android SDK's `android.jar` instead of the JDK, which requires a registered Android SDK toolchain.",
         default = False,
     ),
     "detekt_toolchain": attr.label(
@@ -87,7 +92,6 @@ _ATTRS = {
 }
 
 TOOLCHAIN_TYPE = Label("//detekt:toolchain_type")
-ANDROID_SDK_TOOLCHAIN_TYPE = Label("@rules_android//toolchains/android_sdk:toolchain_type")
 JDK_TOOLCHAIN_TYPE = Label("@bazel_tools//tools/jdk:toolchain_type")
 
 def _detekt_toolchain(ctx):
@@ -192,7 +196,7 @@ def _impl(
     classpath = depset([], transitive = [dep[JavaInfo].compile_jars for dep in ctx.attr.deps]).to_list()
     if classpath:
         if ctx.attr.is_android:
-            platform_jar_files = [ctx.toolchains[ANDROID_SDK_TOOLCHAIN_TYPE].android_sdk_info.android_jar]
+            platform_jar_files = ctx.files._android_jar
         else:
             platform_jar_files = ctx.toolchains[JDK_TOOLCHAIN_TYPE].java.bootclasspath.to_list()
 
@@ -282,14 +286,14 @@ detekt = rule(
     implementation = _detekt_impl,
     attrs = _ATTRS,
     provides = [DefaultInfo],
-    toolchains = [TOOLCHAIN_TYPE, ANDROID_SDK_TOOLCHAIN_TYPE, JDK_TOOLCHAIN_TYPE],
+    toolchains = [TOOLCHAIN_TYPE, JDK_TOOLCHAIN_TYPE],
 )
 
 detekt_create_baseline = rule(
     implementation = _detekt_create_baseline_impl,
     attrs = _ATTRS,
     provides = [DefaultInfo],
-    toolchains = [TOOLCHAIN_TYPE, ANDROID_SDK_TOOLCHAIN_TYPE, JDK_TOOLCHAIN_TYPE],
+    toolchains = [TOOLCHAIN_TYPE, JDK_TOOLCHAIN_TYPE],
     executable = True,
 )
 
@@ -297,6 +301,6 @@ detekt_test = rule(
     implementation = _detekt_test_impl,
     attrs = _ATTRS,
     provides = [DefaultInfo],
-    toolchains = [TOOLCHAIN_TYPE, ANDROID_SDK_TOOLCHAIN_TYPE, JDK_TOOLCHAIN_TYPE],
+    toolchains = [TOOLCHAIN_TYPE, JDK_TOOLCHAIN_TYPE],
     test = True,
 )
