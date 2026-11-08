@@ -151,7 +151,7 @@ All three rules share the same configuration options. In addition to `srcs`, mos
 Detekt CLI flags and pass them through when explicitly set.
 
 `cfgs`, `plugins`, `build_upon_default_config`, `disable_default_rulesets`, `jvm_target`, `language_version`,
-`max_issues`, `fail_on_severity`, and `parallel` are configured on reusable `detekt_config` targets.
+`max_issues`, `fail_on_severity`, `parallel`, and `type_resolution` are configured on reusable `detekt_config` targets.
 The executable wrapper and a `default_config` reference are configured on `detekt_toolchain`.
 `srcs`, `deps`, `baseline`, `excludes`, `includes`, `all_rules`, `auto_correct`, `base_path`, `config_resource`,
 `is_android`, and report options remain rule-level settings.
@@ -474,8 +474,8 @@ including return types, nullability, and symbol information — capabilities tha
 itself. Rules requiring it are annotated with `@RequiresFullAnalysis` in Detekt's source.
 
 Provide the compile dependencies through rule-level `deps` and set config `jvm_target` and `language_version` to match the
-compilation settings of your project. With Detekt 2.x, a non-empty `deps` automatically selects full analysis;
-the Detekt 1.x runtime keeps its existing classpath behavior.
+compilation settings of your project. `deps`, plus the JDK bootclasspath (or `android.jar` when `is_android` is set),
+become Detekt's classpath: Detekt 1.x runs type resolution, and Detekt 2.x selects full analysis.
 
 ```python
 load("@rules_detekt//detekt:config.bzl", "detekt_config")
@@ -493,6 +493,9 @@ detekt_test(
     config = ":my_detekt_config",
 )
 ```
+
+Type resolution is a config policy and is on by default. Set `type_resolution = False` on a config (for example the
+toolchain's `default_config`) to skip the classpath entirely: `deps` are ignored and Detekt runs light analysis.
 
 ### Reports
 
