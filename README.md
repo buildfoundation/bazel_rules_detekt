@@ -30,7 +30,7 @@ For detailed per-Detekt-version Kotlin and JDK compatibility, see the [Detekt co
 
 > **Note:** The Kotlin compiler bundled with Detekt determines which `language_version` values are valid — setting it higher than what the bundled compiler supports will cause Detekt to fail. The default Detekt version can always be overridden — see [Detekt Version](#detekt-version).
 
-> **Note:** Detekt 2.x is currently in alpha. The default is 2.0.0-alpha.6; the compatibility suite also validates a Detekt 1.23.8 override.
+> **Note:** Detekt 2.x is currently in alpha. The default is 1.23.8; Detekt 2.0.0-alpha.6 is supported as an opt-in override.
 
 > **Note:** JDK 25 and above are **not** supported with Detekt 1.23.x. The bundled Kotlin compiler performs a hard version check that fails on JDK 25+. This is resolved in the Detekt 2.x series.
 
@@ -173,8 +173,7 @@ name and maps to Detekt 2.x's Checkstyle report ID. Other formats are opt-in.
 
 ### Detekt Version
 
-The default bundled version is **2.0.0-alpha.6**. To override it (including the supported Detekt 1.23.8
-compatibility runtime):
+The default bundled version is **1.23.8**. To override it (including opting in to Detekt 2.0.0-alpha.6):
 
 #### `MODULE.bazel` Configuration
 
@@ -255,6 +254,8 @@ detekt_test(
 )
 ```
 
+These profiles use Detekt 2.x's `fail_on_severity`; with the default Detekt 1.x runtime, use `max_issues` instead.
+
 An explicit `config` replaces the entire default profile, including empty lists, false booleans, and ordinary
 attribute defaults. No individual options are inherited or merged. If `config` is omitted or resolves to `None`
 in a `select()`, the selected toolchain's `default_config` is used. The bundled default config preserves the
@@ -299,8 +300,8 @@ The wrapper is an exec-configured `java_binary`. Configure its JVM options throu
 build --host_jvmopt=-Xmx512m
 ```
 
-Profiles configure the selected runtime; they do not select a Detekt version. To use the supported Detekt 1.23.8
-override, configure that version separately and use its matching 1.x plugins and `max_issues` policy.
+Profiles configure the selected runtime; they do not select a Detekt version. To opt in to Detekt 2.0.0-alpha.6,
+configure that version separately and use its matching 2.x plugins and `fail_on_severity` policy.
 
 ### Migrating analysis options
 
@@ -365,7 +366,7 @@ Bazel's tool Java runtime, which defaults to `remotejdk_11`, so these plugins fa
 common --tool_java_runtime_version=remotejdk_17
 ```
 
-For a Detekt 1.x override, use the matching legacy coordinate instead:
+For the default Detekt 1.x runtime, use the matching legacy coordinate instead:
 `io.gitlab.arturbosch.detekt:detekt-formatting:1.23.8`. Plugin binaries are not interchangeable
 between majors because their public API packages differ (`io.gitlab.arturbosch.detekt.api` versus
 `dev.detekt.api`).
