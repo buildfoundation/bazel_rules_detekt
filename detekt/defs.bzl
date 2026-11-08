@@ -177,16 +177,11 @@ def _impl(
     if language_version:
         detekt_arguments.add("--language-version", language_version)
 
-    max_issues = config.max_issues
-    fail_on_severity = config.fail_on_severity
+    if config.max_issues >= 0:
+        detekt_arguments.add("--max-issues", config.max_issues)
 
-    if max_issues >= 0:
-        if fail_on_severity:
-            fail("max_issues and fail_on_severity cannot be used together")
-        detekt_arguments.add("--max-issues", max_issues)
-
-    if fail_on_severity:
-        detekt_arguments.add("--fail-on-severity", fail_on_severity)
+    if config.fail_on_severity:
+        detekt_arguments.add("--fail-on-severity", config.fail_on_severity)
 
     if config.parallel:
         detekt_arguments.add("--parallel")
