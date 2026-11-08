@@ -205,6 +205,7 @@ public class DetektExecutableTests {
                 "--classpath", "first,second",
                 "--report", "txt:report.txt",
                 "--report", "xml:report.xml",
+                "--report", "md:report.md",
         }, true);
 
         assertArrayEquals(new String[]{
@@ -212,6 +213,7 @@ public class DetektExecutableTests {
                 "--config", "config-one" + java.io.File.pathSeparator + "config-two",
                 "--classpath", "first" + java.io.File.pathSeparator + "second",
                 "--report", "checkstyle:report.xml",
+                "--report", "markdown:report.md",
                 "--analysis-mode", "full",
         }, translation.arguments);
         assertEquals("report.txt", translation.textReport);

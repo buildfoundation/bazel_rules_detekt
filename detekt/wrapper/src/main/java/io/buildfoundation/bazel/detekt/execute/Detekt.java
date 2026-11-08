@@ -104,6 +104,8 @@ public interface Detekt {
                         }
                         if ("xml".equals(reportType)) {
                             report = "checkstyle:" + reportPath;
+                        } else if ("md".equals(reportType)) {
+                            report = "markdown:" + reportPath;
                         }
                     }
                     translated.add(argument);
