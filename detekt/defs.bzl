@@ -67,7 +67,7 @@ _ATTRS = {
     ),
     "deps": attr.label_list(
         default = [],
-        doc = "Dependencies to provide to Detekt for classpath type resolution.",
+        doc = "Dependencies to provide to Detekt for classpath type resolution. Ignored when the config sets type_resolution = False.",
         providers = [JavaInfo],
     ),
     "is_android": attr.bool(
@@ -189,7 +189,7 @@ def _impl(
     if run_as_test_target:
         detekt_arguments.add("--run-as-test-target")
 
-    classpath = depset([], transitive = [dep[JavaInfo].compile_jars for dep in ctx.attr.deps]).to_list()
+    classpath = depset([], transitive = [dep[JavaInfo].compile_jars for dep in ctx.attr.deps]).to_list() if config.type_resolution else []
     if classpath:
         if ctx.attr.is_android:
             platform_jar_files = [ctx.toolchains[ANDROID_SDK_TOOLCHAIN_TYPE].android_sdk_info.android_jar]

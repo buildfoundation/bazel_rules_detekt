@@ -5,6 +5,7 @@ The rule analysis tests.
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts", "unittest")
 load("//detekt:config.bzl", "detekt_config")
 load("//detekt:defs.bzl", "detekt", "detekt_create_baseline", "detekt_test")
+load("//detekt:toolchain.bzl", "detekt_toolchain")
 
 def _assert_rule_kind(name, expected):
     rule = native.existing_rule(name)
@@ -20,6 +21,7 @@ def _assert_rule_kind(name, expected):
         "max_issues",
         "fail_on_severity",
         "parallel",
+        "type_resolution",
     ]:
         if option in rule:
             fail("{} must be configured on detekt_config, not {}".format(option, expected))
@@ -710,6 +712,54 @@ def _test_plugin_jars():
     )
     return tests + [":invalid_plugin_files_test"]
 
+# Type resolution is a config policy; deps become the classpath only while it is enabled.
+
+def _action_type_resolution_impl(ctx):
+    env = analysistest.begin(ctx)
+    action = [a for a in analysistest.target_actions(env) if a.mnemonic == "Detekt"][0]
+    if ctx.attr.enabled:
+        assert_argv_contains(env, action, "--classpath")
+        assert_argv_contains_prefix_suffix(env, action, "", "/libanalysis_plugin-hjar.jar")
+        assert_input_contains_suffix(env, action, "/libanalysis_plugin-hjar.jar")
+    else:
+        assert_argv_lacks(env, action, "--classpath")
+        asserts.equals(env, [
+            "tests/analysis/path A.kt",
+            "detekt/wrapper/bin",
+            "detekt/wrapper/bin.jar",
+            "detekt/wrapper/bin.runfiles",
+        ], _input_short_paths(action.inputs))
+    return analysistest.end(env)
+
+action_type_resolution_test = analysistest.make(
+    _action_type_resolution_impl,
+    attrs = {"enabled": attr.bool()},
+)
+
+def _test_type_resolution():
+    detekt_config(name = "no_type_resolution_config", type_resolution = False)
+    detekt_toolchain(name = "no_type_resolution_toolchain_impl", default_config = ":no_type_resolution_config")
+    tests = []
+    for name, enabled, attrs in [
+        ("type_resolution_default", True, {}),
+        ("type_resolution_off_config", False, {"config": ":no_type_resolution_config"}),
+        ("type_resolution_off_toolchain", False, {"detekt_toolchain": ":no_type_resolution_toolchain_impl"}),
+    ]:
+        detekt(
+            name = name,
+            srcs = ["path A.kt"],
+            deps = [":analysis_plugin"],
+            tags = ["manual"],
+            **attrs
+        )
+        action_type_resolution_test(
+            name = name + "_test",
+            target_under_test = ":" + name,
+            enabled = enabled,
+        )
+        tests.append(":" + name + "_test")
+    return tests
+
 # Suite
 
 def test_suite(name):
@@ -730,7 +780,7 @@ def test_suite(name):
 
     native.test_suite(
         name = name,
-        tests = config_tests + _test_plugin_jars() + [
+        tests = config_tests + _test_plugin_jars() + _test_type_resolution() + [
             ":action_full_contents_test",
             ":action_blank_contents_test",
             ":action_failure_policy_test",
