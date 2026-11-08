@@ -1,0 +1,13 @@
+module(
+    name = "ignored_detekt_version",
+    version = "0.0.0",
+)
+
+bazel_dep(name = "rules_detekt", version = "0.0.0")
+
+# A dependency's detekt_version is ignored; the root module picks the version.
+detekt = use_extension("@rules_detekt//detekt:extensions.bzl", "detekt")
+detekt.detekt_version(
+    sha256 = "0000000000000000000000000000000000000000000000000000000000000000",
+    version = "0.0.0-ignored",
+)

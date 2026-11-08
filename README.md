@@ -188,6 +188,9 @@ detekt.detekt_version(
 use_repo(detekt, "detekt_cli_all")
 ```
 
+Only the root module's `detekt_version` is used. Versions set by dependencies are ignored, so a dependency cannot
+change the Detekt version or conflict with yours.
+
 To download Detekt from a custom location (e.g. an internal mirror), use the `url_templates` parameter:
 
 ```python

@@ -27,21 +27,19 @@ def _download_detekt_cli_all(detekt):
     )
 
 def _detekt_impl(mctx):
-    detekt_version = None
-    for mod in mctx.modules:
-        for override in mod.tags.detekt_version:
-            if detekt_version:
-                fail("Only a single detekt_version at once is supported right now!")
-            detekt_version = _detekt_version(
-                version = override.version,
-                sha256 = override.sha256,
-                url_templates = override.url_templates if override.url_templates else None,
-            )
+    # Only the root module picks the Detekt version, so dependencies cannot change it or conflict with it.
+    overrides = [tag for mod in mctx.modules if mod.is_root for tag in mod.tags.detekt_version]
+    if len(overrides) > 1:
+        fail("Only a single detekt_version at once is supported right now!")
 
-    kwargs = dict(detekt = _DEFAULT_DETEKT_RELEASE)
-    if detekt_version:
-        kwargs["detekt"] = detekt_version
-    _download_detekt_cli_all(**kwargs)
+    detekt = _DEFAULT_DETEKT_RELEASE
+    for override in overrides:
+        detekt = _detekt_version(
+            version = override.version,
+            sha256 = override.sha256,
+            url_templates = override.url_templates if override.url_templates else None,
+        )
+    _download_detekt_cli_all(detekt = detekt)
 
 detekt = module_extension(
     _detekt_impl,
