@@ -68,7 +68,12 @@ public class DetektExecutableTests {
 
         assertEquals(ExecutableResult.Failure.class, result.getClass());
         assertEquals("1", new String(Files.readAllBytes(executionResult)));
-        assertTrue(new String(Files.readAllBytes(report)).contains("UndocumentedPublicClass"));
+        String reportContent = new String(Files.readAllBytes(report));
+        assertTrue(reportContent.contains("UndocumentedPublicClass"));
+        // Findings failures report Detekt's summary, not a stack trace.
+        assertTrue(result.output().contains("Analysis failed with"));
+        assertFalse(result.output().contains("\tat "));
+        assertFalse(reportContent.contains("\tat "));
     }
 
     @Test

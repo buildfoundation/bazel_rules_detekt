@@ -54,7 +54,12 @@ public interface Executable {
                 result = new ExecutableResult.Success();
             } catch (Exception e) {
                 outputPrinter.flush();
-                e.printStackTrace(errorPrinter);
+                if (isFindingsFailure(e)) {
+                    // Detekt already printed the findings; a stack trace would only bury them.
+                    errorPrinter.println(e.getMessage());
+                } else {
+                    e.printStackTrace(errorPrinter);
+                }
                 errorPrinter.flush();
 
                 try {
@@ -83,6 +88,15 @@ public interface Executable {
                 result = new ExecutableResult.Success();
             }
             return result;
+        }
+
+        /**
+         * Returns true when Detekt failed only because findings exceeded the failure policy.
+         */
+        private static boolean isFindingsFailure(Exception e) {
+            String name = e.getClass().getName();
+            return name.equals("dev.detekt.tooling.api.IssuesFound")
+                    || name.equals("io.github.detekt.tooling.api.MaxIssuesReached");
         }
 
         private void writeTextReport(List<String> arguments, String output, String error) {
