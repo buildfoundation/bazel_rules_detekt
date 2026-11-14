@@ -96,6 +96,14 @@ config_setting(
     values = {"compilation_mode": "opt"},
 )
 
+platform(
+    name = "windows_platform",
+    constraint_values = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:windows",
+    ],
+)
+
 test_suite(
     name = "tests",
 )
