@@ -58,6 +58,19 @@ jobs:
           bazel test --strategy=Detekt=${{ matrix.detekt-strategy }} --modify_execution_info=Detekt=+no-cache --nocache_test_results --test_tag_filters= --test_output=all //:expected_failure_test 2>&1 | tee "$RUNNER_TEMP/detekt-2-failure.log" || status=$?
           test "$status" -eq 3
           grep -F "[UndocumentedPublicClass]" "$RUNNER_TEMP/detekt-2-failure.log"
+      - name: "Detekt 2 sandboxed multiplex worker"
+        if: ${{ matrix.detekt-strategy == 'worker' }}
+        working-directory: e2e/smoke
+        shell: bash
+        run: |
+          flags=(--strategy=Detekt=worker --worker_sandboxing --experimental_worker_multiplex_sandboxing --modify_execution_info=Detekt=+no-cache --nocache_test_results)
+          bazel test "${flags[@]}" //:smoke_test
+          status=0
+          bazel test "${flags[@]}" --test_tag_filters= --test_output=all //:expected_failure_test 2>&1 | tee "$RUNNER_TEMP/detekt-2-sandboxed-failure.log" || status=$?
+          test "$status" -eq 3
+          grep -F "[UndocumentedPublicClass]" "$RUNNER_TEMP/detekt-2-sandboxed-failure.log"
+          # Findings must name execroot-relative paths, not the request's multiplex sandbox.
+          ! grep -F "__sandbox/" "$RUNNER_TEMP/detekt-2-sandboxed-failure.log"
       - name: Verify MODULE.bazel.lock is unchanged
         if: ${{ always() && matrix.bazel == '9.x' && matrix.detekt-strategy == 'local' }}
         shell: bash

@@ -8,6 +8,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
         DetektExecutableTests.class,
         ExecutionUtilsTests.class,
+        PersistentWorkerTests.class,
 })
 public class TestsSuite {
 }

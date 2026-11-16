@@ -1,8 +1,10 @@
 package io.buildfoundation.bazel.detekt;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,6 +84,86 @@ public class ExecutionUtils {
     public static List<String> sanitizeDetektArguments(List<String> inputArgs) {
         Set<String> excludedArgs = new HashSet<>(Arrays.asList("--execution-result", "--run-as-test-target"));
         return filterOutArgValuePairs(inputArgs, excludedArgs);
+    }
+
+    private static final Set<String> PATH_LIST_ARGUMENTS = new HashSet<>(Arrays.asList(
+            "--input", "--config", "--plugins", "--classpath"));
+    private static final Set<String> PATH_ARGUMENTS = new HashSet<>(Arrays.asList(
+            "--baseline", "--execution-result", "--base-path"));
+    private static final String BASE_PATH_ARGUMENT = "--base-path";
+
+    /**
+     * Resolves every relative input and output path against a multiplex sandbox directory.
+     *
+     * <p>A multiplex worker serves concurrent requests from one process, so it cannot change its
+     * working directory per request; each request names its input tree in
+     * {@code WorkRequest.sandbox_dir} instead. Paths are made absolute here, and {@code --base-path}
+     * defaults to the sandbox so formatted reports keep execroot-relative paths.</p>
+     */
+    public static List<String> resolveSandboxPaths(List<String> arguments, Path sandboxDir) {
+        List<String> resolved = new ArrayList<>(arguments.size() + 2);
+        boolean hasBasePath = false;
+
+        for (int index = 0; index < arguments.size(); index++) {
+            String argument = arguments.get(index);
+            resolved.add(argument);
+            if (index + 1 >= arguments.size()) {
+                continue;
+            }
+
+            if (PATH_LIST_ARGUMENTS.contains(argument)) {
+                resolved.add(resolvePathList(arguments.get(++index), sandboxDir));
+            } else if (PATH_ARGUMENTS.contains(argument)) {
+                hasBasePath |= BASE_PATH_ARGUMENT.equals(argument);
+                resolved.add(resolvePath(arguments.get(++index), sandboxDir));
+            } else if ("--report".equals(argument)) {
+                String report = arguments.get(++index);
+                int separator = report.indexOf(':');
+                resolved.add(separator > 0
+                        ? report.substring(0, separator + 1) + resolvePath(report.substring(separator + 1), sandboxDir)
+                        : report);
+            }
+        }
+
+        if (!hasBasePath) {
+            resolved.add(BASE_PATH_ARGUMENT);
+            resolved.add(sandboxDir.toString());
+        }
+        return resolved;
+    }
+
+    /**
+     * Rewrites absolute paths under {@code sandboxDir} to relative ones, so diagnostics do not
+     * depend on which sandbox served the request. A null {@code sandboxDir} leaves text unchanged.
+     */
+    public static String relativizePaths(String text, Path sandboxDir) {
+        if (sandboxDir == null || text.isEmpty()) {
+            return text;
+        }
+        return text.replace(sandboxDir.toString() + File.separator, "");
+    }
+
+    private static String resolvePathList(String value, Path sandboxDir) {
+        // Starlark joins inputs with ',' and the classpath with the host path separator.
+        StringBuilder resolved = new StringBuilder(value.length() + 64);
+        int start = 0;
+        for (int index = 0; index <= value.length(); index++) {
+            if (index == value.length() || value.charAt(index) == ',' || value.charAt(index) == File.pathSeparatorChar) {
+                resolved.append(resolvePath(value.substring(start, index), sandboxDir));
+                if (index < value.length()) {
+                    resolved.append(value.charAt(index));
+                }
+                start = index + 1;
+            }
+        }
+        return resolved.toString();
+    }
+
+    private static String resolvePath(String path, Path sandboxDir) {
+        if (path.isEmpty() || Paths.get(path).isAbsolute()) {
+            return path;
+        }
+        return sandboxDir.resolve(path).normalize().toString();
     }
 
     /**

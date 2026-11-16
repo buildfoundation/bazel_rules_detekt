@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -195,6 +196,107 @@ public class DetektExecutableTests {
         assertTrue(result.output().contains("RuntimeException: original failure"));
         assertTrue(result.output().contains("Unable to write Detekt text report"));
         assertEquals("1", new String(Files.readAllBytes(executionResult)));
+    }
+
+    @Test
+    public void resolvesV2RequestAgainstMultiplexSandboxDir() throws IOException {
+        // Mirror a Bazel/actiond multiplex sandbox: inputs are symlinks into another tree, the
+        // params file and every path in it are relative to sandbox_dir, not the worker's cwd.
+        Path tree = Files.createTempDirectory("detekt-tree");
+        Path realSource = tree.resolve("Undocumented.kt");
+        Files.write(realSource, Arrays.asList("class Undocumented {", "    fun method(): Int = 1", "}"));
+        Path sandbox = Files.createTempDirectory("detekt-sandbox").toRealPath();
+        Files.createDirectories(sandbox.resolve("pkg"));
+        Files.createDirectories(sandbox.resolve("bazel-out"));
+        Files.createSymbolicLink(sandbox.resolve("pkg/Undocumented.kt"), realSource);
+        Files.write(sandbox.resolve("bazel-out/params"), Arrays.asList(
+                "--input", "pkg/Undocumented.kt",
+                "--all-rules",
+                "--report", "txt:bazel-out/report.txt",
+                "--report", "sarif:bazel-out/report.sarif",
+                "--execution-result", "bazel-out/exit.txt"));
+
+        ExecutableResult result = new Executable.DetektImpl(new Detekt.Impl())
+                .execute(new String[]{"@bazel-out/params"}, sandbox);
+
+        assertEquals(ExecutableResult.Failure.class, result.getClass());
+        assertEquals("1", new String(Files.readAllBytes(sandbox.resolve("bazel-out/exit.txt"))));
+        for (String report : Arrays.asList("report.txt", "report.sarif")) {
+            String content = new String(Files.readAllBytes(sandbox.resolve("bazel-out").resolve(report)));
+            assertTrue(report + ": " + content, content.contains("UndocumentedPublicClass"));
+            assertTrue(report + ": " + content, content.contains("pkg/Undocumented.kt"));
+            assertFalse(report + ": " + content, content.contains(sandbox.toString()));
+            assertFalse(report + ": " + content, content.contains(tree.toString()));
+        }
+        assertFalse(result.output(), result.output().contains(sandbox.toString()));
+    }
+
+    @Test
+    public void resolvesExplicitBasePathAgainstMultiplexSandboxDir() throws IOException {
+        // base_path = "." on the rule emits `--base-path .`, which must mean the sandbox root.
+        Path sandbox = Files.createTempDirectory("detekt-sandbox").toRealPath();
+        Files.createDirectories(sandbox.resolve("pkg"));
+        Files.createDirectories(sandbox.resolve("bazel-out"));
+        Files.write(sandbox.resolve("pkg/Undocumented.kt"), Arrays.asList("class Undocumented {", "    fun method(): Int = 1", "}"));
+
+        ExecutableResult result = new Executable.DetektImpl(new Detekt.Impl()).execute(new String[]{
+                "--input", "pkg/Undocumented.kt",
+                "--all-rules",
+                "--base-path", ".",
+                "--report", "sarif:bazel-out/report.sarif",
+                "--report", "txt:bazel-out/report.txt",
+                "--execution-result", "bazel-out/exit.txt",
+                "--run-as-test-target",
+        }, sandbox);
+
+        assertEquals(ExecutableResult.Success.class, result.getClass());
+        assertEquals("1", new String(Files.readAllBytes(sandbox.resolve("bazel-out/exit.txt"))));
+        for (String report : Arrays.asList("report.txt", "report.sarif")) {
+            String content = new String(Files.readAllBytes(sandbox.resolve("bazel-out").resolve(report)));
+            assertTrue(report + ": " + content, content.contains("pkg/Undocumented.kt"));
+            assertFalse(report + ": " + content, content.contains(sandbox.toString()));
+        }
+    }
+
+    @Test
+    public void relativizesTextReportAndOutputOnlyForSandboxedRequests() throws IOException {
+        Path sandbox = Files.createTempDirectory("detekt-sandbox").toRealPath();
+        String finding = sandbox.resolve("pkg/A.kt") + ":1:1 Finding";
+        Detekt detekt = (args, output, error) -> {
+            List<String> arguments = Arrays.asList(args);
+            String report = arguments.get(arguments.indexOf("--report") + 1).substring("txt:".length());
+            try {
+                Files.write(Paths.get(report), Arrays.asList(finding));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            output.print(finding + "\n");
+            throw new RuntimeException("findings");
+        };
+
+        Files.createDirectories(sandbox.resolve("out"));
+        ExecutableResult sandboxed = new Executable.DetektImpl(detekt).execute(new String[]{
+                "--input", "pkg/A.kt",
+                "--report", "txt:out/report.txt",
+                "--execution-result", "out/exit.txt",
+        }, sandbox);
+
+        assertEquals(ExecutableResult.Failure.class, sandboxed.getClass());
+        String sandboxedReport = new String(Files.readAllBytes(sandbox.resolve("out/report.txt")));
+        assertTrue(sandboxedReport, sandboxedReport.startsWith("pkg/A.kt:1:1 Finding\n"));
+        assertFalse(sandboxedReport, sandboxedReport.contains(sandbox.toString()));
+        assertTrue(sandboxed.output(), sandboxed.output().contains("pkg/A.kt:1:1 Finding"));
+        assertFalse(sandboxed.output(), sandboxed.output().contains(sandbox.toString()));
+
+        Path report = Files.createTempDirectory("detekt-report").resolve("report.txt");
+        ExecutableResult unsandboxed = new Executable.DetektImpl(detekt).execute(new String[]{
+                "--input", "pkg/A.kt",
+                "--report", "txt:" + report,
+                "--execution-result", Files.createTempFile("detekt-execution-result", ".txt").toString(),
+        });
+
+        assertTrue(new String(Files.readAllBytes(report)).contains(finding));
+        assertTrue(unsandboxed.output(), unsandboxed.output().contains(finding));
     }
 
     @Test

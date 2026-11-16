@@ -7,7 +7,9 @@ import io.buildfoundation.bazel.detekt.execute.Executable;
 import io.buildfoundation.bazel.detekt.execute.ExecutableResult;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -18,7 +20,7 @@ public final class Main {
         Executable executable = new Executable.DetektImpl(new Detekt.Impl());
 
         if (Arrays.asList(args).contains("--persistent_worker")) {
-            System.exit(runPersistentWorker(executable));
+            System.exit(runPersistentWorker(executable, System.in, System.out, System.err));
         } else {
             System.exit(runOneShot(executable, args));
         }
@@ -34,15 +36,19 @@ public final class Main {
         return result.statusCode();
     }
 
-    private static int runPersistentWorker(Executable executable) {
-        PrintStream stderr = System.err;
-
+    /**
+     * Serves work requests from {@code in} until it closes, writing responses to {@code protocolOut}.
+     */
+    static int runPersistentWorker(Executable executable, InputStream in, PrintStream protocolOut, PrintStream stderr) {
         try (WorkRequestHandler handler = new WorkRequestHandler.WorkRequestHandlerBuilder(
                 new WorkRequestHandler.WorkRequestCallback((request, pw) -> {
                     List<String> arguments = request.getArgumentsList();
                     String[] args = arguments.toArray(new String[0]);
+                    String sandboxDir = request.getSandboxDir();
 
-                    ExecutableResult result = executable.execute(args);
+                    ExecutableResult result = executable.execute(args, sandboxDir.isEmpty()
+                            ? null
+                            : Paths.get(sandboxDir).toAbsolutePath().normalize());
 
                     String output = result.output();
                     if (!output.isEmpty()) {
@@ -52,7 +58,7 @@ public final class Main {
                     return result.statusCode();
                 }),
                 stderr,
-                new ProtoWorkerMessageProcessor(System.in, System.out))
+                new ProtoWorkerMessageProcessor(in, protocolOut))
             .setCpuUsageBeforeGc(Duration.ofSeconds(10))
             .setIdleTimeBeforeGc(Duration.ofSeconds(30))
             .setCancelCallback((requestId, thread) -> thread.interrupt())

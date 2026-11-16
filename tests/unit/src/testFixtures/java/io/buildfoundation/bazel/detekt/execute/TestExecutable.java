@@ -9,7 +9,7 @@ public class TestExecutable implements Executable {
     }
 
     @Override
-    public ExecutableResult execute(String[] args) {
+    public ExecutableResult execute(String[] args, java.nio.file.Path sandboxDir) {
         return executeResult;
     }
 }

@@ -240,6 +240,7 @@ def _impl(
             "requires-worker-protocol": "proto",
             "supports-workers": "1",
             "supports-multiplex-workers": "1",
+            "supports-multiplex-sandboxing": "1",
         },
         arguments = [detekt_arguments],
     )
