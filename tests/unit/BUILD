@@ -10,6 +10,8 @@ java_test(
     test_class = "io.buildfoundation.bazel.detekt.TestsSuite",
     deps = [
         "//detekt/wrapper",
+        "@bazel_worker_java//:worker_protocol_java_proto",
+        "@protobuf//:protobuf_java",
         "@rules_detekt_dependencies//:junit_junit",
     ],
 )

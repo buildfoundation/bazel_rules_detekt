@@ -17,7 +17,15 @@ import java.util.List;
 
 public interface Executable {
 
-    ExecutableResult execute(String[] args);
+    /**
+     * Runs Detekt with paths resolved against {@code sandboxDir}, the request's multiplex sandbox,
+     * or against the working directory when it is null.
+     */
+    ExecutableResult execute(String[] args, Path sandboxDir);
+
+    default ExecutableResult execute(String[] args) {
+        return execute(args, null);
+    }
 
     final class DetektImpl implements Executable {
 
@@ -30,7 +38,7 @@ public interface Executable {
         }
 
         @Override
-        public ExecutableResult execute(String[] args) {
+        public ExecutableResult execute(String[] args, Path sandboxDir) {
             ByteArrayOutputStream outputBuffer = new ByteArrayOutputStream();
             PrintStream outputPrinter = new PrintStream(new BufferedOutputStream(outputBuffer));
 
@@ -41,7 +49,13 @@ public interface Executable {
             if (args.length == 1 && ExecutionUtils.isParamsFile(args[0])) {
                 // drop leading `@` from params-file
                 Path paramsFilePath = Paths.get(args[0].substring(1));
+                if (sandboxDir != null) {
+                    paramsFilePath = sandboxDir.resolve(paramsFilePath);
+                }
                 detektWrapperArguments = ExecutionUtils.readArgumentsFromFile(paramsFilePath);
+            }
+            if (sandboxDir != null) {
+                detektWrapperArguments = ExecutionUtils.resolveSandboxPaths(detektWrapperArguments, sandboxDir);
             }
 
             ExecutableResult result;
@@ -58,8 +72,8 @@ public interface Executable {
                 errorPrinter.flush();
 
                 try {
-                    String output = outputBuffer.toString(charset);
-                    String error = errorBuffer.toString(charset);
+                    String output = ExecutionUtils.relativizePaths(outputBuffer.toString(charset), sandboxDir);
+                    String error = ExecutionUtils.relativizePaths(errorBuffer.toString(charset), sandboxDir);
                     String diagnostics = output + error;
                     try {
                         writeTextReport(detektWrapperArguments, output, error);
@@ -75,6 +89,15 @@ public interface Executable {
             } finally {
                 outputPrinter.close();
                 errorPrinter.close();
+            }
+
+            if (sandboxDir != null && !reportWriteFailed) {
+                try {
+                    relativizeTextReport(detektWrapperArguments, sandboxDir);
+                } catch (IOException e) {
+                    reportWriteFailed = true;
+                    result = new ExecutableResult.Failure("Unable to rewrite Detekt text report: " + e.getMessage());
+                }
             }
 
             ExecutionUtils.writeExecutionResultToFile(result.statusCode(), executionResultOutputPath);
@@ -101,6 +124,23 @@ public interface Executable {
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Unable to write Detekt text report " + reportPath, e);
+            }
+        }
+
+        /**
+         * Detekt prints findings with absolute paths, which under a multiplex sandbox name the
+         * request's sandbox directory; strip it so the report is the same whichever sandbox ran it.
+         */
+        private void relativizeTextReport(List<String> arguments, Path sandboxDir) throws IOException {
+            String reportPath = getTextReportPath(arguments);
+            if (reportPath == null || !Files.exists(Paths.get(reportPath))) {
+                return;
+            }
+            Path path = Paths.get(reportPath);
+            String content = new String(Files.readAllBytes(path), charset);
+            String relativized = ExecutionUtils.relativizePaths(content, sandboxDir);
+            if (!relativized.equals(content)) {
+                Files.write(path, relativized.getBytes(charset), StandardOpenOption.TRUNCATE_EXISTING);
             }
         }
 
