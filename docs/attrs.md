@@ -5,7 +5,7 @@
 Name           | Type                               | Default            | Description
 ---------------|------------------------------------|--------------------|------------
 `name` | [`name`](https://docs.bazel.build/versions/master/build-ref.html#name) | — | A unique name for this target.
-`deps` | [`[Label]`](https://docs.bazel.build/versions/master/skylark/lib/list.html) | `[]` | Dependencies to provide to Detekt for classpath type resolution.
+`deps` | [`[Label]`](https://docs.bazel.build/versions/master/skylark/lib/list.html) | `[]` | Dependencies to provide to Detekt for classpath type resolution. Ignored when the config sets type_resolution = False.
 `srcs` | [`[Label]`](https://docs.bazel.build/versions/master/skylark/lib/list.html) | — | Kotlin source code files to analyze.
 `all_rules` | [`bool`](https://docs.bazel.build/versions/master/skylark/lib/bool.html) | `False` | Activates all available (even unstable) rules.
 `auto_correct` | [`bool`](https://docs.bazel.build/versions/master/skylark/lib/bool.html) | `False` | Allow rules to auto correct code if they support it. The default rule sets do NOT support auto correcting and won't change any line in the users code base. However custom rules can be written to support auto correcting. The additional 'formatting' rule set, added with '--plugins', does support it and needs this flag.

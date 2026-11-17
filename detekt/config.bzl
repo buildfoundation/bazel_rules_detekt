@@ -14,6 +14,7 @@ DetektConfigInfo = provider(
         "max_issues",
         "parallel",
         "plugins",
+        "type_resolution",
     ],
 )
 
@@ -35,6 +36,7 @@ def _impl(ctx):
         max_issues = ctx.attr.max_issues,
         parallel = ctx.attr.parallel,
         plugins = ctx.files.plugins,
+        type_resolution = ctx.attr.type_resolution,
     )
 
     return [config]
@@ -80,6 +82,10 @@ detekt_config = rule(
             default = [],
             allow_files = [".jar"],
             doc = "Ready-to-load plugin JARs. Generated JARs use the target configuration. Callers must supply required dependencies and ensure compatibility with the Detekt runtime and execution platform.",
+        ),
+        "type_resolution": attr.bool(
+            default = True,
+            doc = "Pass a target's deps, plus the JDK bootclasspath or android.jar, to Detekt as its classpath, which runs type resolution (full analysis on Detekt 2.x). When False, no classpath is passed and Detekt runs light analysis.",
         ),
     },
 )
