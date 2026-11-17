@@ -58,6 +58,11 @@ jobs:
           bazel test --strategy=Detekt=${{ matrix.detekt-strategy }} --modify_execution_info=Detekt=+no-cache --nocache_test_results --test_tag_filters= --test_output=all //:expected_failure_test 2>&1 | tee "$RUNNER_TEMP/detekt-2-failure.log" || status=$?
           test "$status" -eq 3
           grep -F "[UndocumentedPublicClass]" "$RUNNER_TEMP/detekt-2-failure.log"
+          # Findings failures print Detekt's summary, not a stack trace.
+          if grep -q $'^\tat ' "$RUNNER_TEMP/detekt-2-failure.log"; then
+            echo "::error::Findings failure printed a stack trace"
+            exit 1
+          fi
       - name: Verify MODULE.bazel.lock is unchanged
         if: ${{ always() && matrix.bazel == '9.x' && matrix.detekt-strategy == 'local' }}
         shell: bash
@@ -98,3 +103,8 @@ jobs:
           bazel test --strategy=Detekt=${{ matrix.detekt-strategy }} --modify_execution_info=Detekt=+no-cache --nocache_test_results --test_tag_filters= --test_output=all //:expected_failure_test 2>&1 | tee "$RUNNER_TEMP/detekt-1-failure.log" || status=$?
           test "$status" -eq 3
           grep -F "ForbiddenFunctionName - [customRuleViolation]" "$RUNNER_TEMP/detekt-1-failure.log"
+          # Findings failures print Detekt's summary, not a stack trace.
+          if grep -q $'^\tat ' "$RUNNER_TEMP/detekt-1-failure.log"; then
+            echo "::error::Findings failure printed a stack trace"
+            exit 1
+          fi
