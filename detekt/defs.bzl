@@ -237,7 +237,6 @@ def _impl(
         outputs = action_outputs + [execution_result],
         executable = detekt_toolchain.detekt_wrapper.files_to_run,
         execution_requirements = {
-            "requires-worker-protocol": "proto",
             "supports-workers": "1",
             "supports-multiplex-workers": "1",
         },
