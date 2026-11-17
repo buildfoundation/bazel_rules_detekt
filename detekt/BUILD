@@ -22,6 +22,7 @@ toolchain(
 )
 
 exports_files([
+    "auto_correct.sh.tpl",
     "config.bzl",
     "defs.bzl",
     "result_script.sh.tpl",
