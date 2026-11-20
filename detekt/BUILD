@@ -24,6 +24,7 @@ toolchain(
 exports_files([
     "config.bzl",
     "defs.bzl",
+    "result_script.bat.tpl",
     "result_script.sh.tpl",
     "toolchain.bzl",
 ])

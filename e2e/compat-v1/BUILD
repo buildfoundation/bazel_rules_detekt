@@ -65,6 +65,12 @@ kt_jvm_library(
 )
 
 detekt_create_baseline(
+    name = "baseline with spaces",
+    srcs = ["src/Clean.kt"],
+    tags = ["manual"],
+)
+
+detekt_create_baseline(
     name = "clean_baseline",
     srcs = ["src/Clean.kt"],
     config = ":compat_v1_config",
@@ -119,6 +125,11 @@ genrule(
     srcs = [":compat_v1_test"],
     outs = ["compat_v1_txt_report_normalized.txt"],
     cmd = "sed -E 's# at .*/src/# at src/#' $(execpath :compat_v1_test) > $@",
+    cmd_ps = """
+$$text = [IO.File]::ReadAllText('$(execpath :compat_v1_test)').Replace('\\', '/')
+$$text = $$text.Replace("`r`n", "`n") -replace ' at .*/src/', ' at src/'
+[IO.File]::WriteAllText('$@', $$text, [Text.UTF8Encoding]::new($$false))
+""",
 )
 
 write_file(
